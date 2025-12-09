@@ -5,7 +5,7 @@ import {
   mapFixtureDetail,
   mapLeague,
   mapLeagueWithCurrentSeason,
-  mapStandingTable,
+  mapStandingsToTables,
   mapH2HFixture,
   mapMatchOdds,
   mapTeamDetail,
@@ -17,7 +17,7 @@ import type {
   SportmonksFixtureRaw,
   SportmonksLeagueRaw,
   SportmonksLeagueWithCurrentSeasonRaw,
-  SportmonksStandingGroupRaw,
+  SportmonksStandingRaw,
   SportmonksOddRaw,
   SportmonksTeamRaw,
   SportmonksPlayerRaw,
@@ -30,7 +30,7 @@ const dateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be YYYY-MM
 const idSchema = z.number().int().positive();
 
 // Default includes for fixtures
-const FIXTURE_INCLUDES = ["participants", "scores", "state", "league"];
+const FIXTURE_INCLUDES = ["participants", "scores", "state", "league", "periods"];
 const FIXTURE_DETAIL_INCLUDES = [
   "participants",
   "scores",
@@ -152,16 +152,18 @@ export async function getOddsByFixture(fixtureId: number): Promise<MatchOdds | n
 /**
  * Get standings by season
  * Endpoint: GET /standings/seasons/{seasonId}
+ * Returns flat array of standing entries, not grouped
  */
 export async function getStandingsBySeason(seasonId: number): Promise<Array<StandingTable>> {
   idSchema.parse(seasonId);
 
-  const response = await sportmonksRequest<Array<SportmonksStandingGroupRaw>>({
+  const response = await sportmonksRequest<Array<SportmonksStandingRaw>>({
     endpoint: `/standings/seasons/${seasonId}`,
     include: ["participant", "details"],
   });
 
-  return response.data.map(mapStandingTable);
+  // API returns flat array of standings, group them by league for our data model
+  return mapStandingsToTables(response.data, seasonId);
 }
 
 /**
@@ -194,9 +196,10 @@ export async function getAllLeagues(page = 1): Promise<{
 export async function getLeagueById(leagueId: number): Promise<League> {
   idSchema.parse(leagueId);
 
+  // Sportmonks uses "currentseason" (no camelCase) for the include
   const response = await sportmonksRequest<SportmonksLeagueWithCurrentSeasonRaw>({
     endpoint: `/leagues/${leagueId}`,
-    include: ["country", "currentSeason"],
+    include: ["country", "currentseason"],
   });
 
   return mapLeagueWithCurrentSeason(response.data);

@@ -94,3 +94,14 @@ export const DATE_FORMATS = {
   dateTime: "dd MMM yyyy HH:mm",
   apiDate: "yyyy-MM-dd",
 } as const
+
+// Popular leagues for sidebar
+export const POPULAR_LEAGUES = [
+  { id: 8, name: "Premier League", shortCode: "ENG", logo: "/leagues/premier-league.png" },
+  { id: 564, name: "La Liga", shortCode: "ESP", logo: "/leagues/la-liga.png" },
+  { id: 82, name: "Bundesliga", shortCode: "GER", logo: "/leagues/bundesliga.png" },
+  { id: 384, name: "Serie A", shortCode: "ITA", logo: "/leagues/serie-a.png" },
+  { id: 301, name: "Ligue 1", shortCode: "FRA", logo: "/leagues/ligue-1.png" },
+  { id: 2, name: "Champions League", shortCode: "UEFA", logo: "/leagues/champions-league.png" },
+  { id: 5, name: "Europa League", shortCode: "UEFA", logo: "/leagues/europa-league.png" },
+] as const

@@ -1,7 +1,10 @@
 import type { Metadata } from "next"
-import { getHomePageData } from "@/lib/queries"
-import { FixtureList } from "@/components/fixtures/fixture-list"
-import { PAGES, SEO } from "@/lib/constants"
+import { getHomePageData, getTopLeaguesStandings } from "@/lib/queries"
+import { getHomePage } from "@/lib/contentful"
+import { HomeContent } from "@/components/home/home-content"
+import { RichText, FaqSection } from "@/components/content"
+import { TopLeagues, AdSpace, BuildXI, StandingsWidget } from "@/components/sidebar"
+import { SEO } from "@/lib/constants"
 
 export const metadata: Metadata = {
   title: SEO.home.title,
@@ -9,37 +12,54 @@ export const metadata: Metadata = {
 }
 
 export default async function HomePage() {
-  const { liveFixtures, todayFixtures } = await getHomePageData()
+  // Fetch all data in parallel
+  const [fixturesData, homepage, leagueStandings] = await Promise.all([
+    getHomePageData(),
+    getHomePage(),
+    getTopLeaguesStandings(),
+  ])
+
+  const { liveFixtures, todayFixtures } = fixturesData
 
   return (
-    <main className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-8">{PAGES.home.title}</h1>
+    <main className="flex-1 overflow-auto">
+      <div className="container mx-auto px-4 py-4">
+        {/* 3-Column Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-[240px_1fr_300px] gap-6">
+          {/* Left Sidebar - Hidden on mobile/tablet */}
+          <aside className="hidden lg:flex flex-col gap-4">
+            <TopLeagues />
+            <AdSpace size="medium-rectangle" />
+          </aside>
 
-      {/* Live Matches */}
-      {liveFixtures.length > 0 && (
-        <section className="mb-8">
-          <div className="flex items-center gap-2 mb-4">
-            <span className="relative flex h-3 w-3">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
-              <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500" />
-            </span>
-            <h2 className="text-xl font-semibold">{PAGES.home.liveSection}</h2>
-            <span className="text-muted-foreground text-sm">
-              ({liveFixtures.length})
-            </span>
+          {/* Center Content */}
+          <div className="min-w-0">
+            {/* Fixtures Section */}
+            <HomeContent
+              initialFixtures={todayFixtures}
+              initialLiveFixtures={liveFixtures}
+            />
+
+            {/* Contentful Rich Text Content */}
+            {homepage?.fields?.content && (
+              <section className="mt-8 pt-8 border-t border-border">
+                <RichText content={homepage.fields.content} />
+              </section>
+            )}
+
+            {/* FAQ Section - Static */}
+            <div className="mt-8 pt-8 border-t border-border">
+              <FaqSection />
+            </div>
           </div>
-          <FixtureList fixtures={liveFixtures} />
-        </section>
-      )}
 
-      {/* Today's Matches */}
-      <section>
-        <FixtureList
-          fixtures={todayFixtures}
-          title={PAGES.home.todaySection}
-          emptyMessage={PAGES.home.emptyMessage}
-        />
-      </section>
+          {/* Right Sidebar - Hidden on mobile */}
+          <aside className="hidden md:flex flex-col gap-4">
+            <BuildXI />
+            <StandingsWidget leagueStandings={leagueStandings} />
+          </aside>
+        </div>
+      </div>
     </main>
   )
 }

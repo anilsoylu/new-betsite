@@ -188,3 +188,104 @@
     letter-spacing: var(--tracking-normal);
   }
 }
+
+/* Safe area for iPhone notch/home indicator */
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+/* Star favorite animation */
+@keyframes star-pop {
+  0% {
+    transform: scale(1);
+  }
+  25% {
+    transform: scale(1.2) rotate(-5deg);
+  }
+  50% {
+    transform: scale(1.35) rotate(5deg);
+  }
+  75% {
+    transform: scale(1.15) rotate(-3deg);
+  }
+  100% {
+    transform: scale(1) rotate(0);
+  }
+}
+
+.animate-star-pop {
+  animation: star-pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* Card hover lift effect */
+@keyframes card-lift {
+  from {
+    transform: translateY(0);
+    box-shadow: var(--shadow-sm);
+  }
+  to {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+  }
+}
+
+.hover-lift {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+/* Yellow pulse for favorited items */
+@keyframes yellow-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(234, 179, 8, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(234, 179, 8, 0);
+  }
+}
+
+.animate-yellow-pulse {
+  animation: yellow-pulse 0.6s ease-out;
+}
+
+/* Hide scrollbar for date picker and horizontal scrolls */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Live pulse animation */
+@keyframes live-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.animate-live-pulse {
+  animation: live-pulse 2s ease-in-out infinite;
+}
+
+/* Smooth collapse/expand */
+.collapse-content {
+  overflow: hidden;
+  transition: max-height 0.3s ease-out;
+}
+
+/* Touch feedback for mobile */
+@media (hover: none) {
+  .touch-feedback:active {
+    background-color: var(--muted);
+    transition: background-color 0.1s ease;
+  }
+}

@@ -1,11 +1,16 @@
 import Link from "next/link"
+import { cn } from "@/lib/utils"
 import { SITE } from "@/lib/constants"
 
-export function Footer() {
+interface FooterProps {
+  className?: string
+}
+
+export function Footer({ className }: FooterProps) {
   const currentYear = new Date().getFullYear()
 
   return (
-    <footer className="border-t bg-background">
+    <footer className={cn("border-t bg-background", className)}>
       <div className="container mx-auto px-4 py-8">
         <div className="grid gap-8 md:grid-cols-3">
           {/* Brand */}

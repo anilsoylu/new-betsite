@@ -174,6 +174,9 @@ export function mapLeague(raw: SportmonksLeagueRaw): League {
 
 // Map league with current season
 export function mapLeagueWithCurrentSeason(raw: SportmonksLeagueWithCurrentSeasonRaw): League {
+  // Handle both camelCase and snake_case from API (API returns "currentseason" lowercase)
+  const currentSeason = raw.currentSeason ?? raw.current_season ?? raw.currentseason;
+
   return {
     id: raw.id,
     name: raw.name,
@@ -182,7 +185,7 @@ export function mapLeagueWithCurrentSeason(raw: SportmonksLeagueWithCurrentSeaso
     countryId: raw.country_id,
     country: raw.country ? mapCountry(raw.country) : null,
     type: raw.type,
-    currentSeasonId: raw.currentSeason?.id ?? null,
+    currentSeasonId: currentSeason?.id ?? null,
   };
 }
 
@@ -341,15 +344,39 @@ export function mapStanding(raw: SportmonksStandingRaw): Standing {
   };
 }
 
-// Map standing group
-export function mapStandingTable(raw: SportmonksStandingGroupRaw): StandingTable {
-  return {
-    id: raw.id,
-    name: raw.name,
-    leagueId: raw.league_id,
-    seasonId: raw.season_id,
-    standings: raw.standings.map(mapStanding),
-  };
+// Map flat array of standings to grouped tables
+// API returns flat array, we group by league_id
+export function mapStandingsToTables(rawStandings: SportmonksStandingRaw[], seasonId: number): StandingTable[] {
+  if (!rawStandings || rawStandings.length === 0) return [];
+
+  // Group standings by league_id
+  const grouped = new Map<number, SportmonksStandingRaw[]>();
+
+  for (const standing of rawStandings) {
+    const leagueId = standing.league_id;
+    if (!grouped.has(leagueId)) {
+      grouped.set(leagueId, []);
+    }
+    grouped.get(leagueId)!.push(standing);
+  }
+
+  // Convert to StandingTable array
+  const tables: StandingTable[] = [];
+
+  for (const [leagueId, standings] of grouped) {
+    // Sort by position
+    standings.sort((a, b) => a.position - b.position);
+
+    tables.push({
+      id: leagueId, // Use league_id as table id
+      name: null,
+      leagueId,
+      seasonId,
+      standings: standings.map(mapStanding),
+    });
+  }
+
+  return tables;
 }
 
 // Map event

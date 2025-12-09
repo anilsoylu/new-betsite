@@ -56,4 +56,6 @@ export interface SportmonksLeagueRaw {
 // League with current season included
 export interface SportmonksLeagueWithCurrentSeasonRaw extends SportmonksLeagueRaw {
   currentSeason?: SportmonksSeasonRaw;
+  current_season?: SportmonksSeasonRaw; // API may return snake_case
+  currentseason?: SportmonksSeasonRaw; // API returns lowercase
 }

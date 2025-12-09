@@ -85,3 +85,25 @@ export function extractPlayerId(slug: string): number | null {
   const match = slug.match(/-(\d+)$/)
   return match ? parseInt(match[1], 10) : null
 }
+
+/**
+ * Generate league URL slug: league-name-id
+ */
+export function generateLeagueSlug(name: string, id: number): string {
+  return `${slugify(name)}-${id}`
+}
+
+/**
+ * Generate league URL path
+ */
+export function getLeagueUrl(name: string, id: number): string {
+  return `/leagues/${generateLeagueSlug(name, id)}`
+}
+
+/**
+ * Extract league ID from slug
+ */
+export function extractLeagueId(slug: string): number | null {
+  const match = slug.match(/-(\d+)$/)
+  return match ? parseInt(match[1], 10) : null
+}
