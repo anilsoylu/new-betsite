@@ -7,7 +7,7 @@ import { DatePicker } from "./date-picker"
 import { LeagueSection } from "./league-section"
 import { MatchRow } from "./match-row"
 import { useFavoritesStore } from "@/stores/favorites-store"
-import type { Fixture } from "@/types/football"
+import type { Fixture, LeagueCategory } from "@/types/football"
 
 interface HomeContentProps {
   initialFixtures: Fixture[]
@@ -23,6 +23,7 @@ interface GroupedFixtures {
     countryFlag?: string
     fixtures: Fixture[]
     hasLive: boolean
+    category: LeagueCategory
   }
 }
 
@@ -88,7 +89,8 @@ export function HomeContent({ initialFixtures, initialLiveFixtures }: HomeConten
           countryName: fixture.league?.country?.name,
           countryFlag: fixture.league?.country?.flag,
           fixtures: [],
-          hasLive: false
+          hasLive: false,
+          category: fixture.league?.category ?? 5 // Default to lowest priority
         }
       }
 
@@ -106,10 +108,16 @@ export function HomeContent({ initialFixtures, initialLiveFixtures }: HomeConten
 
   const grouped = groupFixturesByLeague(fixtures, liveFixtures)
 
-  // Sort leagues: live first, then by fixture count
+  // Sort leagues: live first, then by API category (1 = top tier), then by fixture count
   const sortedLeagues = Object.values(grouped).sort((a, b) => {
+    // 1. Live matches first
     if (a.hasLive && !b.hasLive) return -1
     if (!a.hasLive && b.hasLive) return 1
+
+    // 2. Sort by API category (lower = higher priority, e.g., category 1 = Premier League)
+    if (a.category !== b.category) return a.category - b.category
+
+    // 3. More fixtures = higher priority
     return b.fixtures.length - a.fixtures.length
   })
 
@@ -184,7 +192,7 @@ export function HomeContent({ initialFixtures, initialLiveFixtures }: HomeConten
               No matches found for this date
             </div>
           ) : (
-            sortedLeagues.map((league) => (
+            sortedLeagues.map((league, index) => (
               <LeagueSection
                 key={league.leagueId}
                 leagueId={league.leagueId}
@@ -193,7 +201,7 @@ export function HomeContent({ initialFixtures, initialLiveFixtures }: HomeConten
                 countryName={league.countryName}
                 countryFlag={league.countryFlag}
                 fixtures={league.fixtures}
-                defaultExpanded={league.hasLive || sortedLeagues.indexOf(league) < 5}
+                defaultExpanded={league.hasLive || index < 5}
               />
             ))
           )}

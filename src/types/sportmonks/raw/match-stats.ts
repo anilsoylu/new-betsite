@@ -56,6 +56,13 @@ export interface SportmonksStandingRaw {
     fixture_id: number;
     form: string;
   }>;
+  rule?: {
+    id: number;
+    model_type: string;
+    model_id: number;
+    type_id: number | null;
+    position: number;
+  };
 }
 
 // Standing response wrapper (grouped by stage/round)

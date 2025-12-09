@@ -41,6 +41,11 @@ export interface Venue {
   image: string | null;
 }
 
+// League category (from API)
+// 1 = Top tier (Premier League, Champions League, La Liga, etc.)
+// 2+ = Secondary tier (FA Cup, lower divisions, etc.)
+export type LeagueCategory = 1 | 2 | 3 | 4 | 5;
+
 // League information
 export interface League {
   id: number;
@@ -51,6 +56,7 @@ export interface League {
   country: Country | null;
   type: string;
   currentSeasonId: number | null;
+  category: LeagueCategory;
 }
 
 // Country information
@@ -91,6 +97,15 @@ export interface Fixture {
   isLive: boolean;
 }
 
+// Standing rule types (from API)
+// 180 = UCL qualification
+// 181 = UEL/UECL qualification
+// 182 = Relegation
+// 183 = Promotion playoff
+// 184 = Championship playoff
+// null = No special position
+export type StandingRuleType = 180 | 181 | 182 | 183 | 184 | null;
+
 // Standing entry
 export interface Standing {
   position: number;
@@ -106,6 +121,7 @@ export interface Standing {
   goalDifference: number;
   points: number;
   form: Array<"W" | "D" | "L">;
+  ruleTypeId: StandingRuleType;
 }
 
 // Standing table (grouped)

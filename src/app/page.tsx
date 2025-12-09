@@ -56,7 +56,9 @@ export default async function HomePage() {
           {/* Right Sidebar - Hidden on mobile */}
           <aside className="hidden md:flex flex-col gap-4">
             <BuildXI />
+            <AdSpace size="medium-rectangle" />
             <StandingsWidget leagueStandings={leagueStandings} />
+            <AdSpace size="medium-rectangle" />
           </aside>
         </div>
       </div>

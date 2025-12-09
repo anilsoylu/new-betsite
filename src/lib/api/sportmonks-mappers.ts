@@ -169,6 +169,7 @@ export function mapLeague(raw: SportmonksLeagueRaw): League {
     country: raw.country ? mapCountry(raw.country) : null,
     type: raw.type,
     currentSeasonId: null,
+    category: (raw.category as League["category"]) || 5, // Default to lowest priority if not specified
   };
 }
 
@@ -191,6 +192,7 @@ export function mapLeagueWithCurrentSeason(raw: SportmonksLeagueWithCurrentSeaso
     country: raw.country ? mapCountry(raw.country) : null,
     type: raw.type,
     currentSeasonId: currentSeason?.id ?? null,
+    category: (raw.category as League["category"]) || 5,
   };
 }
 
@@ -332,6 +334,9 @@ export function mapStanding(raw: SportmonksStandingRaw): Standing {
     }
   }
 
+  // Extract rule type ID (180=UCL, 181=UEL/UECL, 182=Relegation, etc.)
+  const ruleTypeId = (raw.rule?.type_id as 180 | 181 | 182 | 183 | 184 | null) ?? null;
+
   return {
     position: raw.position,
     teamId: raw.participant_id,
@@ -346,6 +351,7 @@ export function mapStanding(raw: SportmonksStandingRaw): Standing {
     goalDifference: goalsFor - goalsAgainst,
     points: raw.points,
     form,
+    ruleTypeId,
   };
 }
 

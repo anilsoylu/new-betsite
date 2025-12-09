@@ -159,7 +159,7 @@ export async function getStandingsBySeason(seasonId: number): Promise<Array<Stan
 
   const response = await sportmonksRequest<Array<SportmonksStandingRaw>>({
     endpoint: `/standings/seasons/${seasonId}`,
-    include: ["participant", "details"],
+    include: ["participant", "details", "rule"],
   });
 
   // API returns flat array of standings, group them by league for our data model
