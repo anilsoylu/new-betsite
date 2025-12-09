@@ -45,3 +45,14 @@ export type {
   SportmonksBookmakerRaw,
   SportmonksPreMatchOddsRaw,
 } from "./betting";
+
+// Team types
+export type {
+  SportmonksTeamRaw,
+  SportmonksTeamCoachRaw,
+  SportmonksCoachRaw,
+  SportmonksSquadPlayerRaw,
+  SportmonksPlayerRaw,
+  SportmonksPositionRaw,
+  SportmonksTeamFixtureRaw,
+} from "./team";

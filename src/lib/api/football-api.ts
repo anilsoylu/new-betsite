@@ -8,6 +8,8 @@ import {
   mapStandingTable,
   mapH2HFixture,
   mapMatchOdds,
+  mapTeamDetail,
+  mapTeamSearchResult,
 } from "./sportmonks-mappers";
 import type {
   SportmonksFixtureRaw,
@@ -15,8 +17,9 @@ import type {
   SportmonksLeagueWithCurrentSeasonRaw,
   SportmonksStandingGroupRaw,
   SportmonksOddRaw,
+  SportmonksTeamRaw,
 } from "@/types/sportmonks/raw";
-import type { Fixture, FixtureDetail, League, StandingTable, H2HFixture, MatchOdds } from "@/types/football";
+import type { Fixture, FixtureDetail, League, StandingTable, H2HFixture, MatchOdds, TeamDetail, TeamSearchResult } from "@/types/football";
 import { API, UI } from "@/lib/constants";
 
 // Validation schemas
@@ -201,4 +204,102 @@ export async function getLeagueById(leagueId: number): Promise<League> {
  */
 export function getTodayDate(): string {
   return new Date().toISOString().split("T")[0];
+}
+
+// Team includes
+const TEAM_DETAIL_INCLUDES = [
+  "country",
+  "venue",
+  "coaches.coach",
+  "players.player",
+  "players.position",
+  "activeSeasons.league",
+];
+
+const TEAM_SEARCH_INCLUDES = ["country"];
+
+/**
+ * Get team by ID with full details
+ * Endpoint: GET /teams/{id}
+ */
+export async function getTeamById(teamId: number): Promise<TeamDetail> {
+  idSchema.parse(teamId);
+
+  const response = await sportmonksRequest<SportmonksTeamRaw>({
+    endpoint: `/teams/${teamId}`,
+    include: TEAM_DETAIL_INCLUDES,
+  });
+
+  return mapTeamDetail(response.data);
+}
+
+/**
+ * Search teams by name
+ * Endpoint: GET /teams/search/{name}
+ */
+export async function searchTeams(query: string): Promise<Array<TeamSearchResult>> {
+  if (!query || query.length < 2) return [];
+
+  try {
+    const response = await sportmonksPaginatedRequest<SportmonksTeamRaw>({
+      endpoint: `/teams/search/${encodeURIComponent(query)}`,
+      include: TEAM_SEARCH_INCLUDES,
+      perPage: 25,
+    });
+
+    return response.data.map(mapTeamSearchResult);
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Get fixtures by team ID (recent and upcoming)
+ * Endpoint: GET /fixtures/between/{startDate}/{endDate}/{teamId}
+ */
+export async function getFixturesByTeam(
+  teamId: number,
+  options: { past?: number; future?: number } = {}
+): Promise<{ recent: Array<Fixture>; upcoming: Array<Fixture> }> {
+  idSchema.parse(teamId);
+
+  const { past = 5, future = 5 } = options;
+  const today = new Date();
+
+  // Calculate date range (past 60 days to future 60 days)
+  const startDate = new Date(today);
+  startDate.setDate(startDate.getDate() - 60);
+  const endDate = new Date(today);
+  endDate.setDate(endDate.getDate() + 60);
+
+  const formatDate = (d: Date) => d.toISOString().split("T")[0];
+
+  try {
+    const response = await sportmonksPaginatedRequest<SportmonksFixtureRaw>({
+      endpoint: `/fixtures/between/${formatDate(startDate)}/${formatDate(endDate)}/${teamId}`,
+      include: FIXTURE_INCLUDES,
+      perPage: 50,
+    });
+
+    const fixtures = response.data.map(mapFixture);
+    const now = Date.now();
+
+    // Split into past and future
+    const pastFixtures = fixtures
+      .filter((f) => f.timestamp * 1000 < now)
+      .sort((a, b) => b.timestamp - a.timestamp)
+      .slice(0, past);
+
+    const futureFixtures = fixtures
+      .filter((f) => f.timestamp * 1000 >= now)
+      .sort((a, b) => a.timestamp - b.timestamp)
+      .slice(0, future);
+
+    return {
+      recent: pastFixtures,
+      upcoming: futureFixtures,
+    };
+  } catch {
+    return { recent: [], upcoming: [] };
+  }
 }

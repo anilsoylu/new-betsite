@@ -218,3 +218,66 @@ export interface MatchDetailData {
   h2h: Array<H2HFixture>;
   odds: MatchOdds | null;
 }
+
+// Team detail (full team info for team page)
+export interface TeamDetail {
+  id: number;
+  name: string;
+  shortCode: string | null;
+  logo: string;
+  founded: number | null;
+  country: Country | null;
+  venue: Venue | null;
+  coach: Coach | null;
+  squad: Array<SquadPlayer>;
+  activeSeasons: Array<{
+    id: number;
+    name: string;
+    league: {
+      id: number;
+      name: string;
+      logo: string;
+    } | null;
+  }>;
+}
+
+// Coach info
+export interface Coach {
+  id: number;
+  name: string;
+  displayName: string;
+  image: string | null;
+  countryId: number | null;
+  dateOfBirth: string | null;
+}
+
+// Squad player
+export interface SquadPlayer {
+  id: number;
+  playerId: number;
+  name: string;
+  displayName: string;
+  image: string | null;
+  position: string | null;
+  positionGroup: string | null;
+  jerseyNumber: number | null;
+  countryId: number | null;
+  dateOfBirth: string | null;
+  isCaptain: boolean;
+}
+
+// Team search result (for listing)
+export interface TeamSearchResult {
+  id: number;
+  name: string;
+  shortCode: string | null;
+  logo: string;
+  country: Country | null;
+}
+
+// Team page data
+export interface TeamPageData {
+  team: TeamDetail;
+  recentFixtures: Array<Fixture>;
+  upcomingFixtures: Array<Fixture>;
+}

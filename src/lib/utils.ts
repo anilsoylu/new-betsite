@@ -41,3 +41,25 @@ export function extractFixtureId(slug: string): number | null {
   const match = slug.match(/-(\d+)$/)
   return match ? parseInt(match[1], 10) : null
 }
+
+/**
+ * Generate team URL slug: team-name-id
+ */
+export function generateTeamSlug(name: string, id: number): string {
+  return `${slugify(name)}-${id}`
+}
+
+/**
+ * Generate team URL path
+ */
+export function getTeamUrl(name: string, id: number): string {
+  return `/teams/${generateTeamSlug(name, id)}`
+}
+
+/**
+ * Extract team ID from slug
+ */
+export function extractTeamId(slug: string): number | null {
+  const match = slug.match(/-(\d+)$/)
+  return match ? parseInt(match[1], 10) : null
+}

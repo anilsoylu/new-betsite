@@ -4,6 +4,7 @@ import { format } from "date-fns";
 import { ArrowLeft, MapPin, Calendar } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { getTeamUrl } from "@/lib/utils";
 import type { FixtureDetail } from "@/types/football";
 
 interface MatchHeaderProps {
@@ -68,20 +69,20 @@ export function MatchHeader({ fixture }: MatchHeaderProps) {
           {/* Teams and score */}
           <div className="flex items-center justify-between gap-4">
             {/* Home team */}
-            <div className="flex-1 text-center">
+            <Link href={getTeamUrl(homeTeam.name, homeTeam.id)} className="flex-1 text-center group">
               {homeTeam.logo && (
                 <Image
                   src={homeTeam.logo}
                   alt={homeTeam.name}
                   width={80}
                   height={80}
-                  className="object-contain mx-auto mb-3"
+                  className="object-contain mx-auto mb-3 group-hover:scale-105 transition-transform"
                 />
               )}
-              <p className={`font-semibold text-lg ${homeTeam.isWinner ? "text-foreground" : "text-muted-foreground"}`}>
+              <p className={`font-semibold text-lg group-hover:text-primary transition-colors ${homeTeam.isWinner ? "text-foreground" : "text-muted-foreground"}`}>
                 {homeTeam.name}
               </p>
-            </div>
+            </Link>
 
             {/* Score */}
             <div className="text-center px-6">
@@ -106,20 +107,20 @@ export function MatchHeader({ fixture }: MatchHeaderProps) {
             </div>
 
             {/* Away team */}
-            <div className="flex-1 text-center">
+            <Link href={getTeamUrl(awayTeam.name, awayTeam.id)} className="flex-1 text-center group">
               {awayTeam.logo && (
                 <Image
                   src={awayTeam.logo}
                   alt={awayTeam.name}
                   width={80}
                   height={80}
-                  className="object-contain mx-auto mb-3"
+                  className="object-contain mx-auto mb-3 group-hover:scale-105 transition-transform"
                 />
               )}
-              <p className={`font-semibold text-lg ${awayTeam.isWinner ? "text-foreground" : "text-muted-foreground"}`}>
+              <p className={`font-semibold text-lg group-hover:text-primary transition-colors ${awayTeam.isWinner ? "text-foreground" : "text-muted-foreground"}`}>
                 {awayTeam.name}
               </p>
-            </div>
+            </Link>
           </div>
 
           {/* Match info footer */}

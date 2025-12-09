@@ -12,6 +12,8 @@ import type {
   SportmonksStatisticRaw,
   SportmonksLineupRaw,
   SportmonksOddRaw,
+  SportmonksTeamRaw,
+  SportmonksSquadPlayerRaw,
 } from "@/types/sportmonks/raw";
 import type {
   Fixture,
@@ -32,6 +34,10 @@ import type {
   OddValue,
   H2HFixture,
   FixtureDetail,
+  TeamDetail,
+  TeamSearchResult,
+  SquadPlayer,
+  Coach,
 } from "@/types/football";
 
 // Map state developer_name to MatchStatus
@@ -588,5 +594,84 @@ export function mapFixtureDetail(raw: SportmonksFixtureRaw): FixtureDetail {
     statistics,
     homeLineup,
     awayLineup,
+  };
+}
+
+// Map squad player
+export function mapSquadPlayer(raw: SportmonksSquadPlayerRaw): SquadPlayer {
+  const player = raw.player;
+  const position = raw.position;
+
+  return {
+    id: raw.id,
+    playerId: raw.player_id,
+    name: player?.name || "",
+    displayName: player?.display_name || player?.common_name || "",
+    image: player?.image_path || null,
+    position: position?.name || null,
+    positionGroup: position?.stat_group || null,
+    jerseyNumber: raw.jersey_number,
+    countryId: player?.country_id || null,
+    dateOfBirth: player?.date_of_birth || null,
+    isCaptain: raw.captain,
+  };
+}
+
+// Map team search result
+export function mapTeamSearchResult(raw: SportmonksTeamRaw): TeamSearchResult {
+  return {
+    id: raw.id,
+    name: raw.name,
+    shortCode: raw.short_code,
+    logo: raw.image_path,
+    country: raw.country ? mapCountry(raw.country) : null,
+  };
+}
+
+// Map full team detail
+export function mapTeamDetail(raw: SportmonksTeamRaw): TeamDetail {
+  // Find active coach
+  const activeCoachRelation = raw.coaches?.find((c) => c.active);
+  let coach: Coach | null = null;
+
+  if (activeCoachRelation?.coach) {
+    const c = activeCoachRelation.coach;
+    coach = {
+      id: c.id,
+      name: c.name,
+      displayName: c.display_name || c.common_name,
+      image: c.image_path,
+      countryId: c.country_id,
+      dateOfBirth: c.date_of_birth,
+    };
+  }
+
+  // Map squad players
+  const squad = (raw.players || []).map(mapSquadPlayer);
+
+  // Map active seasons
+  const activeSeasons = (raw.activeSeasons || []).map((s) => ({
+    id: s.id,
+    name: s.name,
+    league: s.league
+      ? {
+          id: s.league.id,
+          name: s.league.name,
+          logo: s.league.image_path,
+        }
+      : null,
+  }));
+
+  return {
+    id: raw.id,
+    name: raw.name,
+    shortCode: raw.short_code,
+    logo: raw.image_path,
+    founded: raw.founded,
+    country: raw.country ? mapCountry(raw.country) : null,
+    venue: raw.venue ? mapVenue(raw.venue) : null,
+    coach,
+    squad,
+    activeSeasons,
   };
 }
