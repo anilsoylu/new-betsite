@@ -395,27 +395,55 @@ export function mapStandingsToTables(rawStandings: SportmonksStandingRaw[], seas
 
 // Map event
 export function mapEvent(raw: SportmonksEventRaw): MatchEvent {
-  // Type IDs: 14=goal, 18=yellow, 19=red, 20=substitution, etc.
   let type: MatchEvent["type"] = "other";
+  let subType: MatchEvent["subType"] = null;
 
-  const goalTypes = [14, 15, 16, 17]; // goal, own goal, penalty, missed penalty
-  const cardTypes = [18, 19, 20]; // yellow, red, yellowred
-  const subTypes = [24]; // substitution
-  const varTypes = [27]; // VAR
+  // SportMonks Event Type IDs:
+  // 14 = Goal, 15 = Own Goal, 16 = Penalty, 17 = Missed Penalty
+  // 18 = Substitution, 19 = Yellowcard, 20 = Redcard, 21 = Yellowred (2nd yellow)
+  // 10 = VAR, 27 = VAR review
 
-  if (goalTypes.includes(raw.type_id)) {
-    type = "goal";
-  } else if (cardTypes.includes(raw.type_id)) {
-    type = "card";
-  } else if (subTypes.includes(raw.type_id)) {
-    type = "substitution";
-  } else if (varTypes.includes(raw.type_id)) {
-    type = "var";
+  switch (raw.type_id) {
+    case 14: // Goal
+      type = "goal";
+      break;
+    case 15: // Own Goal
+      type = "goal";
+      subType = "ownGoal";
+      break;
+    case 16: // Penalty
+      type = "goal";
+      subType = "penalty";
+      break;
+    case 17: // Missed Penalty
+      type = "goal";
+      subType = "missedPenalty";
+      break;
+    case 18: // Substitution
+      type = "substitution";
+      break;
+    case 19: // Yellow Card
+      type = "card";
+      subType = "yellow";
+      break;
+    case 20: // Red Card
+      type = "card";
+      subType = "red";
+      break;
+    case 21: // Second Yellow (Yellow-Red)
+      type = "card";
+      subType = "yellowred";
+      break;
+    case 10: // VAR
+    case 27: // VAR review
+      type = "var";
+      break;
   }
 
   return {
     id: raw.id,
     type,
+    subType,
     minute: raw.minute,
     extraMinute: raw.extra_minute,
     teamId: raw.participant_id,
@@ -634,12 +662,31 @@ export function mapFixtureDetail(raw: SportmonksFixtureRaw): FixtureDetail {
     ? mapTeamLineup(lineups, base.awayTeam.id, awayFormation)
     : null;
 
+  // Map referee - find main referee (type_id: 1) or first available
+  const refereePivots = raw.referees || [];
+
+  // Find main referee (type_id: 1) or fall back to first one with referee data
+  const mainRefereePivot = refereePivots.find((r) => r.type_id === 1 && r.referee)
+    || refereePivots.find((r) => r.referee)
+    || refereePivots[0];
+
+  const refereeData = mainRefereePivot?.referee;
+
+  const referee = refereeData
+    ? {
+        id: refereeData.id,
+        name: refereeData.display_name || refereeData.common_name || refereeData.name,
+        image: refereeData.image_path,
+      }
+    : null;
+
   return {
     ...base,
     events,
     statistics,
     homeLineup,
     awayLineup,
+    referee,
   };
 }
 

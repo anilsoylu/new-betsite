@@ -147,6 +147,7 @@ export interface StandingTable {
 export interface MatchEvent {
   id: number;
   type: "goal" | "card" | "substitution" | "var" | "other";
+  subType?: "yellow" | "red" | "yellowred" | "penalty" | "ownGoal" | "missedPenalty" | null;
   minute: number;
   extraMinute: number | null;
   teamId: number;
@@ -229,12 +230,27 @@ export interface H2HFixture {
   } | null;
 }
 
+// Match referee
+export interface Referee {
+  id: number;
+  name: string;
+  image: string | null;
+}
+
 // Extended fixture with all match details
 export interface FixtureDetail extends Fixture {
   events: Array<MatchEvent>;
   statistics: Array<MatchStatistic>;
   homeLineup: TeamLineup | null;
   awayLineup: TeamLineup | null;
+  referee: Referee | null;
+}
+
+// Form fixture data (for team recent form)
+export interface FormFixtureData {
+  homeScore: number | null;
+  awayScore: number | null;
+  isHome: boolean;
 }
 
 // Match detail page data
@@ -243,6 +259,8 @@ export interface MatchDetailData {
   standings: Array<StandingTable>;
   h2h: Array<H2HFixture>;
   odds: MatchOdds | null;
+  homeForm: Array<FormFixtureData>;
+  awayForm: Array<FormFixtureData>;
 }
 
 // Team detail (full team info for team page)

@@ -161,119 +161,200 @@ export function LeagueAboutSection({
   const leagueLeader = standings[0]
 
   return (
-    <div className="rounded-xl border border-border bg-card p-5 space-y-5">
-      <h3 className="text-lg font-semibold">About {leagueName}</h3>
+    <article className="rounded-xl border border-border bg-card p-5 space-y-5">
+      {/* Main Title - H2 for SEO */}
+      <h2 className="text-xl font-bold">About {leagueName}</h2>
 
       {/* Main Description */}
-      <div className="space-y-3 text-sm text-muted-foreground leading-relaxed">
+      <div className="prose prose-sm dark:prose-invert max-w-none space-y-3">
         <p>
-          {leagueName}{metadata?.description ? `, ${metadata.description.toLowerCase()}` : ''}, is a professional football {league.type === "league" ? "league" : "competition"} in {countryName}.
+          <strong>{leagueName}</strong>
+          {metadata?.description ? `, ${metadata.description.toLowerCase()}` : ""}, is a professional
+          football {league.type === "league" ? "league" : "competition"} in <strong>{countryName}</strong>.
+          {metadata?.foundedYear && (
+            <> Founded in <strong>{metadata.foundedYear}</strong>, it has grown to become one of the
+            most prestigious competitions in world football.</>
+          )}
         </p>
 
         {teamCount > 0 && (
           <p>
-            There are overall <span className="text-foreground font-medium">{teamCount} teams</span> that compete for the title every year.
+            There are overall <strong>{teamCount} teams</strong> that compete for the title every year,
+            battling it out across the season for glory and European qualification spots.
           </p>
         )}
 
         {metadata?.currentHolder && metadata?.recordHolder && (
           <p>
-            The current holder of the title is <span className="text-foreground font-medium">{metadata.currentHolder}</span> and the team that holds the most titles is <span className="text-foreground font-medium">{metadata.recordHolder}</span>{metadata.recordTitles ? ` with ${metadata.recordTitles} titles` : ''}.
+            The current holder of the title is <strong>{metadata.currentHolder}</strong>.
+            The team with the most titles in {leagueName} history is{" "}
+            <strong>{metadata.recordHolder}</strong>
+            {metadata.recordTitles ? <> with an impressive <strong>{metadata.recordTitles} titles</strong></> : ""}.
           </p>
         )}
       </div>
 
       {/* Competition Format */}
       {metadata?.format && (
-        <div className="space-y-2">
-          <h4 className="text-sm font-semibold text-foreground">Competition Format</h4>
+        <section className="space-y-2">
+          <h3 className="text-base font-semibold">Competition Format</h3>
           <p className="text-sm text-muted-foreground leading-relaxed">
             {metadata.format}
           </p>
-        </div>
+        </section>
+      )}
+
+      {/* Current Standings Overview */}
+      {leagueLeader && (
+        <section className="space-y-2">
+          <h3 className="text-base font-semibold">Current Standings</h3>
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            <strong>{leagueLeader.teamName}</strong> is currently leading the {leagueName} table with{" "}
+            <strong>{leagueLeader.points} points</strong> from {leagueLeader.played} matches.
+            They have recorded <strong>{leagueLeader.won} wins</strong>, {leagueLeader.drawn} draws,
+            and {leagueLeader.lost} losses this season.
+          </p>
+        </section>
       )}
 
       {/* Top Scorers Section */}
       {topScorerNames.length > 0 && (
-        <div className="space-y-2">
-          <h4 className="text-sm font-semibold text-foreground">Top Scorers</h4>
+        <section className="space-y-2">
+          <h3 className="text-base font-semibold">Top Scorers</h3>
           <p className="text-sm text-muted-foreground leading-relaxed">
-            The leading scorers in {leagueName} this season are <span className="text-foreground font-medium">{topScorerNames.join(", ")}</span>.
-            {topScorerGoals > 0 && ` The top scorer has ${topScorerGoals} goals so far.`}
+            The leading scorers in {leagueName} this season are{" "}
+            <strong>{topScorerNames.join(" and ")}</strong>.
+            {topScorerGoals > 0 && (
+              <> The Golden Boot race is heating up with the top scorer on <strong>{topScorerGoals} goals</strong>.</>
+            )}
           </p>
-        </div>
+        </section>
       )}
 
-      {/* Current Leader */}
-      {leagueLeader && (
-        <div className="space-y-2">
-          <h4 className="text-sm font-semibold text-foreground">Current Leader</h4>
-          <p className="text-sm text-muted-foreground leading-relaxed">
-            <span className="text-foreground font-medium">{leagueLeader.teamName}</span> is currently leading the table with <span className="text-foreground font-medium">{leagueLeader.points} points</span> after {leagueLeader.played} matches played.
-          </p>
-        </div>
-      )}
-
-      {/* Stats */}
+      {/* Season Statistics */}
       {avgGoals && (
-        <div className="space-y-2">
-          <h4 className="text-sm font-semibold text-foreground">Season Statistics</h4>
+        <section className="space-y-2">
+          <h3 className="text-base font-semibold">Season Statistics</h3>
           <p className="text-sm text-muted-foreground leading-relaxed">
-            The average number of goals per match in {leagueName} this season is <span className="text-foreground font-medium">{avgGoals}</span>.
+            The average number of goals per match in {leagueName} this season is{" "}
+            <strong>{avgGoals}</strong>, making it an exciting league for fans who love
+            goal-filled encounters.
           </p>
-        </div>
+        </section>
       )}
 
-      {/* FAQ Section */}
-      <div className="space-y-3 pt-2 border-t border-border">
-        <h4 className="text-sm font-semibold text-foreground">Frequently Asked Questions</h4>
+      {/* Key Facts List */}
+      <section className="space-y-2">
+        <h3 className="text-base font-semibold">Key Facts</h3>
+        <ul className="list-disc pl-5 space-y-1 text-sm text-muted-foreground">
+          {metadata?.foundedYear && (
+            <li>
+              <strong>Founded:</strong> {metadata.foundedYear}
+            </li>
+          )}
+          {teamCount > 0 && (
+            <li>
+              <strong>Number of Teams:</strong> {teamCount}
+            </li>
+          )}
+          {metadata?.currentHolder && (
+            <li>
+              <strong>Current Champion:</strong> {metadata.currentHolder}
+            </li>
+          )}
+          {metadata?.recordHolder && metadata?.recordTitles && (
+            <li>
+              <strong>Most Titles:</strong> {metadata.recordHolder} ({metadata.recordTitles})
+            </li>
+          )}
+          {metadata?.startMonth && metadata?.endMonth && (
+            <li>
+              <strong>Season:</strong> {metadata.startMonth} - {metadata.endMonth}
+            </li>
+          )}
+          {avgGoals && (
+            <li>
+              <strong>Avg. Goals/Match:</strong> {avgGoals}
+            </li>
+          )}
+        </ul>
+      </section>
 
-        <div className="space-y-3">
+      {/* FAQ Section with proper schema markup */}
+      <section className="space-y-3 pt-4 border-t border-border">
+        <h3 className="text-base font-semibold">Frequently Asked Questions</h3>
+
+        <div className="space-y-4">
           {metadata?.recordHolder && (
-            <div>
-              <p className="text-sm font-medium text-foreground">
+            <div itemScope itemProp="mainEntity" itemType="https://schema.org/Question">
+              <h4 itemProp="name" className="text-sm font-medium">
                 Which team in {leagueName} has the most titles?
-              </p>
-              <p className="text-sm text-muted-foreground">
-                The team with the most titles in {leagueName} is {metadata.recordHolder}{metadata.recordTitles ? ` with ${metadata.recordTitles} titles` : ''}.
-              </p>
+              </h4>
+              <div itemScope itemProp="acceptedAnswer" itemType="https://schema.org/Answer">
+                <p itemProp="text" className="text-sm text-muted-foreground mt-1">
+                  <strong>{metadata.recordHolder}</strong> holds the record for most {leagueName} titles
+                  {metadata.recordTitles ? ` with ${metadata.recordTitles} championships` : ""}.
+                </p>
+              </div>
             </div>
           )}
 
           {metadata?.currentHolder && (
-            <div>
-              <p className="text-sm font-medium text-foreground">
+            <div itemScope itemProp="mainEntity" itemType="https://schema.org/Question">
+              <h4 itemProp="name" className="text-sm font-medium">
                 Who is the current champion of {leagueName}?
-              </p>
-              <p className="text-sm text-muted-foreground">
-                The current titleholder in {leagueName} is {metadata.currentHolder}.
-              </p>
+              </h4>
+              <div itemScope itemProp="acceptedAnswer" itemType="https://schema.org/Answer">
+                <p itemProp="text" className="text-sm text-muted-foreground mt-1">
+                  <strong>{metadata.currentHolder}</strong> is the reigning champion of {leagueName}.
+                </p>
+              </div>
             </div>
           )}
 
           {metadata?.startMonth && metadata?.endMonth && (
-            <div>
-              <p className="text-sm font-medium text-foreground">
+            <div itemScope itemProp="mainEntity" itemType="https://schema.org/Question">
+              <h4 itemProp="name" className="text-sm font-medium">
                 When does the {leagueName} season start and end?
-              </p>
-              <p className="text-sm text-muted-foreground">
-                The {leagueName} usually starts in {metadata.startMonth} and ends in {metadata.endMonth}.
-              </p>
+              </h4>
+              <div itemScope itemProp="acceptedAnswer" itemType="https://schema.org/Answer">
+                <p itemProp="text" className="text-sm text-muted-foreground mt-1">
+                  The {leagueName} season typically runs from <strong>{metadata.startMonth}</strong> to{" "}
+                  <strong>{metadata.endMonth}</strong>.
+                </p>
+              </div>
             </div>
           )}
 
           {leagueLeader && (
-            <div>
-              <p className="text-sm font-medium text-foreground">
+            <div itemScope itemProp="mainEntity" itemType="https://schema.org/Question">
+              <h4 itemProp="name" className="text-sm font-medium">
                 Who is leading {leagueName} right now?
-              </p>
-              <p className="text-sm text-muted-foreground">
-                {leagueLeader.teamName} is currently at the top of the table with {leagueLeader.points} points from {leagueLeader.played} matches ({leagueLeader.won}W-{leagueLeader.drawn}D-{leagueLeader.lost}L).
-              </p>
+              </h4>
+              <div itemScope itemProp="acceptedAnswer" itemType="https://schema.org/Answer">
+                <p itemProp="text" className="text-sm text-muted-foreground mt-1">
+                  <strong>{leagueLeader.teamName}</strong> is currently at the top of the table with{" "}
+                  <strong>{leagueLeader.points} points</strong> from {leagueLeader.played} matches
+                  ({leagueLeader.won}W-{leagueLeader.drawn}D-{leagueLeader.lost}L).
+                </p>
+              </div>
+            </div>
+          )}
+
+          {teamCount > 0 && (
+            <div itemScope itemProp="mainEntity" itemType="https://schema.org/Question">
+              <h4 itemProp="name" className="text-sm font-medium">
+                How many teams play in {leagueName}?
+              </h4>
+              <div itemScope itemProp="acceptedAnswer" itemType="https://schema.org/Answer">
+                <p itemProp="text" className="text-sm text-muted-foreground mt-1">
+                  <strong>{teamCount} teams</strong> compete in {leagueName} each season.
+                </p>
+              </div>
             </div>
           )}
         </div>
-      </div>
-    </div>
+      </section>
+    </article>
   )
 }

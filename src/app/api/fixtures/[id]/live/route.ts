@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { sportmonksRequest } from "@/lib/api/sportmonks-client"
+import { mapEvent, mapStatistic } from "@/lib/api/sportmonks-mappers"
+import type { SportmonksEventRaw, SportmonksStatisticRaw } from "@/types/sportmonks/raw"
 
 // Disable Next.js route caching for live data
 export const dynamic = "force-dynamic"
@@ -35,6 +37,8 @@ interface RawLiveFixture {
   state?: FixtureState
   periods?: FixturePeriod[]
   scores?: FixtureScore[]
+  events?: SportmonksEventRaw[]
+  statistics?: SportmonksStatisticRaw[]
 }
 
 // Status mapping by state_id (from /football/states endpoint)
@@ -79,7 +83,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     // 10 second cache to reduce API calls while keeping data fresh
     const response = await sportmonksRequest<RawLiveFixture[]>({
       endpoint: "/livescores/inplay",
-      include: ["state", "scores", "periods"],
+      include: ["state", "scores", "periods", "events", "statistics", "statistics.type"],
       revalidate: 10
     })
 
@@ -93,7 +97,9 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
         minute: null,
         homeScore: 0,
         awayScore: 0,
-        isLive: false
+        isLive: false,
+        events: [],
+        statistics: []
       })
     }
 
@@ -144,6 +150,12 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       }
     }
 
+    // Map events and statistics
+    const events = (fixture.events || []).map(mapEvent)
+    const homeStats = (fixture.statistics || []).filter((s) => s.location === "home")
+    const awayStats = (fixture.statistics || []).filter((s) => s.location === "away")
+    const statistics = mapStatistic(homeStats, awayStats)
+
     return NextResponse.json({
       status: stateInfo.status,
       minute,
@@ -151,7 +163,9 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       periodLength,
       homeScore,
       awayScore,
-      isLive: stateInfo.isLive
+      isLive: stateInfo.isLive,
+      events,
+      statistics
     }, {
       headers: {
         'Cache-Control': 'no-cache, no-store, must-revalidate',

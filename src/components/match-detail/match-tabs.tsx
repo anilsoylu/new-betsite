@@ -2,10 +2,12 @@
 
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { EventsTab } from "./events-tab";
 import { StatisticsTab } from "./statistics-tab";
 import { LineupsTab } from "./lineups-tab";
 import { StandingsTab } from "./standings-tab";
 import { H2HTab } from "./h2h-tab";
+import { useLiveFixture } from "@/hooks";
 import type { FixtureDetail, StandingTable, H2HFixture } from "@/types/football";
 
 interface MatchTabsProps {
@@ -15,6 +17,7 @@ interface MatchTabsProps {
 }
 
 export function MatchTabs({ fixture, standings, h2h }: MatchTabsProps) {
+  const hasEvents = fixture.events.length > 0;
   const hasStatistics = fixture.statistics.length > 0;
   const hasLineups = fixture.homeLineup || fixture.awayLineup;
   const hasStandings = standings.length > 0;
@@ -22,6 +25,8 @@ export function MatchTabs({ fixture, standings, h2h }: MatchTabsProps) {
 
   // Determine default tab based on available data
   const getDefaultTab = () => {
+    // For live/finished matches, prioritize events
+    if (hasEvents) return "events";
     if (hasLineups) return "lineups";
     if (hasStatistics) return "statistics";
     if (hasStandings) return "standings";
@@ -33,7 +38,10 @@ export function MatchTabs({ fixture, standings, h2h }: MatchTabsProps) {
 
   return (
     <Tabs defaultValue={getDefaultTab()} value={activeTab} onValueChange={setActiveTab} className="w-full">
-      <TabsList className="w-full grid grid-cols-4 mb-4">
+      <TabsList className="w-full grid grid-cols-5 mb-4">
+        <TabsTrigger value="events">
+          Events
+        </TabsTrigger>
         <TabsTrigger value="lineups">
           Lineups
         </TabsTrigger>
@@ -47,6 +55,14 @@ export function MatchTabs({ fixture, standings, h2h }: MatchTabsProps) {
           H2H
         </TabsTrigger>
       </TabsList>
+
+      <TabsContent value="events">
+        <EventsTab
+          events={fixture.events}
+          homeTeam={fixture.homeTeam}
+          awayTeam={fixture.awayTeam}
+        />
+      </TabsContent>
 
       <TabsContent value="lineups">
         {hasLineups ? (

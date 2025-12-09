@@ -74,7 +74,7 @@ function OddButton({ label, teamName, value, probability }: OddButtonProps) {
       <p className="text-lg font-bold tabular-nums">{value.toFixed(2)}</p>
       {probability && (
         <p className="text-xs text-muted-foreground mt-1">
-          {(probability * 100).toFixed(0)}%
+          {probability.toFixed(1)}%
         </p>
       )}
     </div>

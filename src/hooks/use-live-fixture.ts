@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
-import type { Fixture, MatchStatus } from "@/types/football"
+import type { Fixture, MatchStatus, MatchEvent, MatchStatistic } from "@/types/football"
 
 interface LiveFixtureData {
   status: MatchStatus
@@ -13,6 +13,10 @@ interface LiveFixtureData {
   isLive: boolean
   /** Formatted minute string like "45+2'" or "67'" */
   displayMinute: string | null
+  /** Live events (goals, cards, substitutions) */
+  events: MatchEvent[]
+  /** Live statistics */
+  statistics: MatchStatistic[]
 }
 
 interface UseLiveFixtureOptions {
@@ -64,7 +68,9 @@ export function useLiveFixture({
     homeScore: fixture.score?.home ?? 0,
     awayScore: fixture.score?.away ?? 0,
     isLive: fixture.isLive,
-    displayMinute: fixture.minute ? `${fixture.minute}'` : null
+    displayMinute: fixture.minute ? `${fixture.minute}'` : null,
+    events: [],
+    statistics: []
   }))
 
   // Only poll if match is currently live
@@ -95,7 +101,9 @@ export function useLiveFixture({
         homeScore: update.homeScore,
         awayScore: update.awayScore,
         isLive: update.isLive,
-        displayMinute
+        displayMinute,
+        events: update.events || [],
+        statistics: update.statistics || []
       })
     } catch {
       // Silent fail - keep showing last known data
@@ -112,7 +120,9 @@ export function useLiveFixture({
       homeScore: fixture.score?.home ?? 0,
       awayScore: fixture.score?.away ?? 0,
       isLive: fixture.isLive,
-      displayMinute: fixture.minute ? `${fixture.minute}'` : null
+      displayMinute: fixture.minute ? `${fixture.minute}'` : null,
+      events: [],
+      statistics: []
     })
   }, [fixture.id]) // Intentionally only fixture.id - live data updates via polling
 

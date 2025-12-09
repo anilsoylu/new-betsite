@@ -46,6 +46,7 @@ const FIXTURE_DETAIL_INCLUDES = [
   "lineups.player",
   "periods",
   "formations",
+  "referees.referee",
 ];
 
 // H2H includes

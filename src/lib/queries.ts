@@ -7,6 +7,7 @@ import {
   getOddsByFixture,
   getTodayDate,
   getLeagueById,
+  getFixturesByTeam,
 } from "@/lib/api/football-api";
 import { TOP_LEAGUES } from "@/components/sidebar/top-leagues";
 import type { HomePageData, MatchDetailData, Standing } from "@/types/football";
@@ -37,26 +38,43 @@ export async function getHomePageData(): Promise<HomePageData> {
 
 /**
  * Get match detail page data
- * Fetches fixture, h2h, standings, and odds in parallel
+ * Fetches fixture, h2h, standings, odds, and team form in parallel
  */
 export async function getMatchDetailData(fixtureId: number): Promise<MatchDetailData> {
   // First get fixture to know season and teams
   const fixture = await getFixtureById(fixtureId);
 
   // Then fetch additional data in parallel
-  const [h2h, standings, odds] = await Promise.all([
+  const [h2h, standings, odds, homeTeamFixtures, awayTeamFixtures] = await Promise.all([
     getHeadToHead(fixture.homeTeam.id, fixture.awayTeam.id).catch(() => []),
     fixture.seasonId
       ? getStandingsBySeason(fixture.seasonId).catch(() => [])
       : Promise.resolve([]),
     getOddsByFixture(fixtureId).catch(() => null),
+    getFixturesByTeam(fixture.homeTeam.id, { past: 5 }).catch(() => ({ recent: [], upcoming: [] })),
+    getFixturesByTeam(fixture.awayTeam.id, { past: 5 }).catch(() => ({ recent: [], upcoming: [] })),
   ]);
+
+  // Convert recent fixtures to form data for each team
+  const homeForm = homeTeamFixtures.recent.map((f) => ({
+    homeScore: f.score?.home ?? null,
+    awayScore: f.score?.away ?? null,
+    isHome: f.homeTeam.id === fixture.homeTeam.id,
+  }));
+
+  const awayForm = awayTeamFixtures.recent.map((f) => ({
+    homeScore: f.score?.home ?? null,
+    awayScore: f.score?.away ?? null,
+    isHome: f.homeTeam.id === fixture.awayTeam.id,
+  }));
 
   return {
     fixture,
     standings,
     h2h,
     odds,
+    homeForm,
+    awayForm,
   };
 }
 

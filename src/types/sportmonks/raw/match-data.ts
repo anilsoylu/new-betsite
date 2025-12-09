@@ -1,7 +1,39 @@
 /**
  * Match Data Sportmonks Raw Types
- * Venue, Event, Statistic, Lineup, Period
+ * Venue, Event, Statistic, Lineup, Period, Referee
  */
+
+// Referee pivot (fixture-referee relation)
+export interface SportmonksRefereePivotRaw {
+  id: number;
+  fixture_id: number;
+  referee_id: number;
+  type_id: number; // 1 = Main referee, 6 = Fourth official, etc.
+
+  // Nested referee data when using "referees.referee" include
+  referee?: SportmonksRefereeDetailRaw;
+}
+
+// Referee detail information
+export interface SportmonksRefereeDetailRaw {
+  id: number;
+  sport_id: number;
+  country_id: number | null;
+  city_id: number | null;
+  common_name: string;
+  firstname: string;
+  lastname: string;
+  name: string;
+  display_name: string;
+  image_path: string | null;
+  height: number | null;
+  weight: number | null;
+  date_of_birth: string | null;
+  gender: string;
+}
+
+// Alias for backward compatibility
+export type SportmonksRefereeRaw = SportmonksRefereePivotRaw;
 
 // Stadium/venue information
 export interface SportmonksVenueRaw {

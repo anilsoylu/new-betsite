@@ -29,6 +29,7 @@ export type {
   SportmonksStatisticRaw,
   SportmonksLineupRaw,
   SportmunksPeriodRaw,
+  SportmonksRefereeRaw,
 } from "./match-data";
 
 // Match stats types

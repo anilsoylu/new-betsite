@@ -117,4 +117,5 @@ export interface SportmonksFixtureRaw {
   lineups?: Array<import("./match-data").SportmonksLineupRaw>;
   periods?: Array<import("./match-data").SportmunksPeriodRaw>;
   formations?: Array<SportmonksFormationRaw>;
+  referees?: Array<import("./match-data").SportmonksRefereeRaw>;
 }
