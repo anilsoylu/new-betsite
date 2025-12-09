@@ -174,6 +174,11 @@ export function mapLeague(raw: SportmonksLeagueRaw): League {
 
 // Map league with current season
 export function mapLeagueWithCurrentSeason(raw: SportmonksLeagueWithCurrentSeasonRaw): League {
+  // Handle null/undefined raw data
+  if (!raw) {
+    throw new Error("League data is null or undefined");
+  }
+
   // Handle both camelCase and snake_case from API (API returns "currentseason" lowercase)
   const currentSeason = raw.currentSeason ?? raw.current_season ?? raw.currentseason;
 

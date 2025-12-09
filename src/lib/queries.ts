@@ -8,6 +8,7 @@ import {
   getTodayDate,
   getLeagueById,
 } from "@/lib/api/football-api";
+import { TOP_LEAGUES } from "@/components/sidebar/top-leagues";
 import type { HomePageData, MatchDetailData, Standing } from "@/types/football";
 
 /**
@@ -59,14 +60,9 @@ export async function getMatchDetailData(fixtureId: number): Promise<MatchDetail
   };
 }
 
-// League IDs for sidebar standings (Sportmonks IDs)
-const SIDEBAR_LEAGUES = [
-  { id: 8, name: "Premier League", logo: "https://media.api-sports.io/football/leagues/39.png" },
-  { id: 564, name: "La Liga", logo: "https://media.api-sports.io/football/leagues/140.png" },
-  { id: 82, name: "Bundesliga", logo: "https://media.api-sports.io/football/leagues/78.png" },
-  { id: 384, name: "Serie A", logo: "https://media.api-sports.io/football/leagues/135.png" },
-  { id: 301, name: "Ligue 1", logo: "https://media.api-sports.io/football/leagues/61.png" },
-];
+// Use TOP_LEAGUES from sidebar component for consistency
+// Include all leagues/tournaments - API will return standings if available
+const STANDINGS_LEAGUES = TOP_LEAGUES;
 
 export interface LeagueStandingsData {
   leagueId: number;
@@ -77,11 +73,11 @@ export interface LeagueStandingsData {
 
 /**
  * Get standings for top leagues (for sidebar widget)
- * Fetches current season standings for major leagues in parallel
+ * Fetches current season standings for all domestic leagues in parallel
  */
 export async function getTopLeaguesStandings(): Promise<LeagueStandingsData[]> {
   // Fetch all leagues in parallel
-  const leaguePromises = SIDEBAR_LEAGUES.map(async (league) => {
+  const leaguePromises = STANDINGS_LEAGUES.map(async (league) => {
     try {
       const leagueData = await getLeagueById(league.id);
 
@@ -103,8 +99,8 @@ export async function getTopLeaguesStandings(): Promise<LeagueStandingsData[]> {
 
       console.log(`[Standings] ${league.name}: No standings data`);
       return null;
-    } catch (error) {
-      console.error(`[Standings] Failed for ${league.name}:`, error);
+    } catch {
+      // Silently skip leagues without active seasons or API access (e.g., World Cup between tournaments)
       return null;
     }
   });
