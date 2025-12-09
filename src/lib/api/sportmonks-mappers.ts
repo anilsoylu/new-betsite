@@ -14,6 +14,8 @@ import type {
   SportmonksOddRaw,
   SportmonksTeamRaw,
   SportmonksSquadPlayerRaw,
+  SportmonksPlayerRaw,
+  SportmonksPlayerTeamRaw,
 } from "@/types/sportmonks/raw";
 import type {
   Fixture,
@@ -38,6 +40,9 @@ import type {
   TeamSearchResult,
   SquadPlayer,
   Coach,
+  PlayerDetail,
+  PlayerTeam,
+  PlayerSearchResult,
 } from "@/types/football";
 
 // Map state developer_name to MatchStatus
@@ -673,5 +678,77 @@ export function mapTeamDetail(raw: SportmonksTeamRaw): TeamDetail {
     coach,
     squad,
     activeSeasons,
+  };
+}
+
+// Calculate age from date of birth
+function calculateAge(dateOfBirth: string | null): number | null {
+  if (!dateOfBirth) return null;
+  const birthDate = new Date(dateOfBirth);
+  const today = new Date();
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const monthDiff = today.getMonth() - birthDate.getMonth();
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+    age--;
+  }
+  return age;
+}
+
+// Map player's team relation
+export function mapPlayerTeam(raw: SportmonksPlayerTeamRaw): PlayerTeam {
+  const team = raw.team;
+  return {
+    id: raw.id,
+    teamId: raw.team_id,
+    teamName: team?.name || "",
+    teamLogo: team?.image_path || "",
+    teamType: team?.type || "club",
+    jerseyNumber: raw.jersey_number,
+    isCaptain: raw.captain,
+    startDate: raw.start,
+    endDate: raw.end,
+    isCurrent: raw.end === null,
+  };
+}
+
+// Map player search result
+export function mapPlayerSearchResult(raw: SportmonksPlayerRaw): PlayerSearchResult {
+  return {
+    id: raw.id,
+    name: raw.name,
+    displayName: raw.display_name,
+    commonName: raw.common_name,
+    image: raw.image_path,
+    position: raw.position?.name || null,
+    country: raw.country ? mapCountry(raw.country) : null,
+  };
+}
+
+// Map full player detail
+export function mapPlayerDetail(raw: SportmonksPlayerRaw): PlayerDetail {
+  // Map teams
+  const teams = (raw.teams || []).map(mapPlayerTeam);
+
+  // Find current team (no end date)
+  const currentTeam = teams.find((t) => t.isCurrent) || null;
+
+  return {
+    id: raw.id,
+    name: raw.name,
+    displayName: raw.display_name,
+    commonName: raw.common_name,
+    firstName: raw.firstname,
+    lastName: raw.lastname,
+    image: raw.image_path,
+    dateOfBirth: raw.date_of_birth,
+    age: calculateAge(raw.date_of_birth),
+    height: raw.height,
+    weight: raw.weight,
+    position: raw.position?.name || null,
+    detailedPosition: raw.detailedPosition?.name || null,
+    country: raw.country ? mapCountry(raw.country) : null,
+    nationality: raw.nationality ? mapCountry(raw.nationality) : null,
+    currentTeam,
+    teams,
   };
 }

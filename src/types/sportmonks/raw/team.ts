@@ -98,6 +98,33 @@ export interface SportmonksPlayerRaw {
   weight: number | null;
   date_of_birth: string | null;
   gender: string;
+  // Included relations (for player detail endpoint)
+  country?: SportmonksCountryRaw;
+  nationality?: SportmonksCountryRaw;
+  position?: SportmonksPositionRaw;
+  detailedPosition?: SportmonksPositionRaw;
+  teams?: Array<SportmonksPlayerTeamRaw>;
+}
+
+// Player's team relation (from player endpoint)
+export interface SportmonksPlayerTeamRaw {
+  id: number;
+  transfer_id: number | null;
+  player_id: number;
+  team_id: number;
+  position_id: number | null;
+  detailed_position_id: number | null;
+  start: string | null;
+  end: string | null;
+  captain: boolean;
+  jersey_number: number | null;
+  team?: {
+    id: number;
+    name: string;
+    short_code: string | null;
+    image_path: string;
+    type: string;
+  };
 }
 
 // Position raw data

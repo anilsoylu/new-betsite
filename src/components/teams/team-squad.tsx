@@ -1,11 +1,12 @@
 "use client"
 
 import { useState } from "react"
-import Image from "next/image"
+import Link from "next/link"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
+import { getPlayerUrl } from "@/lib/utils"
 import type { SquadPlayer } from "@/types/football"
 
 interface TeamSquadProps {
@@ -135,7 +136,10 @@ function PlayerCard({ player, showPosition = false }: PlayerCardProps) {
     .toUpperCase()
 
   return (
-    <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors">
+    <Link
+      href={getPlayerUrl(player.displayName, player.playerId)}
+      className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors"
+    >
       <Avatar className="h-10 w-10">
         <AvatarImage src={player.image || undefined} alt={player.displayName} />
         <AvatarFallback className="text-xs">{initials}</AvatarFallback>
@@ -148,7 +152,7 @@ function PlayerCard({ player, showPosition = false }: PlayerCardProps) {
               {player.jerseyNumber}
             </span>
           )}
-          <span className="font-medium truncate">{player.displayName}</span>
+          <span className="font-medium truncate hover:text-primary transition-colors">{player.displayName}</span>
           {player.isCaptain && (
             <Badge variant="outline" className="text-[10px] px-1 py-0">C</Badge>
           )}
@@ -157,6 +161,6 @@ function PlayerCard({ player, showPosition = false }: PlayerCardProps) {
           <p className="text-xs text-muted-foreground truncate">{player.position}</p>
         )}
       </div>
-    </div>
+    </Link>
   )
 }

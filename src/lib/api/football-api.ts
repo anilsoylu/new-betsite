@@ -10,6 +10,8 @@ import {
   mapMatchOdds,
   mapTeamDetail,
   mapTeamSearchResult,
+  mapPlayerDetail,
+  mapPlayerSearchResult,
 } from "./sportmonks-mappers";
 import type {
   SportmonksFixtureRaw,
@@ -18,8 +20,9 @@ import type {
   SportmonksStandingGroupRaw,
   SportmonksOddRaw,
   SportmonksTeamRaw,
+  SportmonksPlayerRaw,
 } from "@/types/sportmonks/raw";
-import type { Fixture, FixtureDetail, League, StandingTable, H2HFixture, MatchOdds, TeamDetail, TeamSearchResult } from "@/types/football";
+import type { Fixture, FixtureDetail, League, StandingTable, H2HFixture, MatchOdds, TeamDetail, TeamSearchResult, PlayerDetail, PlayerSearchResult } from "@/types/football";
 import { API, UI } from "@/lib/constants";
 
 // Validation schemas
@@ -301,5 +304,51 @@ export async function getFixturesByTeam(
     };
   } catch {
     return { recent: [], upcoming: [] };
+  }
+}
+
+// Player includes
+const PLAYER_DETAIL_INCLUDES = [
+  "country",
+  "nationality",
+  "position",
+  "detailedPosition",
+  "teams.team",
+];
+
+const PLAYER_SEARCH_INCLUDES = ["country", "position"];
+
+/**
+ * Get player by ID with full details
+ * Endpoint: GET /players/{id}
+ */
+export async function getPlayerById(playerId: number): Promise<PlayerDetail> {
+  idSchema.parse(playerId);
+
+  const response = await sportmonksRequest<SportmonksPlayerRaw>({
+    endpoint: `/players/${playerId}`,
+    include: PLAYER_DETAIL_INCLUDES,
+  });
+
+  return mapPlayerDetail(response.data);
+}
+
+/**
+ * Search players by name
+ * Endpoint: GET /players/search/{name}
+ */
+export async function searchPlayers(query: string): Promise<Array<PlayerSearchResult>> {
+  if (!query || query.length < 2) return [];
+
+  try {
+    const response = await sportmonksPaginatedRequest<SportmonksPlayerRaw>({
+      endpoint: `/players/search/${encodeURIComponent(query)}`,
+      include: PLAYER_SEARCH_INCLUDES,
+      perPage: 25,
+    });
+
+    return response.data.map(mapPlayerSearchResult);
+  } catch {
+    return [];
   }
 }

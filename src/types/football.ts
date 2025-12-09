@@ -281,3 +281,49 @@ export interface TeamPageData {
   recentFixtures: Array<Fixture>;
   upcomingFixtures: Array<Fixture>;
 }
+
+// Player detail (full player info for player page)
+export interface PlayerDetail {
+  id: number;
+  name: string;
+  displayName: string;
+  commonName: string;
+  firstName: string;
+  lastName: string;
+  image: string | null;
+  dateOfBirth: string | null;
+  age: number | null;
+  height: number | null;
+  weight: number | null;
+  position: string | null;
+  detailedPosition: string | null;
+  country: Country | null;
+  nationality: Country | null;
+  currentTeam: PlayerTeam | null;
+  teams: Array<PlayerTeam>;
+}
+
+// Player's team info
+export interface PlayerTeam {
+  id: number;
+  teamId: number;
+  teamName: string;
+  teamLogo: string;
+  teamType: string;
+  jerseyNumber: number | null;
+  isCaptain: boolean;
+  startDate: string | null;
+  endDate: string | null;
+  isCurrent: boolean;
+}
+
+// Player search result
+export interface PlayerSearchResult {
+  id: number;
+  name: string;
+  displayName: string;
+  commonName: string;
+  image: string | null;
+  position: string | null;
+  country: Country | null;
+}

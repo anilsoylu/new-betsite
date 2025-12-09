@@ -53,6 +53,7 @@ export type {
   SportmonksCoachRaw,
   SportmonksSquadPlayerRaw,
   SportmonksPlayerRaw,
+  SportmonksPlayerTeamRaw,
   SportmonksPositionRaw,
   SportmonksTeamFixtureRaw,
 } from "./team";

@@ -63,3 +63,25 @@ export function extractTeamId(slug: string): number | null {
   const match = slug.match(/-(\d+)$/)
   return match ? parseInt(match[1], 10) : null
 }
+
+/**
+ * Generate player URL slug: player-name-id
+ */
+export function generatePlayerSlug(name: string, id: number): string {
+  return `${slugify(name)}-${id}`
+}
+
+/**
+ * Generate player URL path
+ */
+export function getPlayerUrl(name: string, id: number): string {
+  return `/players/${generatePlayerSlug(name, id)}`
+}
+
+/**
+ * Extract player ID from slug
+ */
+export function extractPlayerId(slug: string): number | null {
+  const match = slug.match(/-(\d+)$/)
+  return match ? parseInt(match[1], 10) : null
+}
