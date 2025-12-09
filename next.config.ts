@@ -1,8 +1,29 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from "next"
 
 const nextConfig: NextConfig = {
-  /* config options here */
   reactCompiler: true,
-};
+  compress: true, // Gzip compression
+  poweredByHeader: false, // Hide Next.js signature (security)
+  experimental: {
+    browserDebugInfoInTerminal: true,
+  },
+  htmlLimitedBots: /.*/,
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "images.ctfassets.net",
+      },
+      {
+        protocol: "https",
+        hostname: "*.googleusercontent.com",
+      },
+      {
+        protocol: "https",
+        hostname: "cdn.sportmonks.com",
+      },
+    ],
+  },
+}
 
-export default nextConfig;
+export default nextConfig
