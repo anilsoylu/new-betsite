@@ -176,6 +176,11 @@ export function mapLeagueWithCurrentSeason(raw: SportmonksLeagueWithCurrentSeaso
 }
 
 // Extract scores from fixture
+// Score type_ids:
+// - 1 = 1ST_HALF (halftime score)
+// - 2 = 2ND_HALF (full time score)
+// - 1525 = CURRENT (live score during match)
+// - 48996 = 2ND_HALF_ONLY (goals in 2nd half only)
 function extractScore(raw: SportmonksFixtureRaw): Score | null {
   if (!raw.scores || raw.scores.length === 0) return null;
 
@@ -185,20 +190,28 @@ function extractScore(raw: SportmonksFixtureRaw): Score | null {
   let halftimeAway: number | null = null;
 
   for (const score of raw.scores) {
-    // Current score (type_id: 1 = current, 1525 = 1st half, 1526 = 2nd half)
-    if (score.type_id === 1) {
+    // Full time score (type_id: 2 = 2ND_HALF means final score)
+    if (score.type_id === 2) {
       if (score.score.participant === "home") {
         homeScore = score.score.goals;
       } else {
         awayScore = score.score.goals;
       }
     }
-    // Halftime score
-    if (score.type_id === 1525) {
+    // Halftime score (type_id: 1 = 1ST_HALF)
+    if (score.type_id === 1) {
       if (score.score.participant === "home") {
         halftimeHome = score.score.goals;
       } else {
         halftimeAway = score.score.goals;
+      }
+    }
+    // Current/Live score (type_id: 1525) - use if no final score yet
+    if (score.type_id === 1525 && homeScore === 0 && awayScore === 0) {
+      if (score.score.participant === "home") {
+        homeScore = score.score.goals;
+      } else {
+        awayScore = score.score.goals;
       }
     }
   }
@@ -521,7 +534,16 @@ function extractScoreForH2H(raw: SportmonksFixtureRaw): { home: number; away: nu
   let awayScore = 0;
 
   for (const score of raw.scores) {
-    if (score.type_id === 1) {
+    // Full time score (type_id: 2 = 2ND_HALF means final score)
+    if (score.type_id === 2) {
+      if (score.score.participant === "home") {
+        homeScore = score.score.goals;
+      } else {
+        awayScore = score.score.goals;
+      }
+    }
+    // Current/Live score fallback (type_id: 1525)
+    if (score.type_id === 1525 && homeScore === 0 && awayScore === 0) {
       if (score.score.participant === "home") {
         homeScore = score.score.goals;
       } else {
