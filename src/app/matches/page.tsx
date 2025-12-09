@@ -1,8 +1,10 @@
 import type { Metadata } from "next"
-import { format, addDays, subDays, isToday, parseISO } from "date-fns"
+import { format, parseISO, isToday } from "date-fns"
 import { getFixturesByDate, getLiveFixtures } from "@/lib/api/football-api"
-import { FixtureList } from "@/components/fixtures/fixture-list"
+import { getTopLeaguesStandings } from "@/lib/queries"
 import { DateNavigation } from "@/components/matches/date-navigation"
+import { MatchesContent } from "@/components/matches/matches-content"
+import { TopLeagues, AdSpace, StandingsWidget } from "@/components/sidebar"
 import { SITE, DATE_FORMATS } from "@/lib/constants"
 
 export const metadata: Metadata = {
@@ -14,6 +16,24 @@ interface MatchesPageProps {
   searchParams: Promise<{ date?: string }>
 }
 
+// Generate date items for navigation
+function generateDateItems(selectedDateString: string) {
+  const today = new Date()
+  return Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(today)
+    d.setDate(today.getDate() - 3 + i)
+    const dateString = format(d, DATE_FORMATS.apiDate)
+    return {
+      date: d,
+      dateString,
+      label: format(d, "EEE"),
+      dayNumber: format(d, "d"),
+      isToday: isToday(d),
+      isSelected: dateString === selectedDateString,
+    }
+  })
+}
+
 export default async function MatchesPage({ searchParams }: MatchesPageProps) {
   const { date } = await searchParams
 
@@ -22,23 +42,14 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
   const dateString = format(selectedDate, DATE_FORMATS.apiDate)
   const isSelectedToday = isToday(selectedDate)
 
-  // Generate date range for navigation (3 days before, today, 3 days after)
-  const dates = Array.from({ length: 7 }, (_, i) => {
-    const d = addDays(subDays(new Date(), 3), i)
-    return {
-      date: d,
-      dateString: format(d, DATE_FORMATS.apiDate),
-      label: format(d, "EEE"),
-      dayNumber: format(d, "d"),
-      isToday: isToday(d),
-      isSelected: format(d, DATE_FORMATS.apiDate) === dateString,
-    }
-  })
+  // Generate date items for navigation
+  const dates = generateDateItems(dateString)
 
-  // Fetch fixtures for selected date
-  const [fixtures, liveFixtures] = await Promise.all([
+  // Fetch fixtures and standings in parallel
+  const [fixtures, liveFixtures, leagueStandings] = await Promise.all([
     getFixturesByDate(dateString).catch(() => []),
     isSelectedToday ? getLiveFixtures().catch(() => []) : Promise.resolve([]),
+    getTopLeaguesStandings().catch(() => []),
   ])
 
   // Filter out live fixtures from regular fixtures to avoid duplicates
@@ -48,43 +59,38 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
   const formattedDate = format(selectedDate, "EEEE, d MMMM yyyy")
 
   return (
-    <main className="container mx-auto px-4 py-8">
-      {/* Date Navigation */}
-      <DateNavigation dates={dates} />
+    <main className="flex-1 overflow-auto">
+      <div className="container mx-auto px-4 py-4">
+        {/* 3-Column Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-[240px_1fr_300px] gap-6">
+          {/* Left Sidebar - Hidden on mobile/tablet */}
+          <aside className="hidden lg:flex flex-col gap-4">
+            <TopLeagues />
+            <AdSpace size="medium-rectangle" />
+          </aside>
 
-      {/* Page Title */}
-      <div className="mt-6 mb-6">
-        <h1 className="text-2xl font-bold">{formattedDate}</h1>
-        <p className="text-muted-foreground text-sm mt-1">
-          {fixtures.length + liveFixtures.length} matches
-        </p>
-      </div>
+          {/* Center Content */}
+          <div className="min-w-0">
+            {/* Date Navigation */}
+            <DateNavigation dates={dates} />
 
-      {/* Live Matches (only on today) */}
-      {isSelectedToday && liveFixtures.length > 0 && (
-        <section className="mb-8">
-          <div className="flex items-center gap-2 mb-4">
-            <span className="relative flex h-3 w-3">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
-              <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500" />
-            </span>
-            <h2 className="text-xl font-semibold">Live Matches</h2>
-            <span className="text-muted-foreground text-sm">
-              ({liveFixtures.length})
-            </span>
+            {/* Matches Content - Same as Homepage */}
+            <div className="mt-6">
+              <MatchesContent
+                fixtures={nonLiveFixtures}
+                liveFixtures={liveFixtures}
+                formattedDate={formattedDate}
+              />
+            </div>
           </div>
-          <FixtureList fixtures={liveFixtures} />
-        </section>
-      )}
 
-      {/* All Matches */}
-      <section>
-        <FixtureList
-          fixtures={nonLiveFixtures}
-          title={isSelectedToday && liveFixtures.length > 0 ? "Scheduled Matches" : undefined}
-          emptyMessage="No matches scheduled for this date"
-        />
-      </section>
+          {/* Right Sidebar - Hidden on mobile */}
+          <aside className="hidden md:flex flex-col gap-4">
+            <StandingsWidget leagueStandings={leagueStandings} />
+            <AdSpace size="medium-rectangle" />
+          </aside>
+        </div>
+      </div>
     </main>
   )
 }

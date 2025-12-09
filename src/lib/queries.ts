@@ -8,7 +8,10 @@ import {
   getTodayDate,
   getLeagueById,
   getFixturesByTeam,
+  getTeamsBySeason,
+  getTopScorersBySeason,
 } from "@/lib/api/football-api";
+import type { TopScorer, Country } from "@/types/football";
 import { TOP_LEAGUES } from "@/components/sidebar/top-leagues";
 import type { HomePageData, MatchDetailData, Standing } from "@/types/football";
 
@@ -100,7 +103,6 @@ export async function getTopLeaguesStandings(): Promise<LeagueStandingsData[]> {
       const leagueData = await getLeagueById(league.id);
 
       if (!leagueData.currentSeasonId) {
-        console.log(`[Standings] ${league.name}: No current season`);
         return null;
       }
 
@@ -115,7 +117,6 @@ export async function getTopLeaguesStandings(): Promise<LeagueStandingsData[]> {
         };
       }
 
-      console.log(`[Standings] ${league.name}: No standings data`);
       return null;
     } catch {
       // Silently skip leagues without active seasons or API access (e.g., World Cup between tournaments)
@@ -125,4 +126,118 @@ export async function getTopLeaguesStandings(): Promise<LeagueStandingsData[]> {
 
   const results = await Promise.all(leaguePromises);
   return results.filter((r): r is LeagueStandingsData => r !== null);
+}
+
+// League teams data type
+export interface LeagueTeamsData {
+  leagueId: number;
+  leagueName: string;
+  leagueLogo: string;
+  teams: Array<{
+    id: number;
+    name: string;
+    shortCode: string | null;
+    logo: string;
+    country: Country | null;
+  }>;
+}
+
+// Leagues to show on teams page
+const TEAMS_PAGE_LEAGUES = [
+  { id: 8, name: "Premier League", logo: "https://cdn.sportmonks.com/images/soccer/leagues/8/8.png" },
+  { id: 564, name: "La Liga", logo: "https://cdn.sportmonks.com/images/soccer/leagues/20/564.png" },
+  { id: 82, name: "Bundesliga", logo: "https://cdn.sportmonks.com/images/soccer/leagues/18/82.png" },
+  { id: 384, name: "Serie A", logo: "https://cdn.sportmonks.com/images/soccer/leagues/0/384.png" },
+  { id: 301, name: "Ligue 1", logo: "https://cdn.sportmonks.com/images/soccer/leagues/13/301.png" },
+  { id: 600, name: "Süper Lig", logo: "https://cdn.sportmonks.com/images/soccer/leagues/24/600.png" },
+];
+
+/**
+ * Get teams for popular leagues
+ */
+export async function getTeamsForPopularLeagues(): Promise<LeagueTeamsData[]> {
+  const leaguePromises = TEAMS_PAGE_LEAGUES.map(async (league) => {
+    try {
+      const leagueData = await getLeagueById(league.id);
+
+      if (!leagueData.currentSeasonId) {
+        return null;
+      }
+
+      const teams = await getTeamsBySeason(leagueData.currentSeasonId);
+
+      if (teams.length === 0) {
+        return null;
+      }
+
+      return {
+        leagueId: league.id,
+        leagueName: league.name,
+        leagueLogo: league.logo,
+        teams: teams.map(t => ({
+          id: t.id,
+          name: t.name,
+          shortCode: t.shortCode,
+          logo: t.logo,
+          country: t.country,
+        })),
+      };
+    } catch {
+      return null;
+    }
+  });
+
+  const results = await Promise.all(leaguePromises);
+  return results.filter((r): r is LeagueTeamsData => r !== null);
+}
+
+// League topscorers data type
+export interface LeagueTopScorersData {
+  leagueId: number;
+  leagueName: string;
+  leagueLogo: string;
+  topScorers: TopScorer[];
+}
+
+// Leagues to show topscorers from (same as teams page)
+const TOPSCORERS_LEAGUES = [
+  { id: 8, name: "Premier League", logo: "https://cdn.sportmonks.com/images/soccer/leagues/8/8.png" },
+  { id: 564, name: "La Liga", logo: "https://cdn.sportmonks.com/images/soccer/leagues/20/564.png" },
+  { id: 82, name: "Bundesliga", logo: "https://cdn.sportmonks.com/images/soccer/leagues/18/82.png" },
+  { id: 384, name: "Serie A", logo: "https://cdn.sportmonks.com/images/soccer/leagues/0/384.png" },
+  { id: 301, name: "Ligue 1", logo: "https://cdn.sportmonks.com/images/soccer/leagues/13/301.png" },
+  { id: 600, name: "Süper Lig", logo: "https://cdn.sportmonks.com/images/soccer/leagues/24/600.png" },
+];
+
+/**
+ * Get top scorers for popular leagues
+ */
+export async function getTopScorersForPopularLeagues(): Promise<LeagueTopScorersData[]> {
+  const leaguePromises = TOPSCORERS_LEAGUES.map(async (league) => {
+    try {
+      const leagueData = await getLeagueById(league.id);
+
+      if (!leagueData.currentSeasonId) {
+        return null;
+      }
+
+      const topScorers = await getTopScorersBySeason(leagueData.currentSeasonId, "goals", 10);
+
+      if (topScorers.length === 0) {
+        return null;
+      }
+
+      return {
+        leagueId: league.id,
+        leagueName: league.name,
+        leagueLogo: league.logo,
+        topScorers,
+      };
+    } catch {
+      return null;
+    }
+  });
+
+  const results = await Promise.all(leaguePromises);
+  return results.filter((r): r is LeagueTopScorersData => r !== null);
 }

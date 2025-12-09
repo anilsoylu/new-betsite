@@ -114,10 +114,6 @@ export async function sportmonksRequest<TData>(
 
     const data = (await response.json()) as SportmonksResponse<TData>;
 
-    console.log(`[Sportmonks] ${config.endpoint} (${duration}ms)`, {
-      rateLimit: data.rate_limit?.remaining,
-    });
-
     return data;
   } catch (error) {
     if (error instanceof SportmonksError) {
@@ -171,12 +167,6 @@ export async function sportmonksPaginatedRequest<TItem>(
     }
 
     const data = (await response.json()) as SportmonksPaginatedResponse<TItem>;
-
-    console.log(`[Sportmonks] ${config.endpoint} (${duration}ms)`, {
-      count: data.pagination?.count,
-      page: data.pagination?.current_page,
-      rateLimit: data.rate_limit?.remaining,
-    });
 
     return data;
   } catch (error) {

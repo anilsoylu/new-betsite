@@ -106,10 +106,6 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     // Get status from state_id
     const stateInfo = STATE_ID_MAP[fixture.state_id] || { status: "unknown", isLive: false }
 
-    // Debug: Log raw periods data
-    console.log(`[Live API] Fixture ${fixtureId} - state_id: ${fixture.state_id}, periods:`,
-      JSON.stringify(fixture.periods, null, 2))
-
     // Get current minute from active period (ticking: true)
     let minute: number | null = null
     let timeAdded: number | null = null
@@ -118,9 +114,6 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     if (fixture.periods && fixture.periods.length > 0) {
       // Find the active period (ticking: true)
       const activePeriod = fixture.periods.find(p => p.ticking)
-
-      console.log(`[Live API] Active period:`, activePeriod ?
-        `minutes=${activePeriod.minutes}, ticking=${activePeriod.ticking}` : 'none')
 
       if (activePeriod) {
         minute = activePeriod.minutes

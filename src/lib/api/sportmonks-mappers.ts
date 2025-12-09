@@ -17,6 +17,10 @@ import type {
   SportmonksPlayerRaw,
   SportmonksPlayerTeamRaw,
   SportmonksTopScorerRaw,
+  SportmonksPlayerStatisticRaw,
+  SportmonksTransferRaw,
+  SportmonksParticipantTrophyRaw,
+  SportmonksPlayerFixtureRaw,
 } from "@/types/sportmonks/raw";
 import type {
   Fixture,
@@ -45,6 +49,10 @@ import type {
   PlayerTeam,
   PlayerSearchResult,
   TopScorer,
+  PlayerSeasonStats,
+  PlayerTransfer,
+  PlayerTrophy,
+  PlayerMatch,
 } from "@/types/football";
 
 // Map state developer_name to MatchStatus
@@ -702,7 +710,8 @@ export function mapSquadPlayer(raw: SportmonksSquadPlayerRaw): SquadPlayer {
     displayName: player?.display_name || player?.common_name || "",
     image: player?.image_path || null,
     position: position?.name || null,
-    positionGroup: position?.stat_group || null,
+    // Use stat_group if available, fallback to position name (Goalkeeper, Defender, Midfielder, Attacker)
+    positionGroup: position?.stat_group || position?.name || null,
     jerseyNumber: raw.jersey_number,
     countryId: player?.country_id || null,
     dateOfBirth: player?.date_of_birth || null,
@@ -812,13 +821,201 @@ export function mapPlayerSearchResult(raw: SportmonksPlayerRaw): PlayerSearchRes
   };
 }
 
+// Map player season statistics
+function mapPlayerSeasonStats(raw: SportmonksPlayerStatisticRaw): PlayerSeasonStats {
+  const details = raw.details || [];
+
+  // Type IDs from SportMonks API v3
+  // 321 = appearances, 119 = minutes played, 52 = goals, 79 = assists
+  // 84 = yellow cards, 83 = red cards, 118 = rating, 214 = clean sheets
+  // 99 = saves, 76 = penalties scored, 78 = penalties missed
+  const findDetailValue = (typeId: number): number => {
+    const detail = details.find((d) => d.type_id === typeId);
+    return detail?.value?.total ?? detail?.value?.all ?? 0;
+  };
+
+  const findDetailRating = (): number | null => {
+    const detail = details.find((d) => d.type_id === 118);
+    if (!detail?.value?.average) return null;
+    return parseFloat(detail.value.average);
+  };
+
+  return {
+    seasonId: raw.season_id,
+    seasonName: raw.season?.name || "",
+    leagueId: raw.season?.league_id || null,
+    leagueName: raw.season?.league?.name || null,
+    leagueLogo: raw.season?.league?.image_path || null,
+    teamId: raw.team_id,
+    teamName: raw.team?.name || "",
+    teamLogo: raw.team?.image_path || "",
+    jerseyNumber: raw.jersey_number,
+    // Core stats
+    appearances: findDetailValue(321),
+    minutesPlayed: findDetailValue(119),
+    goals: findDetailValue(52),
+    assists: findDetailValue(79),
+    yellowCards: findDetailValue(84),
+    redCards: findDetailValue(83),
+    // Additional stats
+    rating: findDetailRating(),
+    cleanSheets: findDetailValue(214),
+    saves: findDetailValue(99),
+    penaltiesScored: findDetailValue(76),
+    penaltiesMissed: findDetailValue(78),
+  };
+}
+
+// Map player transfer
+function mapPlayerTransfer(raw: SportmonksTransferRaw): PlayerTransfer {
+  // Type IDs: 219 = loan, 220 = permanent/normal, etc.
+  const typeMap: Record<number, PlayerTransfer["type"]> = {
+    219: "loan",
+    220: "permanent",
+    221: "free",
+    222: "end_of_loan",
+  };
+
+  return {
+    id: raw.id,
+    date: raw.date,
+    type: typeMap[raw.type_id] || "unknown",
+    fromTeamId: raw.from_team_id,
+    fromTeamName: raw.fromteam?.name || "",
+    fromTeamLogo: raw.fromteam?.image_path || "",
+    toTeamId: raw.to_team_id,
+    toTeamName: raw.toteam?.name || "",
+    toTeamLogo: raw.toteam?.image_path || "",
+    amount: raw.amount,
+    completed: raw.completed,
+  };
+}
+
+// Map player trophy
+function mapPlayerTrophy(raw: SportmonksParticipantTrophyRaw): PlayerTrophy {
+  return {
+    id: raw.id,
+    name: raw.trophy?.name || "Trophy",
+    position: raw.trophy?.position || 1,
+    leagueId: raw.league_id,
+    leagueName: raw.league?.name || "",
+    leagueLogo: raw.league?.image_path || "",
+    seasonId: raw.season_id,
+    seasonName: raw.season?.name || "",
+  };
+}
+
+// Map player's recent match (raw is lineup data with nested fixture)
+function mapPlayerMatch(raw: SportmonksPlayerFixtureRaw): PlayerMatch | null {
+  // raw is actually lineup data, fixture is nested inside
+  const fixture = raw.fixture;
+  if (!fixture) return null;
+
+  const participants = fixture.participants || [];
+  const scores = fixture.scores || [];
+
+  const homeParticipant = participants.find((p) => p.meta?.location === "home");
+  const awayParticipant = participants.find((p) => p.meta?.location === "away");
+
+  // Find CURRENT score (full time or current for live)
+  const homeScoreObj = scores.find(
+    (s) => s.participant_id === homeParticipant?.id && s.description === "CURRENT"
+  );
+  const awayScoreObj = scores.find(
+    (s) => s.participant_id === awayParticipant?.id && s.description === "CURRENT"
+  );
+
+  // Parse match name if participants not available (format: "Team A vs Team B")
+  let homeName = homeParticipant?.name || "";
+  let awayName = awayParticipant?.name || "";
+  if (!homeName && !awayName && fixture.name) {
+    const parts = fixture.name.split(" vs ");
+    if (parts.length === 2) {
+      homeName = parts[0].trim();
+      awayName = parts[1].trim();
+    }
+  }
+
+  return {
+    id: fixture.id,
+    date: fixture.starting_at,
+    leagueId: fixture.league_id,
+    leagueName: fixture.league?.name || "",
+    leagueLogo: fixture.league?.image_path || "",
+    homeTeamId: homeParticipant?.id || 0,
+    homeTeamName: homeName,
+    homeTeamLogo: homeParticipant?.image_path || "",
+    awayTeamId: awayParticipant?.id || 0,
+    awayTeamName: awayName,
+    awayTeamLogo: awayParticipant?.image_path || "",
+    homeScore: homeScoreObj?.score?.goals ?? null,
+    awayScore: awayScoreObj?.score?.goals ?? null,
+    status: mapMatchStatus(fixture.state?.developer_name),
+  };
+}
+
+// Extract preferred foot from metadata (type_id 229)
+function extractPreferredFoot(metadata: SportmonksPlayerRaw["metadata"]): PlayerDetail["preferredFoot"] {
+  if (!metadata) return null;
+  const footMeta = metadata.find(m => m.type_id === 229);
+  if (!footMeta) return null;
+  const value = String(footMeta.values).toLowerCase();
+  if (value === "left") return "left";
+  if (value === "right") return "right";
+  if (value === "both") return "both";
+  return null;
+}
+
 // Map full player detail
 export function mapPlayerDetail(raw: SportmonksPlayerRaw): PlayerDetail {
   // Map teams
   const teams = (raw.teams || []).map(mapPlayerTeam);
 
   // Find current team (no end date)
-  const currentTeam = teams.find((t) => t.isCurrent) || null;
+  let currentTeam = teams.find((t) => t.isCurrent) || null;
+
+  // Map extended data
+  const seasonStats = (raw.statistics || [])
+    .filter((s) => s.has_values !== false)
+    .map(mapPlayerSeasonStats)
+    .sort((a, b) => b.seasonId - a.seasonId); // Most recent first
+
+  // Enrich currentTeam with jersey_number from latest statistics
+  // (teams endpoint doesn't include jersey_number, but statistics does)
+
+  // If no current team found (all have end dates), use the most recent from stats
+  if (!currentTeam && seasonStats.length > 0) {
+    const mostRecentTeamId = seasonStats[0].teamId;
+    currentTeam = teams.find(t => t.teamId === mostRecentTeamId) || null;
+  }
+
+  // Always try to enrich jersey number from stats (teams endpoint doesn't include it)
+  if (currentTeam && seasonStats.length > 0) {
+    const latestStatForTeam = seasonStats.find(s => s.teamId === currentTeam!.teamId);
+    if (latestStatForTeam?.jerseyNumber) {
+      currentTeam = { ...currentTeam, jerseyNumber: latestStatForTeam.jerseyNumber };
+    }
+  }
+
+  const transfers = (raw.transfers || [])
+    .map(mapPlayerTransfer)
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+  const trophies = (raw.trophies || [])
+    .map(mapPlayerTrophy)
+    .sort((a, b) => b.seasonId - a.seasonId);
+
+  const recentMatches = (raw.latest || [])
+    .filter((lineup) => lineup.fixture?.starting_at) // Filter out lineups without fixture data
+    .map(mapPlayerMatch)
+    .filter((m): m is PlayerMatch => m !== null && !!m.date) // Filter nulls and ensure date exists
+    .sort((a, b) => {
+      const dateA = new Date(a.date).getTime()
+      const dateB = new Date(b.date).getTime()
+      if (isNaN(dateA) || isNaN(dateB)) return 0
+      return dateB - dateA
+    })
+    .slice(0, 10); // Last 10 matches
 
   return {
     id: raw.id,
@@ -838,6 +1035,15 @@ export function mapPlayerDetail(raw: SportmonksPlayerRaw): PlayerDetail {
     nationality: raw.nationality ? mapCountry(raw.nationality) : null,
     currentTeam,
     teams,
+    // Additional attributes
+    preferredFoot: extractPreferredFoot(raw.metadata),
+    // Get market value from most recent transfer (if available)
+    marketValue: transfers.length > 0 ? transfers[0].amount : null,
+    // Extended data
+    seasonStats,
+    transfers,
+    trophies,
+    recentMatches,
   };
 }
 

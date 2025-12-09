@@ -1,143 +1,174 @@
 import type { Metadata } from "next"
-import { Search, TrendingUp, Star, Users } from "lucide-react"
+import Image from "next/image"
+import Link from "next/link"
+import { Search, ChevronRight, Trophy } from "lucide-react"
 import { SITE } from "@/lib/constants"
-import { Button } from "@/components/ui/button"
+import { getTopScorersForPopularLeagues, getTopLeaguesStandings } from "@/lib/queries"
+import { slugify } from "@/lib/utils"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { TopLeagues, AdSpace, StandingsWidget } from "@/components/sidebar"
 
 export const metadata: Metadata = {
   title: `Players | ${SITE.name}`,
-  description: "Discover and browse football players. Find player information, statistics and career history.",
+  description: "Discover top goalscorers from the best football leagues. Find player statistics, career history and more.",
 }
 
-// Placeholder trending players data
-const TRENDING_PLAYERS = [
-  { id: 1, name: "Erling Haaland", position: "ST", team: "Manchester City" },
-  { id: 2, name: "Kylian Mbappé", position: "LW", team: "Real Madrid" },
-  { id: 3, name: "Jude Bellingham", position: "CM", team: "Real Madrid" },
-  { id: 4, name: "Vinicius Jr", position: "LW", team: "Real Madrid" },
-  { id: 5, name: "Bukayo Saka", position: "RW", team: "Arsenal" },
-  { id: 6, name: "Rodri", position: "DM", team: "Manchester City" },
-]
+export default async function PlayersPage() {
+  // Fetch topscorers and standings in parallel
+  const [leagueTopScorers, leagueStandings] = await Promise.all([
+    getTopScorersForPopularLeagues(),
+    getTopLeaguesStandings(),
+  ])
 
-const PLAYER_CATEGORIES = [
-  { label: "Goalkeepers", icon: "🧤", count: "2,500+" },
-  { label: "Defenders", icon: "🛡️", count: "8,000+" },
-  { label: "Midfielders", icon: "⚽", count: "10,000+" },
-  { label: "Forwards", icon: "🎯", count: "6,000+" },
-]
+  const totalPlayers = leagueTopScorers.reduce((sum, league) => sum + league.topScorers.length, 0)
 
-export default function PlayersPage() {
   return (
     <main className="flex-1 overflow-auto">
-      <div className="container mx-auto px-4 py-8 max-w-5xl">
-          {/* Hero Section */}
-          <div className="text-center mb-12">
-            <h1 className="text-3xl font-bold mb-4">Discover Players</h1>
-            <p className="text-muted-foreground mb-6 max-w-xl mx-auto">
-              Search through thousands of football players worldwide. Find statistics,
-              career history, and add your favorites to track.
-            </p>
-            <div className="flex items-center justify-center gap-2">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <div className="pl-10 pr-4 py-2.5 rounded-lg border bg-muted/50 text-muted-foreground text-sm w-64 text-left">
-                  Use search in header...
-                </div>
-              </div>
-              <span className="text-xs text-muted-foreground">or press</span>
-              <kbd className="inline-flex h-6 items-center gap-1 rounded border bg-muted px-2 font-mono text-xs font-medium">
-                <span>⌘</span>K
-              </kbd>
+      <div className="container mx-auto px-4 py-4">
+        {/* 3-Column Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-[240px_1fr_300px] gap-6">
+          {/* Left Sidebar */}
+          <aside className="hidden lg:flex flex-col gap-4">
+            <TopLeagues />
+            <AdSpace size="medium-rectangle" />
+          </aside>
+
+          {/* Center Content */}
+          <div className="min-w-0">
+            {/* Page Header */}
+            <div className="mb-6">
+              <h1 className="text-2xl font-bold">Top Goalscorers</h1>
+              <p className="text-muted-foreground text-sm mt-1">
+                {totalPlayers} players from {leagueTopScorers.length} leagues
+              </p>
             </div>
-          </div>
 
-          {/* Categories Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
-            {PLAYER_CATEGORIES.map((category) => (
-              <Card key={category.label} className="hover:bg-muted/50 transition-colors cursor-pointer">
-                <CardContent className="p-4 text-center">
-                  <span className="text-2xl mb-2 block">{category.icon}</span>
-                  <p className="font-medium text-sm">{category.label}</p>
-                  <p className="text-xs text-muted-foreground">{category.count}</p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-
-          {/* Trending Players */}
-          <Card className="mb-8">
-            <CardHeader className="pb-3">
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <TrendingUp className="h-5 w-5 text-primary" />
-                Trending Players
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                {TRENDING_PLAYERS.map((player) => (
-                  <div
-                    key={player.id}
-                    className="flex items-center gap-3 p-3 rounded-lg border hover:bg-muted/50 transition-colors cursor-pointer group"
-                  >
-                    <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center text-sm font-medium">
-                      {player.name.charAt(0)}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">{player.name}</p>
-                      <p className="text-xs text-muted-foreground truncate">
-                        {player.position} · {player.team}
-                      </p>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <Star className="h-4 w-4" />
-                    </Button>
-                  </div>
-                ))}
+            {/* Search Hint */}
+            <div className="mb-6 p-4 rounded-xl border bg-muted/30">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                  <Search className="h-5 w-5 text-primary" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-medium">Search for any player</p>
+                  <p className="text-xs text-muted-foreground">
+                    Press <kbd className="inline-flex h-5 items-center gap-1 rounded border bg-background px-1.5 font-mono text-[10px] font-medium">⌘K</kbd> or use the search in header
+                  </p>
+                </div>
               </div>
-            </CardContent>
-          </Card>
+            </div>
 
-          {/* Info Cards */}
-          <div className="grid md:grid-cols-2 gap-4">
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-start gap-4">
-                  <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                    <Star className="h-5 w-5 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="font-medium mb-1">Track Your Favorites</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Star players to add them to your favorites. View all your favorite
-                      players and teams in the sidebar.
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            {/* League Top Scorers */}
+            <div className="space-y-6">
+              {leagueTopScorers.map((league) => (
+                <Card key={league.leagueId}>
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center justify-between">
+                      <Link
+                        href={`/leagues/${slugify(league.leagueName)}-${league.leagueId}`}
+                        className="flex items-center gap-2 hover:opacity-80 transition-opacity group"
+                      >
+                        <Image
+                          src={league.leagueLogo}
+                          alt={league.leagueName}
+                          width={24}
+                          height={24}
+                          className="object-contain"
+                        />
+                        <CardTitle className="text-base group-hover:text-primary transition-colors">
+                          {league.leagueName}
+                        </CardTitle>
+                        <ChevronRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                      </Link>
+                      <Badge variant="secondary" className="text-xs">
+                        <Trophy className="h-3 w-3 mr-1" />
+                        Top Scorers
+                      </Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2">
+                      {league.topScorers.map((scorer, index) => (
+                        <Link
+                          key={scorer.id}
+                          href={`/players/${slugify(scorer.playerName)}-${scorer.playerId}`}
+                          className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors group"
+                        >
+                          {/* Position */}
+                          <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
+                            index === 0 ? "bg-yellow-500 text-yellow-950" :
+                            index === 1 ? "bg-gray-300 text-gray-700" :
+                            index === 2 ? "bg-amber-600 text-amber-50" :
+                            "bg-muted text-muted-foreground"
+                          }`}>
+                            {scorer.position}
+                          </div>
 
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-start gap-4">
-                  <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                    <Users className="h-5 w-5 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="font-medium mb-1">Comprehensive Database</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Access detailed profiles for 25,000+ players from leagues around
-                      the world. Statistics, transfers, and more.
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                          {/* Player Image */}
+                          {scorer.playerImage ? (
+                            <Image
+                              src={scorer.playerImage}
+                              alt={scorer.playerName}
+                              width={36}
+                              height={36}
+                              className="rounded-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-9 h-9 rounded-full bg-muted flex items-center justify-center text-sm font-medium">
+                              {scorer.playerName.charAt(0)}
+                            </div>
+                          )}
+
+                          {/* Player Info */}
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium truncate group-hover:text-primary transition-colors">
+                              {scorer.playerName}
+                            </p>
+                            <div className="flex items-center gap-2">
+                              {scorer.teamLogo && (
+                                <Image
+                                  src={scorer.teamLogo}
+                                  alt={scorer.teamName}
+                                  width={14}
+                                  height={14}
+                                  className="object-contain"
+                                />
+                              )}
+                              <span className="text-xs text-muted-foreground truncate">
+                                {scorer.teamName}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Goals */}
+                          <div className="text-right">
+                            <p className="text-lg font-bold tabular-nums">{scorer.goals}</p>
+                            <p className="text-[10px] text-muted-foreground uppercase">Goals</p>
+                          </div>
+                        </Link>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            {/* Empty State */}
+            {leagueTopScorers.length === 0 && (
+              <div className="text-center py-12 text-muted-foreground">
+                <p>No player data available at the moment</p>
+              </div>
+            )}
           </div>
+
+          {/* Right Sidebar */}
+          <aside className="hidden md:flex flex-col gap-4">
+            <StandingsWidget leagueStandings={leagueStandings} />
+            <AdSpace size="medium-rectangle" />
+          </aside>
         </div>
-      </main>
+      </div>
+    </main>
   )
 }

@@ -1,9 +1,19 @@
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 import { getPlayerById } from "@/lib/api/football-api"
+import { getTopLeaguesStandings } from "@/lib/queries"
 import { extractPlayerId } from "@/lib/utils"
-import { PlayerHeader } from "@/components/players/player-header"
-import { PlayerCareer } from "@/components/players/player-career"
+import {
+  PlayerHeader,
+  PlayerCurrentSeason,
+  PlayerDataTabs,
+  PlayerTrophies,
+  PlayerMatches,
+  PlayerCareer,
+  PlayerAboutSection,
+  PlayerAttributes,
+} from "@/components/players"
+import { StandingsWidget } from "@/components/sidebar"
 import { SITE } from "@/lib/constants"
 
 interface PlayerDetailPageProps {
@@ -45,28 +55,62 @@ export default async function PlayerDetailPage({ params }: PlayerDetailPageProps
     notFound()
   }
 
-  let player
-  try {
-    player = await getPlayerById(playerId)
-  } catch {
+  // Fetch player and standings in parallel
+  const [player, leagueStandings] = await Promise.all([
+    getPlayerById(playerId).catch(() => null),
+    getTopLeaguesStandings().catch(() => []),
+  ])
+
+  if (!player) {
     notFound()
   }
 
   return (
-    <main className="container mx-auto px-4 py-8">
-      {/* Player Header */}
-      <PlayerHeader player={player} />
+    <main className="flex-1 overflow-auto">
+      <div className="container mx-auto px-4 py-4">
+        {/* 2-Column Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6">
+          {/* Main Content */}
+          <div className="min-w-0 space-y-6">
+            {/* Player Header */}
+            <PlayerHeader player={player} />
 
-      {/* Content Grid */}
-      <div className="mt-8 grid gap-8 lg:grid-cols-3">
-        {/* Career History (2/3 width) */}
-        <div className="lg:col-span-2">
-          <PlayerCareer teams={player.teams} />
-        </div>
+            {/* Current Season Stats */}
+            {player.seasonStats?.[0] && (
+              <PlayerCurrentSeason stats={player.seasonStats[0]} />
+            )}
 
-        {/* Stats Sidebar (1/3 width) - placeholder for future */}
-        <div className="space-y-6">
-          {/* Can add player statistics here in future */}
+            {/* Stats & Transfers Tabs */}
+            <PlayerDataTabs
+              stats={player.seasonStats}
+              transfers={player.transfers}
+            />
+
+            {/* About Section - SEO Content */}
+            <PlayerAboutSection player={player} />
+          </div>
+
+          {/* Right Sidebar */}
+          <aside className="hidden lg:flex flex-col gap-4">
+            {/* Attribute Overview */}
+            <PlayerAttributes player={player} />
+
+            {/* Career History - All clubs */}
+            <PlayerCareer
+              teams={player.teams}
+              seasonStats={player.seasonStats}
+              currentTeamId={player.currentTeam?.teamId}
+            />
+
+            {/* Trophies */}
+            <PlayerTrophies trophies={player.trophies} />
+
+            {/* Recent Matches */}
+            <PlayerMatches matches={player.recentMatches} playerId={player.id} />
+
+            {/* Standings Widget */}
+            <StandingsWidget leagueStandings={leagueStandings} />
+          </aside>
         </div>
       </div>
     </main>

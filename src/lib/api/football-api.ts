@@ -263,6 +263,26 @@ export async function searchTeams(query: string): Promise<Array<TeamSearchResult
 }
 
 /**
+ * Get teams by season ID
+ * Endpoint: GET /teams/seasons/{id}
+ */
+export async function getTeamsBySeason(seasonId: number): Promise<Array<TeamSearchResult>> {
+  idSchema.parse(seasonId);
+
+  try {
+    const response = await sportmonksPaginatedRequest<SportmonksTeamRaw>({
+      endpoint: `/teams/seasons/${seasonId}`,
+      include: TEAM_SEARCH_INCLUDES,
+      perPage: 50,
+    });
+
+    return response.data.map(mapTeamSearchResult);
+  } catch {
+    return [];
+  }
+}
+
+/**
  * Get fixtures by team ID (recent and upcoming)
  * Endpoint: GET /fixtures/between/{startDate}/{endDate}/{teamId}
  */
@@ -320,6 +340,23 @@ const PLAYER_DETAIL_INCLUDES = [
   "position",
   "detailedPosition",
   "teams.team",
+  // Extended includes for player detail page
+  "statistics.details",
+  "statistics.season.league",
+  "statistics.team",
+  "transfers.fromTeam",
+  "transfers.toTeam",
+  "transfers.type",
+  "trophies.trophy",
+  "trophies.league",
+  "trophies.season",
+  // Latest lineups with fixture details
+  "latest.fixture.participants",
+  "latest.fixture.league",
+  "latest.fixture.scores",
+  "latest.fixture.state",
+  // Metadata (may contain market value)
+  "metadata",
 ];
 
 const PLAYER_SEARCH_INCLUDES = ["country", "position"];

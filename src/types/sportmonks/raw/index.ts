@@ -58,4 +58,9 @@ export type {
   SportmonksPlayerTeamRaw,
   SportmonksPositionRaw,
   SportmonksTeamFixtureRaw,
+  SportmonksPlayerStatisticRaw,
+  SportmonksPlayerStatisticDetailRaw,
+  SportmonksTransferRaw,
+  SportmonksParticipantTrophyRaw,
+  SportmonksPlayerFixtureRaw,
 } from "./team";

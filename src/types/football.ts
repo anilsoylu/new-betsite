@@ -345,6 +345,14 @@ export interface PlayerDetail {
   nationality: Country | null;
   currentTeam: PlayerTeam | null;
   teams: Array<PlayerTeam>;
+  // Additional attributes
+  preferredFoot: "left" | "right" | "both" | null;
+  marketValue: number | null; // From latest transfer or metadata
+  // Extended data for player detail page
+  seasonStats: Array<PlayerSeasonStats>;
+  transfers: Array<PlayerTransfer>;
+  trophies: Array<PlayerTrophy>;
+  recentMatches: Array<PlayerMatch>;
 }
 
 // Player's team info
@@ -359,6 +367,77 @@ export interface PlayerTeam {
   startDate: string | null;
   endDate: string | null;
   isCurrent: boolean;
+}
+
+// Player's season statistics
+export interface PlayerSeasonStats {
+  seasonId: number;
+  seasonName: string;
+  leagueId: number | null;
+  leagueName: string | null;
+  leagueLogo: string | null;
+  teamId: number;
+  teamName: string;
+  teamLogo: string;
+  jerseyNumber: number | null;
+  // Core stats
+  appearances: number;
+  minutesPlayed: number;
+  goals: number;
+  assists: number;
+  yellowCards: number;
+  redCards: number;
+  // Additional stats
+  rating: number | null;
+  cleanSheets: number;
+  saves: number;
+  penaltiesScored: number;
+  penaltiesMissed: number;
+}
+
+// Player transfer record
+export interface PlayerTransfer {
+  id: number;
+  date: string;
+  type: "loan" | "permanent" | "free" | "end_of_loan" | "unknown";
+  fromTeamId: number;
+  fromTeamName: string;
+  fromTeamLogo: string;
+  toTeamId: number;
+  toTeamName: string;
+  toTeamLogo: string;
+  amount: number | null; // Transfer fee in currency
+  completed: boolean;
+}
+
+// Player trophy/achievement
+export interface PlayerTrophy {
+  id: number;
+  name: string; // e.g. "Winner", "Runner-up"
+  position: number; // 1 = winner, 2 = runner-up, etc.
+  leagueId: number;
+  leagueName: string;
+  leagueLogo: string;
+  seasonId: number;
+  seasonName: string;
+}
+
+// Player's recent match
+export interface PlayerMatch {
+  id: number;
+  date: string;
+  leagueId: number;
+  leagueName: string;
+  leagueLogo: string;
+  homeTeamId: number;
+  homeTeamName: string;
+  homeTeamLogo: string;
+  awayTeamId: number;
+  awayTeamName: string;
+  awayTeamLogo: string;
+  homeScore: number | null;
+  awayScore: number | null;
+  status: MatchStatus;
 }
 
 // Player search result

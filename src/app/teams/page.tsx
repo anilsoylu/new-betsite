@@ -1,170 +1,144 @@
 import type { Metadata } from "next"
-import { Search, Trophy, Star, Shield, TrendingUp } from "lucide-react"
-import { SITE, POPULAR_LEAGUES } from "@/lib/constants"
-import { Button } from "@/components/ui/button"
+import Image from "next/image"
+import Link from "next/link"
+import { Search, ChevronRight } from "lucide-react"
+import { SITE } from "@/lib/constants"
+import { getTeamsForPopularLeagues, getTopLeaguesStandings } from "@/lib/queries"
+import { slugify } from "@/lib/utils"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+import { TopLeagues, AdSpace, StandingsWidget } from "@/components/sidebar"
 
 export const metadata: Metadata = {
   title: `Teams | ${SITE.name}`,
-  description: "Discover and browse football teams. Find team information, squad, fixtures and statistics.",
+  description: "Discover and browse football teams from top leagues. Find team information, squad, fixtures and statistics.",
 }
 
-// Placeholder popular teams data
-const POPULAR_TEAMS = [
-  { id: 1, name: "Manchester City", league: "Premier League", shortCode: "MCI" },
-  { id: 2, name: "Real Madrid", league: "La Liga", shortCode: "RMA" },
-  { id: 3, name: "Bayern Munich", league: "Bundesliga", shortCode: "BAY" },
-  { id: 4, name: "Arsenal", league: "Premier League", shortCode: "ARS" },
-  { id: 5, name: "Barcelona", league: "La Liga", shortCode: "BAR" },
-  { id: 6, name: "Liverpool", league: "Premier League", shortCode: "LIV" },
-  { id: 7, name: "Inter Milan", league: "Serie A", shortCode: "INT" },
-  { id: 8, name: "Paris Saint-Germain", league: "Ligue 1", shortCode: "PSG" },
-]
+export default async function TeamsPage() {
+  // Fetch teams and standings in parallel
+  const [leagueTeams, leagueStandings] = await Promise.all([
+    getTeamsForPopularLeagues(),
+    getTopLeaguesStandings(),
+  ])
 
-export default function TeamsPage() {
+  const totalTeams = leagueTeams.reduce((sum, league) => sum + league.teams.length, 0)
+
   return (
     <main className="flex-1 overflow-auto">
-      <div className="container mx-auto px-4 py-8 max-w-5xl">
-          {/* Hero Section */}
-          <div className="text-center mb-12">
-            <h1 className="text-3xl font-bold mb-4">Discover Teams</h1>
-            <p className="text-muted-foreground mb-6 max-w-xl mx-auto">
-              Explore football clubs from leagues around the world. View squads,
-              fixtures, standings and add favorites to track.
-            </p>
-            <div className="flex items-center justify-center gap-2">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <div className="pl-10 pr-4 py-2.5 rounded-lg border bg-muted/50 text-muted-foreground text-sm w-64 text-left">
-                  Use search in header...
+      <div className="container mx-auto px-4 py-4">
+        {/* 3-Column Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-[240px_1fr_300px] gap-6">
+          {/* Left Sidebar */}
+          <aside className="hidden lg:flex flex-col gap-4">
+            <TopLeagues />
+            <AdSpace size="medium-rectangle" />
+          </aside>
+
+          {/* Center Content */}
+          <div className="min-w-0">
+            {/* Page Header */}
+            <div className="mb-6">
+              <h1 className="text-2xl font-bold">Football Teams</h1>
+              <p className="text-muted-foreground text-sm mt-1">
+                {totalTeams} teams from {leagueTeams.length} leagues
+              </p>
+            </div>
+
+            {/* Search Hint */}
+            <div className="mb-6 p-4 rounded-xl border bg-muted/30">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                  <Search className="h-5 w-5 text-primary" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-medium">Search for any team</p>
+                  <p className="text-xs text-muted-foreground">
+                    Press <kbd className="inline-flex h-5 items-center gap-1 rounded border bg-background px-1.5 font-mono text-[10px] font-medium">⌘K</kbd> or use the search in header
+                  </p>
                 </div>
               </div>
-              <span className="text-xs text-muted-foreground">or press</span>
-              <kbd className="inline-flex h-6 items-center gap-1 rounded border bg-muted px-2 font-mono text-xs font-medium">
-                <span>⌘</span>K
-              </kbd>
             </div>
-          </div>
 
-          {/* League Filter Chips */}
-          <div className="mb-8">
-            <h2 className="text-sm font-medium text-muted-foreground mb-3">Browse by League</h2>
-            <div className="flex flex-wrap gap-2">
-              {POPULAR_LEAGUES.map((league) => (
-                <Badge
-                  key={league.id}
-                  variant="outline"
-                  className="cursor-pointer hover:bg-accent transition-colors px-3 py-1.5"
-                >
-                  <span className="mr-1.5 text-xs font-bold text-muted-foreground">
-                    {league.shortCode}
-                  </span>
-                  {league.name}
-                </Badge>
+            {/* League Sections */}
+            <div className="space-y-6">
+              {leagueTeams.map((league) => (
+                <Card key={league.leagueId}>
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center justify-between">
+                      <Link
+                        href={`/leagues/${slugify(league.leagueName)}-${league.leagueId}`}
+                        className="flex items-center gap-2 hover:opacity-80 transition-opacity group"
+                      >
+                        <Image
+                          src={league.leagueLogo}
+                          alt={league.leagueName}
+                          width={24}
+                          height={24}
+                          className="object-contain"
+                        />
+                        <CardTitle className="text-base group-hover:text-primary transition-colors">
+                          {league.leagueName}
+                        </CardTitle>
+                        <ChevronRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                      </Link>
+                      <span className="text-xs text-muted-foreground">
+                        {league.teams.length} teams
+                      </span>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                      {league.teams.map((team) => (
+                        <Link
+                          key={team.id}
+                          href={`/teams/${slugify(team.name)}-${team.id}`}
+                          className="flex flex-col items-center gap-2 p-3 rounded-lg border hover:bg-muted/50 hover:border-primary/30 transition-all group"
+                        >
+                          {team.logo ? (
+                            <Image
+                              src={team.logo}
+                              alt={team.name}
+                              width={40}
+                              height={40}
+                              className="object-contain"
+                            />
+                          ) : (
+                            <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center text-sm font-bold text-muted-foreground">
+                              {team.shortCode?.slice(0, 2) || team.name.charAt(0)}
+                            </div>
+                          )}
+                          <div className="text-center">
+                            <p className="text-xs font-medium truncate max-w-[100px] group-hover:text-primary transition-colors">
+                              {team.name}
+                            </p>
+                            {team.shortCode && (
+                              <p className="text-[10px] text-muted-foreground">
+                                {team.shortCode}
+                              </p>
+                            )}
+                          </div>
+                        </Link>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
               ))}
             </div>
-          </div>
 
-          {/* Popular Teams */}
-          <Card className="mb-8">
-            <CardHeader className="pb-3">
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <TrendingUp className="h-5 w-5 text-primary" />
-                Popular Teams
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                {POPULAR_TEAMS.map((team) => (
-                  <div
-                    key={team.id}
-                    className="flex flex-col items-center gap-2 p-4 rounded-lg border hover:bg-muted/50 transition-colors cursor-pointer group"
-                  >
-                    <div className="h-12 w-12 rounded-lg bg-muted flex items-center justify-center">
-                      <Shield className="h-6 w-6 text-muted-foreground" />
-                    </div>
-                    <div className="text-center">
-                      <p className="text-sm font-medium truncate max-w-full">{team.name}</p>
-                      <p className="text-xs text-muted-foreground truncate">{team.league}</p>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <Star className="h-4 w-4" />
-                    </Button>
-                  </div>
-                ))}
+            {/* Empty State */}
+            {leagueTeams.length === 0 && (
+              <div className="text-center py-12 text-muted-foreground">
+                <p>No teams available at the moment</p>
               </div>
-            </CardContent>
-          </Card>
-
-          {/* League Cards */}
-          <div className="grid md:grid-cols-2 gap-4 mb-8">
-            {POPULAR_LEAGUES.slice(0, 4).map((league) => (
-              <Card key={league.id} className="hover:bg-muted/50 transition-colors cursor-pointer">
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="h-12 w-12 rounded-lg bg-muted flex items-center justify-center text-lg font-bold text-muted-foreground">
-                      {league.shortCode.slice(0, 2)}
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-medium">{league.name}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {league.shortCode === "ENG" && "20 teams"}
-                        {league.shortCode === "ESP" && "20 teams"}
-                        {league.shortCode === "GER" && "18 teams"}
-                        {league.shortCode === "ITA" && "20 teams"}
-                        {league.shortCode === "FRA" && "18 teams"}
-                        {league.shortCode === "UEFA" && "32 teams"}
-                      </p>
-                    </div>
-                    <Trophy className="h-5 w-5 text-muted-foreground" />
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+            )}
           </div>
 
-          {/* Info Cards */}
-          <div className="grid md:grid-cols-2 gap-4">
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-start gap-4">
-                  <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                    <Star className="h-5 w-5 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="font-medium mb-1">Follow Your Teams</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Star your favorite teams to track their matches and results.
-                      Access them quickly from the sidebar.
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-start gap-4">
-                  <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                    <Trophy className="h-5 w-5 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="font-medium mb-1">Global Coverage</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Browse teams from 1,000+ leagues and competitions across
-                      the world. Complete squad and fixture data.
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+          {/* Right Sidebar */}
+          <aside className="hidden md:flex flex-col gap-4">
+            <StandingsWidget leagueStandings={leagueStandings} />
+            <AdSpace size="medium-rectangle" />
+          </aside>
         </div>
-      </main>
+      </div>
+    </main>
   )
 }
