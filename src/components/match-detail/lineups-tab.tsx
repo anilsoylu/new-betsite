@@ -109,7 +109,7 @@ function PitchView({
                 alt={homeTeam.name}
                 width={24}
                 height={24}
-                className="object-contain"
+                className="object-contain w-auto h-auto"
               />
             )}
             <span className="font-medium text-sm">{homeTeam.name}</span>
@@ -132,7 +132,7 @@ function PitchView({
                 alt={awayTeam.name}
                 width={24}
                 height={24}
-                className="object-contain"
+                className="object-contain w-auto h-auto"
               />
             )}
           </div>

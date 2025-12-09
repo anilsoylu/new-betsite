@@ -15,6 +15,8 @@ export interface SportmonksRequestConfig {
   sortBy?: string;
   order?: "asc" | "desc";
   timezone?: string;
+  /** Cache revalidation time in seconds (0 = no-store, undefined = default cache) */
+  revalidate?: number;
 }
 
 // Error types
@@ -91,6 +93,9 @@ export async function sportmonksRequest<TData>(
         Authorization: env.API_SPORTMONKS_KEY,
         Accept: "application/json",
       },
+      ...(config.revalidate !== undefined && {
+        next: { revalidate: config.revalidate }
+      }),
     });
 
     const duration = Math.round(performance.now() - startTime);
@@ -146,6 +151,9 @@ export async function sportmonksPaginatedRequest<TItem>(
         Authorization: env.API_SPORTMONKS_KEY,
         Accept: "application/json",
       },
+      ...(config.revalidate !== undefined && {
+        next: { revalidate: config.revalidate }
+      }),
     });
 
     const duration = Math.round(performance.now() - startTime);

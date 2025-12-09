@@ -36,6 +36,7 @@ export type {
   SportmonksStandingRaw,
   SportmonksStandingGroupRaw,
   SportmonksStandingDetailRaw,
+  SportmonksTopScorerRaw,
 } from "./match-stats";
 
 // Betting types

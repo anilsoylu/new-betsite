@@ -55,7 +55,7 @@ export function TeamCard({
                   src={team.logo}
                   alt={team.name}
                   fill
-                  className="object-contain"
+                  className="object-contain w-auto h-auto"
                 />
               ) : (
                 <div className="h-full w-full bg-muted rounded-lg flex items-center justify-center">
@@ -111,7 +111,7 @@ export function TeamCard({
                   src={team.logo}
                   alt={team.name}
                   fill
-                  className="object-contain"
+                  className="object-contain w-auto h-auto"
                 />
               </div>
             ) : (
@@ -153,7 +153,7 @@ export function TeamCard({
                       alt={team.country.name}
                       width={14}
                       height={10}
-                      className="object-contain"
+                      className="object-contain w-auto h-auto"
                     />
                   )}
                   <span className="truncate">{team.country.name}</span>

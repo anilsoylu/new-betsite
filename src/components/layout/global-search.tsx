@@ -273,7 +273,7 @@ export function GlobalSearch() {
                               src={team.logo}
                               alt={team.name}
                               fill
-                              className="object-contain"
+                              className="object-contain w-auto h-auto"
                             />
                           ) : (
                             <div className="h-full w-full bg-muted rounded-full flex items-center justify-center text-sm font-medium">

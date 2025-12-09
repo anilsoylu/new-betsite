@@ -16,6 +16,7 @@ import type {
   SportmonksSquadPlayerRaw,
   SportmonksPlayerRaw,
   SportmonksPlayerTeamRaw,
+  SportmonksTopScorerRaw,
 } from "@/types/sportmonks/raw";
 import type {
   Fixture,
@@ -43,6 +44,7 @@ import type {
   PlayerDetail,
   PlayerTeam,
   PlayerSearchResult,
+  TopScorer,
 } from "@/types/football";
 
 // Map state developer_name to MatchStatus
@@ -352,6 +354,7 @@ export function mapStanding(raw: SportmonksStandingRaw): Standing {
     points: raw.points,
     form,
     ruleTypeId,
+    nextMatch: null, // Will be populated later with upcoming fixtures
   };
 }
 
@@ -788,5 +791,27 @@ export function mapPlayerDetail(raw: SportmonksPlayerRaw): PlayerDetail {
     nationality: raw.nationality ? mapCountry(raw.nationality) : null,
     currentTeam,
     teams,
+  };
+}
+
+// Map top scorer entry
+export function mapTopScorer(raw: SportmonksTopScorerRaw): TopScorer {
+  // Type IDs: 208 = goals, 209 = assists, 210 = yellow cards, 211 = red cards
+  const isGoals = raw.type_id === 208;
+  const isAssists = raw.type_id === 209;
+
+  return {
+    id: raw.id,
+    playerId: raw.player_id,
+    playerName: raw.player?.display_name || raw.player?.name || "Unknown",
+    playerImage: raw.player?.image_path || null,
+    teamId: raw.participant_id,
+    teamName: raw.participant?.name || "",
+    teamLogo: raw.participant?.image_path || "",
+    position: raw.position,
+    goals: isGoals ? raw.total : 0,
+    assists: isAssists ? raw.total : 0,
+    yellowCards: raw.type_id === 210 ? raw.total : 0,
+    redCards: raw.type_id === 211 ? raw.total : 0,
   };
 }

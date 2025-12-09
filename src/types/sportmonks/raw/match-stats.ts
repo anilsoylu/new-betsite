@@ -77,3 +77,47 @@ export interface SportmonksStandingGroupRaw {
   resource: string;
   standings: Array<SportmonksStandingRaw>;
 }
+
+// Top scorer entry from API
+export interface SportmonksTopScorerRaw {
+  id: number;
+  season_id: number;
+  player_id: number;
+  type_id: number; // 208 = goals, 209 = assists, 210 = yellow cards, 211 = red cards
+  position: number;
+  total: number;
+  participant_id: number;
+
+  // Included relations
+  player?: {
+    id: number;
+    sport_id: number;
+    country_id: number;
+    nationality_id: number | null;
+    city_id: number | null;
+    position_id: number | null;
+    detailed_position_id: number | null;
+    common_name: string;
+    display_name: string;
+    name: string;
+    firstname: string;
+    lastname: string;
+    date_of_birth: string | null;
+    gender: string;
+    height: number | null;
+    weight: number | null;
+    image_path: string;
+  };
+  participant?: {
+    id: number;
+    name: string;
+    short_code: string | null;
+    image_path: string;
+  };
+  type?: {
+    id: number;
+    name: string;
+    code: string;
+    developer_name: string;
+  };
+}

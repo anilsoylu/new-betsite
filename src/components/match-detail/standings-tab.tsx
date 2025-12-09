@@ -82,7 +82,7 @@ function StandingRow({ standing, isHighlighted }: StandingRowProps) {
               alt={standing.teamName}
               width={20}
               height={20}
-              className="object-contain"
+              className="object-contain w-auto h-auto"
             />
           )}
           <span className={cn("truncate max-w-[120px] sm:max-w-[180px]", isHighlighted && "font-semibold")}>

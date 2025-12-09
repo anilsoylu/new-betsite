@@ -106,6 +106,15 @@ export interface Fixture {
 // null = No special position
 export type StandingRuleType = 180 | 181 | 182 | 183 | 184 | null;
 
+// Upcoming opponent info for standings
+export interface NextOpponent {
+  teamId: number;
+  teamName: string;
+  teamLogo: string;
+  isHome: boolean;
+  matchDate: string;
+}
+
 // Standing entry
 export interface Standing {
   position: number;
@@ -122,6 +131,7 @@ export interface Standing {
   points: number;
   form: Array<"W" | "D" | "L">;
   ruleTypeId: StandingRuleType;
+  nextMatch: NextOpponent | null;
 }
 
 // Standing table (grouped)
@@ -342,4 +352,31 @@ export interface PlayerSearchResult {
   image: string | null;
   position: string | null;
   country: Country | null;
+}
+
+// Top scorer entry
+export interface TopScorer {
+  id: number;
+  playerId: number;
+  playerName: string;
+  playerImage: string | null;
+  teamId: number;
+  teamName: string;
+  teamLogo: string;
+  position: number;
+  goals: number;
+  assists: number;
+  yellowCards: number;
+  redCards: number;
+}
+
+// League page data (comprehensive)
+export interface LeaguePageData {
+  league: League;
+  standings: StandingTable[];
+  topScorers: TopScorer[];
+  topAssists: TopScorer[];
+  recentFixtures: Fixture[];
+  upcomingFixtures: Fixture[];
+  liveFixtures: Fixture[];
 }

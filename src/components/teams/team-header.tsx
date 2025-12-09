@@ -20,7 +20,7 @@ export function TeamHeader({ team }: TeamHeaderProps) {
                 src={team.logo}
                 alt={team.name}
                 fill
-                className="object-contain"
+                className="object-contain w-auto h-auto"
                 priority
               />
             ) : (
@@ -51,7 +51,7 @@ export function TeamHeader({ team }: TeamHeaderProps) {
                       alt={team.country.name}
                       width={20}
                       height={14}
-                      className="object-contain"
+                      className="object-contain w-auto h-auto"
                     />
                   )}
                   <span>{team.country.name}</span>

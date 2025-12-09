@@ -1,3 +1,5 @@
+"use client"
+
 import Image from "next/image";
 import Link from "next/link";
 import { format } from "date-fns";
@@ -5,6 +7,7 @@ import { ArrowLeft, MapPin, Calendar } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { getTeamUrl } from "@/lib/utils";
+import { useLiveFixture } from "@/hooks";
 import type { FixtureDetail } from "@/types/football";
 
 interface MatchHeaderProps {
@@ -12,9 +15,13 @@ interface MatchHeaderProps {
 }
 
 export function MatchHeader({ fixture }: MatchHeaderProps) {
-  const { homeTeam, awayTeam, score, status, statusDetail, minute, league, venue, isLive, startTime } = fixture;
+  const { homeTeam, awayTeam, score, statusDetail, league, venue, startTime } = fixture;
   const formattedDate = format(new Date(startTime), "dd MMM yyyy");
   const formattedTime = format(new Date(startTime), "HH:mm");
+
+  // Poll for live fixture updates
+  const liveData = useLiveFixture({ fixture, pollInterval: 30000 });
+  const { status, displayMinute, homeScore, awayScore, isLive } = liveData;
 
   return (
     <div className="space-y-4">
@@ -36,7 +43,7 @@ export function MatchHeader({ fixture }: MatchHeaderProps) {
               alt={league.name}
               width={28}
               height={28}
-              className="object-contain"
+              className="object-contain w-auto h-auto"
             />
           )}
           <div>
@@ -53,9 +60,13 @@ export function MatchHeader({ fixture }: MatchHeaderProps) {
         <CardContent className="p-6">
           {/* Status badge */}
           <div className="flex justify-center mb-6">
-            {isLive ? (
+            {status === "halftime" ? (
+              <Badge variant="secondary" className="text-base px-4 py-1.5 bg-amber-500/20 text-amber-600 border-amber-500/30">
+                HT
+              </Badge>
+            ) : isLive ? (
               <Badge variant="destructive" className="animate-pulse text-base px-4 py-1.5">
-                {minute ? `${minute}'` : "LIVE"}
+                {displayMinute || "LIVE"}
               </Badge>
             ) : status === "finished" ? (
               <Badge variant="secondary" className="text-base px-4 py-1.5">FT</Badge>
@@ -86,14 +97,14 @@ export function MatchHeader({ fixture }: MatchHeaderProps) {
 
             {/* Score */}
             <div className="text-center px-6">
-              {score ? (
+              {(score || isLive || status === "halftime" || status === "finished") ? (
                 <div className="text-5xl font-bold tabular-nums">
                   <span className={homeTeam.isWinner ? "text-foreground" : "text-muted-foreground"}>
-                    {score.home}
+                    {homeScore}
                   </span>
                   <span className="text-muted-foreground mx-3">-</span>
                   <span className={awayTeam.isWinner ? "text-foreground" : "text-muted-foreground"}>
-                    {score.away}
+                    {awayScore}
                   </span>
                 </div>
               ) : (

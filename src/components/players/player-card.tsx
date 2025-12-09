@@ -152,7 +152,7 @@ export function PlayerCard({
                       alt={player.country.name}
                       width={14}
                       height={10}
-                      className="object-contain"
+                      className="object-contain w-auto h-auto"
                     />
                   )}
                   <span className="truncate">{player.country.name}</span>

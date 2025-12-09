@@ -96,7 +96,7 @@ function H2HMatchRow({ match, highlightTeamId }: H2HMatchRowProps) {
                 alt={match.league.name}
                 width={14}
                 height={14}
-                className="object-contain"
+                className="object-contain w-auto h-auto"
               />
             )}
             <span className="truncate max-w-[100px]">{match.league.name}</span>

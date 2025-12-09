@@ -12,6 +12,7 @@ import {
   mapTeamSearchResult,
   mapPlayerDetail,
   mapPlayerSearchResult,
+  mapTopScorer,
 } from "./sportmonks-mappers";
 import type {
   SportmonksFixtureRaw,
@@ -21,8 +22,9 @@ import type {
   SportmonksOddRaw,
   SportmonksTeamRaw,
   SportmonksPlayerRaw,
+  SportmonksTopScorerRaw,
 } from "@/types/sportmonks/raw";
-import type { Fixture, FixtureDetail, League, StandingTable, H2HFixture, MatchOdds, TeamDetail, TeamSearchResult, PlayerDetail, PlayerSearchResult } from "@/types/football";
+import type { Fixture, FixtureDetail, League, Standing, StandingTable, H2HFixture, MatchOdds, TeamDetail, TeamSearchResult, PlayerDetail, PlayerSearchResult, TopScorer, LeaguePageData } from "@/types/football";
 import { API, UI } from "@/lib/constants";
 
 // Validation schemas
@@ -159,7 +161,7 @@ export async function getStandingsBySeason(seasonId: number): Promise<Array<Stan
 
   const response = await sportmonksRequest<Array<SportmonksStandingRaw>>({
     endpoint: `/standings/seasons/${seasonId}`,
-    include: ["participant", "details", "rule"],
+    include: ["participant", "details", "rule", "form"],
   });
 
   // API returns flat array of standings, group them by league for our data model
@@ -354,4 +356,267 @@ export async function searchPlayers(query: string): Promise<Array<PlayerSearchRe
   } catch {
     return [];
   }
+}
+
+/**
+ * Top scorer statistic types
+ * seasontopscorerTypes filter IDs from Sportmonks API
+ */
+export type TopScorerStatType =
+  | "goals"
+  | "assists"
+  | "yellowCards"
+  | "redCards"
+  | "cleanSheets"
+  | "rating"
+
+const TOP_SCORER_TYPE_IDS: Record<TopScorerStatType, number> = {
+  goals: 208,
+  assists: 209,
+  yellowCards: 210,
+  redCards: 211,
+  cleanSheets: 212,
+  rating: 118,
+}
+
+/**
+ * Get top scorers by season
+ * Endpoint: GET /topscorers/seasons/{seasonId}
+ * Supports: goals, assists, yellowCards, redCards, cleanSheets, rating
+ */
+export async function getTopScorersBySeason(
+  seasonId: number,
+  type: TopScorerStatType = "goals",
+  limit = 10
+): Promise<Array<TopScorer>> {
+  idSchema.parse(seasonId);
+
+  const filterTypeId = TOP_SCORER_TYPE_IDS[type];
+
+  try {
+    const response = await sportmonksPaginatedRequest<SportmonksTopScorerRaw>({
+      endpoint: `/topscorers/seasons/${seasonId}`,
+      include: ["player", "player.nationality", "participant", "type"],
+      perPage: limit,
+      filters: { seasontopscorerTypes: filterTypeId },
+    });
+
+    return response.data.map(mapTopScorer);
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Get fixtures by season with date range
+ * Endpoint: GET /fixtures/between/{startDate}/{endDate}
+ * Filtered by league
+ */
+export async function getFixturesBySeason(
+  leagueId: number,
+  options: { past?: number; future?: number } = {}
+): Promise<{ recent: Array<Fixture>; upcoming: Array<Fixture> }> {
+  idSchema.parse(leagueId);
+
+  const { past = 10, future = 10 } = options;
+  const today = new Date();
+
+  // Calculate date range (past 30 days to future 30 days)
+  const startDate = new Date(today);
+  startDate.setDate(startDate.getDate() - 30);
+  const endDate = new Date(today);
+  endDate.setDate(endDate.getDate() + 30);
+
+  const formatDate = (d: Date) => d.toISOString().split("T")[0];
+
+  try {
+    const response = await sportmonksPaginatedRequest<SportmonksFixtureRaw>({
+      endpoint: `/fixtures/between/${formatDate(startDate)}/${formatDate(endDate)}`,
+      include: FIXTURE_INCLUDES,
+      perPage: 50,
+      filters: { fixtureLeagues: leagueId },
+    });
+
+    const fixtures = response.data.map(mapFixture);
+    const now = Date.now();
+
+    // Split into past and future
+    const pastFixtures = fixtures
+      .filter((f) => f.timestamp * 1000 < now && f.status === "finished")
+      .sort((a, b) => b.timestamp - a.timestamp)
+      .slice(0, past);
+
+    const futureFixtures = fixtures
+      .filter((f) => f.timestamp * 1000 >= now || f.status === "scheduled")
+      .sort((a, b) => a.timestamp - b.timestamp)
+      .slice(0, future);
+
+    return {
+      recent: pastFixtures,
+      upcoming: futureFixtures,
+    };
+  } catch {
+    return { recent: [], upcoming: [] };
+  }
+}
+
+/**
+ * Get live fixtures for a specific league
+ * Filters the inplay endpoint by league ID
+ */
+export async function getLiveFixturesByLeague(leagueId: number): Promise<Array<Fixture>> {
+  idSchema.parse(leagueId);
+
+  try {
+    const allLive = await getLiveFixtures();
+    return allLive.filter((f) => f.leagueId === leagueId);
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Get comprehensive league page data
+ * Fetches all data needed for a rich league page in parallel
+ */
+export async function getLeaguePageData(leagueId: number): Promise<LeaguePageData> {
+  idSchema.parse(leagueId);
+
+  // First get the league to know the current season
+  const league = await getLeagueById(leagueId);
+
+  if (!league.currentSeasonId) {
+    return {
+      league,
+      standings: [],
+      topScorers: [],
+      topAssists: [],
+      recentFixtures: [],
+      upcomingFixtures: [],
+      liveFixtures: [],
+    };
+  }
+
+  // Fetch all data in parallel
+  const [standings, topScorers, topAssists, fixtures, liveFixtures] = await Promise.all([
+    getStandingsBySeason(league.currentSeasonId).catch(() => []),
+    getTopScorersBySeason(league.currentSeasonId, "goals", 10).catch(() => []),
+    getTopScorersBySeason(league.currentSeasonId, "assists", 10).catch(() => []),
+    getFixturesBySeason(leagueId, { past: 10, future: 20 }).catch(() => ({ recent: [], upcoming: [] })),
+    getLiveFixturesByLeague(leagueId).catch(() => []),
+  ]);
+
+  // Enrich standings with next match info from upcoming fixtures
+  const enrichedStandings = standings.map((table) => ({
+    ...table,
+    standings: table.standings.map((standing) => {
+      // Find first upcoming fixture for this team
+      const nextFixture = fixtures.upcoming.find(
+        (f) => f.homeTeam.id === standing.teamId || f.awayTeam.id === standing.teamId
+      );
+
+      if (nextFixture) {
+        const isHome = nextFixture.homeTeam.id === standing.teamId;
+        const opponent = isHome ? nextFixture.awayTeam : nextFixture.homeTeam;
+
+        return {
+          ...standing,
+          nextMatch: {
+            teamId: opponent.id,
+            teamName: opponent.name,
+            teamLogo: opponent.logo,
+            isHome,
+            matchDate: nextFixture.startTime,
+          },
+        };
+      }
+
+      return standing;
+    }),
+  }));
+
+  return {
+    league,
+    standings: enrichedStandings,
+    topScorers,
+    topAssists,
+    recentFixtures: fixtures.recent,
+    upcomingFixtures: fixtures.upcoming,
+    liveFixtures,
+  };
+}
+
+/**
+ * League stats page data
+ */
+export interface LeagueStatsData {
+  league: League;
+  standings: Standing[];
+  recentFixtures: Fixture[];
+  goals: TopScorer[];
+  assists: TopScorer[];
+  yellowCards: TopScorer[];
+  redCards: TopScorer[];
+  cleanSheets: TopScorer[];
+  ratings: TopScorer[];
+}
+
+/**
+ * Get all statistics for league stats page
+ * Fetches top scorers for all stat types in parallel
+ */
+export async function getLeagueStatsData(leagueId: number): Promise<LeagueStatsData> {
+  const league = await getLeagueById(leagueId);
+
+  if (!league.currentSeasonId) {
+    return {
+      league,
+      standings: [],
+      recentFixtures: [],
+      goals: [],
+      assists: [],
+      yellowCards: [],
+      redCards: [],
+      cleanSheets: [],
+      ratings: [],
+    };
+  }
+
+  const seasonId = league.currentSeasonId;
+
+  const [
+    standingsData,
+    fixtures,
+    goals,
+    assists,
+    yellowCards,
+    redCards,
+    cleanSheets,
+    ratings
+  ] = await Promise.all([
+    getStandingsBySeason(seasonId).catch(() => []),
+    getFixturesBySeason(leagueId, { past: 10 }).catch(() => ({ recent: [], upcoming: [] })),
+    getTopScorersBySeason(seasonId, "goals", 10),
+    getTopScorersBySeason(seasonId, "assists", 10),
+    getTopScorersBySeason(seasonId, "yellowCards", 10),
+    getTopScorersBySeason(seasonId, "redCards", 10),
+    getTopScorersBySeason(seasonId, "cleanSheets", 10),
+    getTopScorersBySeason(seasonId, "rating", 10),
+  ]);
+
+  const standings = standingsData.length > 0 && standingsData[0].standings.length > 0
+    ? standingsData[0].standings
+    : [];
+
+  return {
+    league,
+    standings,
+    recentFixtures: fixtures.recent,
+    goals,
+    assists,
+    yellowCards,
+    redCards,
+    cleanSheets,
+    ratings,
+  };
 }

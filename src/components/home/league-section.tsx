@@ -2,8 +2,9 @@
 
 import { useState } from "react"
 import Image from "next/image"
-import { ChevronDown } from "lucide-react"
-import { cn } from "@/lib/utils"
+import Link from "next/link"
+import { ChevronDown, ChevronRight } from "lucide-react"
+import { cn, getLeagueUrl } from "@/lib/utils"
 import { MatchRow } from "./match-row"
 import { AdSpace } from "@/components/sidebar"
 import type { Fixture } from "@/types/football"
@@ -42,49 +43,54 @@ export function LeagueSection({
   return (
     <div className="border border-border/50 rounded-xl overflow-hidden bg-card">
       {/* League Header */}
-      <button
-        onClick={() => setIsExpanded(!isExpanded)}
+      <div
         className={cn(
-          "w-full flex items-center gap-2 px-3 py-2.5 transition-colors",
-          "hover:bg-muted/30",
+          "flex items-center gap-2 px-3 py-2.5",
           isExpanded && "border-b border-border/50"
         )}
       >
-        {/* League/Country Logo */}
-        <div className="flex items-center gap-2 shrink-0">
-          {countryFlag && (
-            <Image
-              src={countryFlag}
-              alt={countryName || ""}
-              width={20}
-              height={14}
-              className="object-contain rounded-sm"
-            />
-          )}
-          {leagueLogo && !countryFlag && (
-            <Image
-              src={leagueLogo}
-              alt={leagueName}
-              width={20}
-              height={20}
-              className="object-contain"
-            />
-          )}
-        </div>
+        {/* League Link - Click to go to league page */}
+        <Link
+          href={getLeagueUrl(leagueName, leagueId)}
+          className="flex items-center gap-2 flex-1 min-w-0 group hover:opacity-80 transition-opacity"
+        >
+          {/* League/Country Logo */}
+          <div className="flex items-center gap-2 shrink-0">
+            {countryFlag && (
+              <Image
+                src={countryFlag}
+                alt={countryName || ""}
+                width={20}
+                height={14}
+                className="object-contain rounded-sm"
+              />
+            )}
+            {leagueLogo && !countryFlag && (
+              <Image
+                src={leagueLogo}
+                alt={leagueName}
+                width={20}
+                height={20}
+                className="object-contain w-auto h-auto"
+              />
+            )}
+          </div>
 
-        {/* League Info */}
-        <div className="flex flex-col items-start flex-1 min-w-0">
-          {countryName && (
-            <span className="text-[10px] uppercase text-muted-foreground font-medium">
-              {countryName}
+          {/* League Info */}
+          <div className="flex flex-col items-start flex-1 min-w-0">
+            {countryName && (
+              <span className="text-[10px] uppercase text-muted-foreground font-medium">
+                {countryName}
+              </span>
+            )}
+            <span className="text-sm font-semibold text-foreground truncate w-full text-left group-hover:text-primary transition-colors flex items-center gap-1">
+              {leagueName}
+              <ChevronRight className="h-3 w-3 text-muted-foreground group-hover:text-primary opacity-0 group-hover:opacity-100 transition-opacity" />
             </span>
-          )}
-          <span className="text-sm font-semibold text-foreground truncate w-full text-left">
-            {leagueName}
-          </span>
-        </div>
+          </div>
+        </Link>
 
-        {/* Match Count & Live Indicator */}
+        {/* Match Count, Live Indicator & Expand/Collapse */}
         <div className="flex items-center gap-2 shrink-0">
           {liveCount > 0 && (
             <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-red-500/10">
@@ -98,14 +104,20 @@ export function LeagueSection({
           <span className="text-xs text-muted-foreground">
             {fixtures.length} {fixtures.length === 1 ? "match" : "matches"}
           </span>
-          <ChevronDown
-            className={cn(
-              "h-4 w-4 text-muted-foreground transition-transform",
-              isExpanded && "rotate-180"
-            )}
-          />
+          <button
+            onClick={() => setIsExpanded(!isExpanded)}
+            className="p-1.5 rounded-md hover:bg-muted/50 transition-colors"
+            aria-label={isExpanded ? "Collapse" : "Expand"}
+          >
+            <ChevronDown
+              className={cn(
+                "h-4 w-4 text-muted-foreground transition-transform",
+                isExpanded && "rotate-180"
+              )}
+            />
+          </button>
         </div>
-      </button>
+      </div>
 
       {/* Matches with Inline Ads */}
       {isExpanded && (

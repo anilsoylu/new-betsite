@@ -7,6 +7,7 @@ import { format } from "date-fns"
 import { Star } from "lucide-react"
 import { cn, getFixtureUrl } from "@/lib/utils"
 import { useFavoritesStore } from "@/stores/favorites-store"
+import { useLiveFixture } from "@/hooks"
 import type { Fixture } from "@/types/football"
 
 interface MatchRowProps {
@@ -15,10 +16,14 @@ interface MatchRowProps {
 }
 
 export function MatchRow({ fixture, showFavorites = true }: MatchRowProps) {
-  const { homeTeam, awayTeam, score, status, minute, isLive, startTime, id: fixtureId } = fixture
+  const { homeTeam, awayTeam, startTime, id: fixtureId } = fixture
   const { isFavorite, toggleFavorite } = useFavoritesStore()
   const [hasMounted, setHasMounted] = useState(false)
   const [isAnimating, setIsAnimating] = useState(false)
+
+  // Poll for live fixture updates
+  const liveData = useLiveFixture({ fixture, pollInterval: 30000 })
+  const { status, displayMinute, homeScore, awayScore, isLive } = liveData
 
   useEffect(() => {
     setHasMounted(true)
@@ -58,18 +63,6 @@ export function MatchRow({ fixture, showFavorites = true }: MatchRowProps) {
       )
     }
     // Live with minute
-    if (isLive && minute) {
-      return (
-        <div className="flex items-center gap-1 min-w-[44px] justify-center">
-          <span className="relative flex h-1.5 w-1.5">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75" />
-            <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-red-500" />
-          </span>
-          <span className="text-xs font-bold text-red-500">{minute}'</span>
-        </div>
-      )
-    }
-    // Live without minute (fallback)
     if (isLive) {
       return (
         <div className="flex items-center gap-1 min-w-[44px] justify-center">
@@ -77,7 +70,7 @@ export function MatchRow({ fixture, showFavorites = true }: MatchRowProps) {
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75" />
             <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-red-500" />
           </span>
-          <span className="text-xs font-bold text-red-500">LIVE</span>
+          <span className="text-xs font-bold text-red-500">{displayMinute || "LIVE"}</span>
         </div>
       )
     }
@@ -125,20 +118,20 @@ export function MatchRow({ fixture, showFavorites = true }: MatchRowProps) {
         </div>
 
         {/* Score */}
-        {score ? (
+        {(isLive || status === "finished" || status === "halftime") ? (
           <div className="flex items-center gap-1 shrink-0">
             <span className={cn(
               "text-sm font-bold w-5 text-center tabular-nums",
               homeTeam.isWinner ? "text-foreground" : "text-muted-foreground"
             )}>
-              {score.home}
+              {homeScore}
             </span>
             <span className="text-muted-foreground/50">-</span>
             <span className={cn(
               "text-sm font-bold w-5 text-center tabular-nums",
               awayTeam.isWinner ? "text-foreground" : "text-muted-foreground"
             )}>
-              {score.away}
+              {awayScore}
             </span>
           </div>
         ) : (

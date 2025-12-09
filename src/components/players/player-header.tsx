@@ -84,7 +84,7 @@ export function PlayerHeader({ player }: PlayerHeaderProps) {
                       alt={currentTeam.teamName}
                       width={24}
                       height={24}
-                      className="object-contain"
+                      className="object-contain w-auto h-auto"
                     />
                   )}
                   <span className="font-medium">{currentTeam.teamName}</span>

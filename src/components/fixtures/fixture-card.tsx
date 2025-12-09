@@ -9,6 +9,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { getFixtureUrl, cn } from "@/lib/utils"
 import { useFavoritesStore } from "@/stores/favorites-store"
+import { useLiveFixture } from "@/hooks"
 import type { Fixture } from "@/types/football"
 
 interface FixtureCardProps {
@@ -24,10 +25,14 @@ export function FixtureCard({
   showLeague = true,
   variant = "default"
 }: FixtureCardProps) {
-  const { homeTeam, awayTeam, score, status, statusDetail, minute, isLive, startTime, id: fixtureId, league, venue } = fixture
+  const { homeTeam, awayTeam, score, statusDetail, startTime, id: fixtureId, league, venue } = fixture
   const { isFavorite, toggleFavorite } = useFavoritesStore()
   const [hasMounted, setHasMounted] = useState(false)
   const [animatingStars, setAnimatingStars] = useState<Record<string, boolean>>({})
+
+  // Poll for live fixture updates (status, minute, scores)
+  const liveData = useLiveFixture({ fixture, pollInterval: 30000 })
+  const { status, displayMinute, homeScore, awayScore, isLive } = liveData
 
   useEffect(() => {
     setHasMounted(true)
@@ -148,7 +153,7 @@ export function FixtureCard({
                     alt={homeTeam.name}
                     width={variant === "featured" ? 32 : 24}
                     height={variant === "featured" ? 32 : 24}
-                    className="object-contain"
+                    className="object-contain w-auto h-auto"
                   />
                 ) : (
                   <div className={cn(
@@ -180,13 +185,13 @@ export function FixtureCard({
               )}
 
               {/* Score */}
-              {score && (
+              {(score || isLive) && (
                 <span className={cn(
                   "font-bold tabular-nums w-6 text-center",
                   homeTeam.isWinner ? "text-foreground" : "text-muted-foreground",
                   variant === "featured" ? "text-xl" : "text-base"
                 )}>
-                  {score.home}
+                  {homeScore}
                 </span>
               )}
             </div>
@@ -201,7 +206,7 @@ export function FixtureCard({
                     alt={awayTeam.name}
                     width={variant === "featured" ? 32 : 24}
                     height={variant === "featured" ? 32 : 24}
-                    className="object-contain"
+                    className="object-contain w-auto h-auto"
                   />
                 ) : (
                   <div className={cn(
@@ -233,13 +238,13 @@ export function FixtureCard({
               )}
 
               {/* Score */}
-              {score && (
+              {(score || isLive) && (
                 <span className={cn(
                   "font-bold tabular-nums w-6 text-center",
                   awayTeam.isWinner ? "text-foreground" : "text-muted-foreground",
                   variant === "featured" ? "text-xl" : "text-base"
                 )}>
-                  {score.away}
+                  {awayScore}
                 </span>
               )}
             </div>
@@ -248,13 +253,17 @@ export function FixtureCard({
           {/* Match Info Footer */}
           <div className="flex items-center gap-2 mt-3 pt-2 border-t">
             {/* Status Badge */}
-            {isLive ? (
+            {status === "halftime" ? (
+              <Badge variant="secondary" className="text-xs h-5 px-1.5 bg-amber-500/20 text-amber-600 border-amber-500/30">
+                HT
+              </Badge>
+            ) : isLive ? (
               <Badge variant="destructive" className="animate-pulse text-xs h-5 px-1.5 gap-1">
                 <span className="relative flex h-1.5 w-1.5">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75" />
                   <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-white" />
                 </span>
-                {minute ? `${minute}'` : "LIVE"}
+                {displayMinute || "LIVE"}
               </Badge>
             ) : status === "finished" ? (
               <Badge variant="secondary" className="text-xs h-5 px-1.5">FT</Badge>
