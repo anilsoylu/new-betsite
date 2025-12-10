@@ -59,8 +59,8 @@ export default async function StatsPage({ params }: StatsPageProps) {
 
       {/* Goals & Assists */}
       <div className="grid md:grid-cols-2 gap-6">
-        <StatLeaderCard type="goals" players={data.goals} />
-        <StatLeaderCard type="assists" players={data.assists} />
+        <StatLeaderCard type="goals" players={data.goals} limit={10} />
+        <StatLeaderCard type="assists" players={data.assists} limit={10} />
       </div>
 
       {/* Cards & Defense */}

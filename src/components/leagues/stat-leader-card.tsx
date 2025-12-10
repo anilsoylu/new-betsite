@@ -216,14 +216,7 @@ export function StatLeaderCard({
         ))}
       </div>
 
-      {/* View All - if more players available */}
-      {players.length > limit && (
-        <div className="px-4 py-2 border-t border-border bg-muted/20">
-          <button className={cn("text-xs font-medium", config.color)}>
-            View all {players.length} players
-          </button>
-        </div>
-      )}
+
     </div>
   );
 }
