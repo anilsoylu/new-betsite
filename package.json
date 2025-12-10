@@ -8,11 +8,11 @@
     "start": "next start",
     "lint": "biome check",
     "format": "biome format --write",
-    "sync:sitemap": "bun scripts/sync-sitemap-cache.ts",
-    "sync:leagues": "bun scripts/sync-sitemap-cache.ts -e leagues",
-    "sync:teams": "bun scripts/sync-sitemap-cache.ts -e teams",
-    "sync:players": "bun scripts/sync-sitemap-cache.ts -e players",
-    "sync:matches": "bun scripts/sync-sitemap-cache.ts -e matches"
+    "sync:sitemap": "pnpm run scripts/sync-sitemap-cache.ts",
+    "sync:leagues": "pnpm run scripts/sync-sitemap-cache.ts -e leagues",
+    "sync:teams": "pnpm run scripts/sync-sitemap-cache.ts -e teams",
+    "sync:players": "pnpm run scripts/sync-sitemap-cache.ts -e players",
+    "sync:matches": "pnpm run scripts/sync-sitemap-cache.ts -e matches"
   },
   "dependencies": {
     "@contentful/rich-text-react-renderer": "^16.1.6",
