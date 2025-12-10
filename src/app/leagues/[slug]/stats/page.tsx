@@ -1,27 +1,23 @@
-import type { Metadata } from "next";
-import { notFound } from "next/navigation";
-import { getLeagueStatsData } from "@/lib/api/cached-football-api";
-import { extractLeagueId } from "@/lib/utils";
-import {
-  StatLeaderCard,
-  StatsDashboard,
-  LeagueAboutSection,
-} from "@/components/leagues";
-import { TOP_LEAGUES } from "@/components/sidebar/top-leagues";
-import { SITE, SEO } from "@/lib/constants";
+import type { Metadata } from "next"
+import { notFound } from "next/navigation"
+import { getLeagueStatsData } from "@/lib/api/cached-football-api"
+import { extractLeagueId } from "@/lib/utils"
+import { StatLeaderCard, StatsDashboard } from "@/components/leagues"
+import { TOP_LEAGUES } from "@/components/sidebar/top-leagues"
+import { SITE, SEO } from "@/lib/constants"
 
 interface StatsPageProps {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ slug: string }>
 }
 
 export async function generateMetadata({
   params,
 }: StatsPageProps): Promise<Metadata> {
-  const { slug } = await params;
-  const leagueId = extractLeagueId(slug);
+  const { slug } = await params
+  const leagueId = extractLeagueId(slug)
 
-  const knownLeague = TOP_LEAGUES.find((l) => l.id === leagueId);
-  const leagueName = knownLeague?.name || "League";
+  const knownLeague = TOP_LEAGUES.find((l) => l.id === leagueId)
+  const leagueName = knownLeague?.name || "League"
 
   return {
     title: SEO.leagueStats.titleTemplate(leagueName),
@@ -29,22 +25,22 @@ export async function generateMetadata({
     alternates: {
       canonical: `${SITE.url}/leagues/${slug}/stats`,
     },
-  };
+  }
 }
 
 export default async function StatsPage({ params }: StatsPageProps) {
-  const { slug } = await params;
-  const leagueId = extractLeagueId(slug);
+  const { slug } = await params
+  const leagueId = extractLeagueId(slug)
 
   if (!leagueId) {
-    notFound();
+    notFound()
   }
 
-  let data;
+  let data
   try {
-    data = await getLeagueStatsData(leagueId);
+    data = await getLeagueStatsData(leagueId)
   } catch {
-    notFound();
+    notFound()
   }
 
   return (
@@ -76,14 +72,6 @@ export default async function StatsPage({ params }: StatsPageProps) {
 
       {/* Top Rated Players */}
       <StatLeaderCard type="rating" players={data.ratings} limit={10} />
-
-      {/* League About Section */}
-      <LeagueAboutSection
-        league={data.league}
-        standings={data.standings}
-        topScorers={data.goals}
-        recentFixtures={data.recentFixtures}
-      />
     </div>
-  );
+  )
 }
