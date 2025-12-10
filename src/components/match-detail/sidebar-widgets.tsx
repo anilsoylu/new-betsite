@@ -1,30 +1,47 @@
-"use client"
+"use client";
 
-import Image from "next/image"
-import Link from "next/link"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { cn } from "@/lib/utils"
-import type { FixtureDetail, StandingTable, MatchStatistic, FormFixtureData } from "@/types/football"
-import { getFormFromFixtures } from "@/components/teams/form-strip"
+import Image from "next/image";
+import Link from "next/link";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
+import type {
+  FixtureDetail,
+  StandingTable,
+  MatchStatistic,
+  FormFixtureData,
+} from "@/types/football";
+import { getFormFromFixtures } from "@/components/teams/form-strip";
 
 // ================================
 // Match Quick Stats Widget
 // ================================
 interface MatchQuickStatsProps {
-  statistics: MatchStatistic[]
-  homeTeam: FixtureDetail["homeTeam"]
-  awayTeam: FixtureDetail["awayTeam"]
+  statistics: MatchStatistic[];
+  homeTeam: FixtureDetail["homeTeam"];
+  awayTeam: FixtureDetail["awayTeam"];
 }
 
-export function MatchQuickStats({ statistics, homeTeam, awayTeam }: MatchQuickStatsProps) {
-  if (statistics.length === 0) return null
+export function MatchQuickStats({
+  statistics,
+  homeTeam,
+  awayTeam,
+}: MatchQuickStatsProps) {
+  if (statistics.length === 0) return null;
 
   // Get key stats
-  const keyStats = ["Shots Total", "Shots On Target", "Possession %", "Corners", "Fouls"]
-  const displayStats = statistics.filter(stat => keyStats.includes(stat.type))
+  const keyStats = [
+    "Shots Total",
+    "Shots On Target",
+    "Possession %",
+    "Corners",
+    "Fouls",
+  ];
+  const displayStats = statistics.filter((stat) =>
+    keyStats.includes(stat.type),
+  );
 
-  if (displayStats.length === 0) return null
+  if (displayStats.length === 0) return null;
 
   return (
     <Card>
@@ -44,10 +61,14 @@ export function MatchQuickStats({ statistics, homeTeam, awayTeam }: MatchQuickSt
                 className="object-contain"
               />
             )}
-            <span className="truncate max-w-[60px]">{homeTeam.shortCode || homeTeam.name}</span>
+            <span className="truncate max-w-[60px]">
+              {homeTeam.shortCode || homeTeam.name}
+            </span>
           </div>
           <div className="flex items-center gap-1">
-            <span className="truncate max-w-[60px]">{awayTeam.shortCode || awayTeam.name}</span>
+            <span className="truncate max-w-[60px]">
+              {awayTeam.shortCode || awayTeam.name}
+            </span>
             {awayTeam.logo && (
               <Image
                 src={awayTeam.logo}
@@ -61,9 +82,9 @@ export function MatchQuickStats({ statistics, homeTeam, awayTeam }: MatchQuickSt
         </div>
 
         {displayStats.slice(0, 4).map((stat) => {
-          const homeVal = typeof stat.home === "number" ? stat.home : 0
-          const awayVal = typeof stat.away === "number" ? stat.away : 0
-          const total = homeVal + awayVal || 1
+          const homeVal = typeof stat.home === "number" ? stat.home : 0;
+          const awayVal = typeof stat.away === "number" ? stat.away : 0;
+          const total = homeVal + awayVal || 1;
 
           return (
             <div key={stat.type} className="space-y-1">
@@ -83,37 +104,42 @@ export function MatchQuickStats({ statistics, homeTeam, awayTeam }: MatchQuickSt
                 />
               </div>
             </div>
-          )
+          );
         })}
       </CardContent>
     </Card>
-  )
+  );
 }
 
 // ================================
 // Team Form Comparison Widget
 // ================================
 interface TeamFormWidgetProps {
-  homeTeam: FixtureDetail["homeTeam"]
-  awayTeam: FixtureDetail["awayTeam"]
-  homeForm: FormFixtureData[]
-  awayForm: FormFixtureData[]
+  homeTeam: FixtureDetail["homeTeam"];
+  awayTeam: FixtureDetail["awayTeam"];
+  homeForm: FormFixtureData[];
+  awayForm: FormFixtureData[];
 }
 
-export function TeamFormWidget({ homeTeam, awayTeam, homeForm, awayForm }: TeamFormWidgetProps) {
-  const homeResults = getFormFromFixtures(homeForm)
-  const awayResults = getFormFromFixtures(awayForm)
+export function TeamFormWidget({
+  homeTeam,
+  awayTeam,
+  homeForm,
+  awayForm,
+}: TeamFormWidgetProps) {
+  const homeResults = getFormFromFixtures(homeForm);
+  const awayResults = getFormFromFixtures(awayForm);
 
-  if (homeResults.length === 0 && awayResults.length === 0) return null
+  if (homeResults.length === 0 && awayResults.length === 0) return null;
 
   const getFormStats = (results: string[]) => ({
-    wins: results.filter(r => r === "W").length,
-    draws: results.filter(r => r === "D").length,
-    losses: results.filter(r => r === "L").length,
-  })
+    wins: results.filter((r) => r === "W").length,
+    draws: results.filter((r) => r === "D").length,
+    losses: results.filter((r) => r === "L").length,
+  });
 
-  const homeStats = getFormStats(homeResults)
-  const awayStats = getFormStats(awayResults)
+  const homeStats = getFormStats(homeResults);
+  const awayStats = getFormStats(awayResults);
 
   return (
     <Card>
@@ -133,7 +159,9 @@ export function TeamFormWidget({ homeTeam, awayTeam, homeForm, awayForm }: TeamF
                 className="object-contain"
               />
             )}
-            <span className="text-xs font-medium truncate flex-1">{homeTeam.name}</span>
+            <span className="text-xs font-medium truncate flex-1">
+              {homeTeam.name}
+            </span>
             <span className="text-xs text-muted-foreground">
               {homeStats.wins}W {homeStats.draws}D {homeStats.losses}L
             </span>
@@ -159,7 +187,9 @@ export function TeamFormWidget({ homeTeam, awayTeam, homeForm, awayForm }: TeamF
                 className="object-contain"
               />
             )}
-            <span className="text-xs font-medium truncate flex-1">{awayTeam.name}</span>
+            <span className="text-xs font-medium truncate flex-1">
+              {awayTeam.name}
+            </span>
             <span className="text-xs text-muted-foreground">
               {awayStats.wins}W {awayStats.draws}D {awayStats.losses}L
             </span>
@@ -172,7 +202,7 @@ export function TeamFormWidget({ homeTeam, awayTeam, homeForm, awayForm }: TeamF
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }
 
 function FormBadge({ result }: { result: string }) {
@@ -182,46 +212,49 @@ function FormBadge({ result }: { result: string }) {
         "w-6 h-6 rounded flex items-center justify-center text-xs font-bold text-white",
         result === "W" && "bg-green-500",
         result === "D" && "bg-gray-400",
-        result === "L" && "bg-red-500"
+        result === "L" && "bg-red-500",
       )}
     >
       {result}
     </div>
-  )
+  );
 }
 
 // ================================
 // League Mini Table Widget
 // ================================
 interface LeagueMiniTableProps {
-  standings: StandingTable[]
-  homeTeamId: number
-  awayTeamId: number
-  leagueSlug?: string
+  standings: StandingTable[];
+  homeTeamId: number;
+  awayTeamId: number;
+  leagueSlug?: string;
 }
 
 export function LeagueMiniTable({
   standings,
   homeTeamId,
   awayTeamId,
-  leagueSlug
+  leagueSlug,
 }: LeagueMiniTableProps) {
   // Find the table containing our teams
-  const table = standings.find(t =>
-    t.standings.some(s => s.teamId === homeTeamId || s.teamId === awayTeamId)
-  )
+  const table = standings.find((t) =>
+    t.standings.some((s) => s.teamId === homeTeamId || s.teamId === awayTeamId),
+  );
 
-  if (!table || table.standings.length === 0) return null
+  if (!table || table.standings.length === 0) return null;
 
   // Get positions around our teams
-  const homePos = table.standings.findIndex(s => s.teamId === homeTeamId)
-  const awayPos = table.standings.findIndex(s => s.teamId === awayTeamId)
+  const homePos = table.standings.findIndex((s) => s.teamId === homeTeamId);
+  const awayPos = table.standings.findIndex((s) => s.teamId === awayTeamId);
 
   // Get a slice of the table around these teams
-  const minPos = Math.max(0, Math.min(homePos, awayPos) - 1)
-  const maxPos = Math.min(table.standings.length - 1, Math.max(homePos, awayPos) + 1)
+  const minPos = Math.max(0, Math.min(homePos, awayPos) - 1);
+  const maxPos = Math.min(
+    table.standings.length - 1,
+    Math.max(homePos, awayPos) + 1,
+  );
 
-  const displayStandings = table.standings.slice(minPos, maxPos + 1)
+  const displayStandings = table.standings.slice(minPos, maxPos + 1);
 
   return (
     <Card>
@@ -251,26 +284,30 @@ export function LeagueMiniTable({
           </thead>
           <tbody>
             {displayStandings.map((standing) => {
-              const isHome = standing.teamId === homeTeamId
-              const isAway = standing.teamId === awayTeamId
-              const isHighlighted = isHome || isAway
+              const isHome = standing.teamId === homeTeamId;
+              const isAway = standing.teamId === awayTeamId;
+              const isHighlighted = isHome || isAway;
               return (
                 <tr
                   key={standing.teamId}
                   className={cn(
                     "border-b last:border-0 transition-colors",
-                    isHighlighted && "bg-primary/10 font-semibold"
+                    isHighlighted && "bg-primary/10 font-semibold",
                   )}
                 >
-                  <td className={cn(
-                    "py-2 relative",
-                    isHighlighted ? "pl-3" : "pl-4"
-                  )}>
+                  <td
+                    className={cn(
+                      "py-2 relative",
+                      isHighlighted ? "pl-3" : "pl-4",
+                    )}
+                  >
                     {isHighlighted && (
-                      <div className={cn(
-                        "absolute left-0 top-1 bottom-1 w-1 rounded-r",
-                        isHome ? "bg-blue-500" : "bg-red-500"
-                      )} />
+                      <div
+                        className={cn(
+                          "absolute left-0 top-1 bottom-1 w-1 rounded-r",
+                          isHome ? "bg-blue-500" : "bg-red-500",
+                        )}
+                      />
                     )}
                     {standing.position}
                   </td>
@@ -285,45 +322,51 @@ export function LeagueMiniTable({
                           className="object-contain"
                         />
                       )}
-                      <span className={cn(
-                        "truncate max-w-[100px]",
-                        isHighlighted && "text-foreground"
-                      )}>
+                      <span
+                        className={cn(
+                          "truncate max-w-[100px]",
+                          isHighlighted && "text-foreground",
+                        )}
+                      >
                         {standing.teamName}
                       </span>
                     </div>
                   </td>
                   <td className="text-center py-2">{standing.played}</td>
                   <td className="text-center py-2">
-                    {standing.goalDifference > 0 ? `+${standing.goalDifference}` : standing.goalDifference}
+                    {standing.goalDifference > 0
+                      ? `+${standing.goalDifference}`
+                      : standing.goalDifference}
                   </td>
-                  <td className="text-center pr-4 py-2 font-semibold">{standing.points}</td>
+                  <td className="text-center pr-4 py-2 font-semibold">
+                    {standing.points}
+                  </td>
                 </tr>
-              )
+              );
             })}
           </tbody>
         </table>
       </CardContent>
     </Card>
-  )
+  );
 }
 
 // ================================
 // Match Info Widget
 // ================================
 interface MatchInfoWidgetProps {
-  fixture: FixtureDetail
+  fixture: FixtureDetail;
 }
 
 export function MatchInfoWidget({ fixture }: MatchInfoWidgetProps) {
-  const { venue, referee, league, startTime } = fixture
+  const { venue, referee, league, startTime } = fixture;
 
-  const hasInfo = venue || referee || league
+  const hasInfo = venue || referee || league;
 
-  if (!hasInfo) return null
+  if (!hasInfo) return null;
 
-  const startDate = new Date(startTime)
-  const isUpcoming = startDate > new Date()
+  const startDate = new Date(startTime);
+  const isUpcoming = startDate > new Date();
 
   return (
     <Card>
@@ -337,7 +380,9 @@ export function MatchInfoWidget({ fixture }: MatchInfoWidgetProps) {
             <div>
               <p className="font-medium">{venue.name}</p>
               {venue.capacity && (
-                <p className="text-muted-foreground">Capacity: {venue.capacity.toLocaleString()}</p>
+                <p className="text-muted-foreground">
+                  Capacity: {venue.capacity.toLocaleString()}
+                </p>
               )}
             </div>
           </div>
@@ -366,5 +411,5 @@ export function MatchInfoWidget({ fixture }: MatchInfoWidgetProps) {
         )}
       </CardContent>
     </Card>
-  )
+  );
 }

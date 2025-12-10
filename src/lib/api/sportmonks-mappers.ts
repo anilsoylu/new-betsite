@@ -184,14 +184,17 @@ export function mapLeague(raw: SportmonksLeagueRaw): League {
 }
 
 // Map league with current season
-export function mapLeagueWithCurrentSeason(raw: SportmonksLeagueWithCurrentSeasonRaw): League {
+export function mapLeagueWithCurrentSeason(
+  raw: SportmonksLeagueWithCurrentSeasonRaw,
+): League {
   // Handle null/undefined raw data
   if (!raw) {
     throw new Error("League data is null or undefined");
   }
 
   // Handle both camelCase and snake_case from API (API returns "currentseason" lowercase)
-  const currentSeason = raw.currentSeason ?? raw.current_season ?? raw.currentseason;
+  const currentSeason =
+    raw.currentSeason ?? raw.current_season ?? raw.currentseason;
 
   return {
     id: raw.id,
@@ -286,10 +289,24 @@ export function mapFixture(raw: SportmonksFixtureRaw): Fixture {
     minute: getCurrentMinute(raw),
     homeTeam: homeParticipant
       ? mapTeam(homeParticipant)
-      : { id: 0, name: "TBA", shortCode: null, logo: "", isHome: true, isWinner: null },
+      : {
+          id: 0,
+          name: "TBA",
+          shortCode: null,
+          logo: "",
+          isHome: true,
+          isWinner: null,
+        },
     awayTeam: awayParticipant
       ? mapTeam(awayParticipant)
-      : { id: 0, name: "TBA", shortCode: null, logo: "", isHome: false, isWinner: null },
+      : {
+          id: 0,
+          name: "TBA",
+          shortCode: null,
+          logo: "",
+          isHome: false,
+          isWinner: null,
+        },
     score: extractScore(raw),
     league: raw.league ? mapLeague(raw.league) : null,
     venue: raw.venue ? mapVenue(raw.venue) : null,
@@ -345,7 +362,8 @@ export function mapStanding(raw: SportmonksStandingRaw): Standing {
   }
 
   // Extract rule type ID (180=UCL, 181=UEL/UECL, 182=Relegation, etc.)
-  const ruleTypeId = (raw.rule?.type_id as 180 | 181 | 182 | 183 | 184 | null) ?? null;
+  const ruleTypeId =
+    (raw.rule?.type_id as 180 | 181 | 182 | 183 | 184 | null) ?? null;
 
   return {
     position: raw.position,
@@ -368,7 +386,10 @@ export function mapStanding(raw: SportmonksStandingRaw): Standing {
 
 // Map flat array of standings to grouped tables
 // API returns flat array, we group by league_id
-export function mapStandingsToTables(rawStandings: SportmonksStandingRaw[], seasonId: number): StandingTable[] {
+export function mapStandingsToTables(
+  rawStandings: SportmonksStandingRaw[],
+  seasonId: number,
+): StandingTable[] {
   if (!rawStandings || rawStandings.length === 0) return [];
 
   // Group standings by league_id
@@ -465,9 +486,12 @@ export function mapEvent(raw: SportmonksEventRaw): MatchEvent {
 // Map statistic
 export function mapStatistic(
   homeStats: Array<SportmonksStatisticRaw>,
-  awayStats: Array<SportmonksStatisticRaw>
+  awayStats: Array<SportmonksStatisticRaw>,
 ): Array<MatchStatistic> {
-  const statsMap = new Map<number, { home: number | string | null; away: number | string | null; name: string }>();
+  const statsMap = new Map<
+    number,
+    { home: number | string | null; away: number | string | null; name: string }
+  >();
 
   for (const stat of homeStats) {
     if (!statsMap.has(stat.type_id)) {
@@ -518,11 +542,15 @@ export function mapLineupPlayer(raw: SportmonksLineupRaw): LineupPlayer {
 export function mapTeamLineup(
   lineups: Array<SportmonksLineupRaw>,
   teamId: number,
-  formation: string | null
+  formation: string | null,
 ): TeamLineup {
   const teamLineups = lineups.filter((l) => l.team_id === teamId);
-  const starters = teamLineups.filter((l) => l.type_id === 11).map(mapLineupPlayer);
-  const substitutes = teamLineups.filter((l) => l.type_id === 12).map(mapLineupPlayer);
+  const starters = teamLineups
+    .filter((l) => l.type_id === 11)
+    .map(mapLineupPlayer);
+  const substitutes = teamLineups
+    .filter((l) => l.type_id === 12)
+    .map(mapLineupPlayer);
 
   return {
     teamId,
@@ -615,7 +643,10 @@ export function mapH2HFixture(raw: SportmonksFixtureRaw): H2HFixture {
 }
 
 // Extract score for H2H (simplified)
-function extractScoreForH2H(raw: SportmonksFixtureRaw): { home: number; away: number } {
+function extractScoreForH2H(raw: SportmonksFixtureRaw): {
+  home: number;
+  away: number;
+} {
   if (!raw.scores || raw.scores.length === 0) return { home: 0, away: 0 };
 
   let homeScore = 0;
@@ -660,8 +691,10 @@ export function mapFixtureDetail(raw: SportmonksFixtureRaw): FixtureDetail {
 
   // Extract formations from array (API returns array with location: "home" | "away")
   const formations = raw.formations || [];
-  const homeFormation = formations.find((f) => f.location === "home")?.formation || null;
-  const awayFormation = formations.find((f) => f.location === "away")?.formation || null;
+  const homeFormation =
+    formations.find((f) => f.location === "home")?.formation || null;
+  const awayFormation =
+    formations.find((f) => f.location === "away")?.formation || null;
 
   const homeLineup = lineups.some((l) => l.team_id === base.homeTeam.id)
     ? mapTeamLineup(lineups, base.homeTeam.id, homeFormation)
@@ -674,16 +707,20 @@ export function mapFixtureDetail(raw: SportmonksFixtureRaw): FixtureDetail {
   const refereePivots = raw.referees || [];
 
   // Find main referee (type_id: 1) or fall back to first one with referee data
-  const mainRefereePivot = refereePivots.find((r) => r.type_id === 1 && r.referee)
-    || refereePivots.find((r) => r.referee)
-    || refereePivots[0];
+  const mainRefereePivot =
+    refereePivots.find((r) => r.type_id === 1 && r.referee) ||
+    refereePivots.find((r) => r.referee) ||
+    refereePivots[0];
 
   const refereeData = mainRefereePivot?.referee;
 
   const referee = refereeData
     ? {
         id: refereeData.id,
-        name: refereeData.display_name || refereeData.common_name || refereeData.name,
+        name:
+          refereeData.display_name ||
+          refereeData.common_name ||
+          refereeData.name,
         image: refereeData.image_path,
       }
     : null;
@@ -785,7 +822,10 @@ function calculateAge(dateOfBirth: string | null): number | null {
   const today = new Date();
   let age = today.getFullYear() - birthDate.getFullYear();
   const monthDiff = today.getMonth() - birthDate.getMonth();
-  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+  if (
+    monthDiff < 0 ||
+    (monthDiff === 0 && today.getDate() < birthDate.getDate())
+  ) {
     age--;
   }
   return age;
@@ -809,7 +849,9 @@ export function mapPlayerTeam(raw: SportmonksPlayerTeamRaw): PlayerTeam {
 }
 
 // Map player search result
-export function mapPlayerSearchResult(raw: SportmonksPlayerRaw): PlayerSearchResult {
+export function mapPlayerSearchResult(
+  raw: SportmonksPlayerRaw,
+): PlayerSearchResult {
   return {
     id: raw.id,
     name: raw.name,
@@ -822,7 +864,9 @@ export function mapPlayerSearchResult(raw: SportmonksPlayerRaw): PlayerSearchRes
 }
 
 // Map player season statistics
-function mapPlayerSeasonStats(raw: SportmonksPlayerStatisticRaw): PlayerSeasonStats {
+function mapPlayerSeasonStats(
+  raw: SportmonksPlayerStatisticRaw,
+): PlayerSeasonStats {
   const details = raw.details || [];
 
   // Type IDs from SportMonks API v3
@@ -919,10 +963,12 @@ function mapPlayerMatch(raw: SportmonksPlayerFixtureRaw): PlayerMatch | null {
 
   // Find CURRENT score (full time or current for live)
   const homeScoreObj = scores.find(
-    (s) => s.participant_id === homeParticipant?.id && s.description === "CURRENT"
+    (s) =>
+      s.participant_id === homeParticipant?.id && s.description === "CURRENT",
   );
   const awayScoreObj = scores.find(
-    (s) => s.participant_id === awayParticipant?.id && s.description === "CURRENT"
+    (s) =>
+      s.participant_id === awayParticipant?.id && s.description === "CURRENT",
   );
 
   // Parse match name if participants not available (format: "Team A vs Team B")
@@ -955,9 +1001,11 @@ function mapPlayerMatch(raw: SportmonksPlayerFixtureRaw): PlayerMatch | null {
 }
 
 // Extract preferred foot from metadata (type_id 229)
-function extractPreferredFoot(metadata: SportmonksPlayerRaw["metadata"]): PlayerDetail["preferredFoot"] {
+function extractPreferredFoot(
+  metadata: SportmonksPlayerRaw["metadata"],
+): PlayerDetail["preferredFoot"] {
   if (!metadata) return null;
-  const footMeta = metadata.find(m => m.type_id === 229);
+  const footMeta = metadata.find((m) => m.type_id === 229);
   if (!footMeta) return null;
   const value = String(footMeta.values).toLowerCase();
   if (value === "left") return "left";
@@ -986,14 +1034,19 @@ export function mapPlayerDetail(raw: SportmonksPlayerRaw): PlayerDetail {
   // If no current team found (all have end dates), use the most recent from stats
   if (!currentTeam && seasonStats.length > 0) {
     const mostRecentTeamId = seasonStats[0].teamId;
-    currentTeam = teams.find(t => t.teamId === mostRecentTeamId) || null;
+    currentTeam = teams.find((t) => t.teamId === mostRecentTeamId) || null;
   }
 
   // Always try to enrich jersey number from stats (teams endpoint doesn't include it)
   if (currentTeam && seasonStats.length > 0) {
-    const latestStatForTeam = seasonStats.find(s => s.teamId === currentTeam!.teamId);
+    const latestStatForTeam = seasonStats.find(
+      (s) => s.teamId === currentTeam!.teamId,
+    );
     if (latestStatForTeam?.jerseyNumber) {
-      currentTeam = { ...currentTeam, jerseyNumber: latestStatForTeam.jerseyNumber };
+      currentTeam = {
+        ...currentTeam,
+        jerseyNumber: latestStatForTeam.jerseyNumber,
+      };
     }
   }
 
@@ -1010,10 +1063,10 @@ export function mapPlayerDetail(raw: SportmonksPlayerRaw): PlayerDetail {
     .map(mapPlayerMatch)
     .filter((m): m is PlayerMatch => m !== null && !!m.date) // Filter nulls and ensure date exists
     .sort((a, b) => {
-      const dateA = new Date(a.date).getTime()
-      const dateB = new Date(b.date).getTime()
-      if (isNaN(dateA) || isNaN(dateB)) return 0
-      return dateB - dateA
+      const dateA = new Date(a.date).getTime();
+      const dateB = new Date(b.date).getTime();
+      if (isNaN(dateA) || isNaN(dateB)) return 0;
+      return dateB - dateA;
     })
     .slice(0, 10); // Last 10 matches
 

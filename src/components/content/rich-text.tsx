@@ -1,13 +1,16 @@
-"use client"
+"use client";
 
-import { documentToReactComponents, Options } from "@contentful/rich-text-react-renderer"
-import { BLOCKS, INLINES, Document } from "@contentful/rich-text-types"
-import Image from "next/image"
-import Link from "next/link"
+import {
+  documentToReactComponents,
+  Options,
+} from "@contentful/rich-text-react-renderer";
+import { BLOCKS, INLINES, Document } from "@contentful/rich-text-types";
+import Image from "next/image";
+import Link from "next/link";
 
 interface RichTextProps {
-  content: Document
-  className?: string
+  content: Document;
+  className?: string;
 }
 
 const options: Options = {
@@ -33,9 +36,7 @@ const options: Options = {
     [BLOCKS.OL_LIST]: (node, children) => (
       <ol className="list-decimal list-inside mb-4 space-y-1">{children}</ol>
     ),
-    [BLOCKS.LIST_ITEM]: (node, children) => (
-      <li>{children}</li>
-    ),
+    [BLOCKS.LIST_ITEM]: (node, children) => <li>{children}</li>,
     [BLOCKS.QUOTE]: (node, children) => (
       <blockquote className="border-l-4 border-primary pl-4 italic my-4">
         {children}
@@ -43,11 +44,11 @@ const options: Options = {
     ),
     [BLOCKS.HR]: () => <hr className="my-6 border-border" />,
     [BLOCKS.EMBEDDED_ASSET]: (node) => {
-      const { file, title, description } = node.data.target.fields
-      const url = file?.url
-      const alt = description || title || "Image"
+      const { file, title, description } = node.data.target.fields;
+      const url = file?.url;
+      const alt = description || title || "Image";
 
-      if (!url) return null
+      if (!url) return null;
 
       return (
         <div className="my-4">
@@ -62,27 +63,29 @@ const options: Options = {
             <p className="text-sm text-muted-foreground mt-2">{description}</p>
           )}
         </div>
-      )
+      );
     },
     [INLINES.HYPERLINK]: (node, children) => (
       <Link
         href={node.data.uri}
         className="text-primary underline hover:no-underline"
         target={node.data.uri.startsWith("http") ? "_blank" : undefined}
-        rel={node.data.uri.startsWith("http") ? "noopener noreferrer" : undefined}
+        rel={
+          node.data.uri.startsWith("http") ? "noopener noreferrer" : undefined
+        }
       >
         {children}
       </Link>
     ),
   },
-}
+};
 
 export function RichText({ content, className }: RichTextProps) {
-  if (!content) return null
+  if (!content) return null;
 
   return (
     <div className={className}>
       {documentToReactComponents(content, options)}
     </div>
-  )
+  );
 }

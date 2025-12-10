@@ -1,7 +1,7 @@
-"use client"
+"use client";
 
-import Image from "next/image"
-import Link from "next/link"
+import Image from "next/image";
+import Link from "next/link";
 import {
   Trophy,
   Target,
@@ -9,20 +9,26 @@ import {
   XCircle,
   Shield,
   Star,
-  type LucideIcon
-} from "lucide-react"
-import { cn, getPlayerUrl } from "@/lib/utils"
-import type { TopScorer } from "@/types/football"
+  type LucideIcon,
+} from "lucide-react";
+import { cn, getPlayerUrl } from "@/lib/utils";
+import type { TopScorer } from "@/types/football";
 
-type StatType = "goals" | "assists" | "yellowCards" | "redCards" | "cleanSheets" | "rating"
+type StatType =
+  | "goals"
+  | "assists"
+  | "yellowCards"
+  | "redCards"
+  | "cleanSheets"
+  | "rating";
 
 interface StatConfig {
-  icon: LucideIcon
-  label: string
-  statKey: keyof TopScorer
-  color: string
-  bgColor: string
-  badgeColor: string
+  icon: LucideIcon;
+  label: string;
+  statKey: keyof TopScorer;
+  color: string;
+  bgColor: string;
+  badgeColor: string;
 }
 
 const STAT_CONFIGS: Record<StatType, StatConfig> = {
@@ -74,16 +80,16 @@ const STAT_CONFIGS: Record<StatType, StatConfig> = {
     bgColor: "bg-amber-500/10",
     badgeColor: "bg-amber-500/20 text-amber-600 dark:text-amber-400",
   },
-}
+};
 
 interface StatLeaderCardProps {
-  type: StatType
-  players: TopScorer[]
-  className?: string
+  type: StatType;
+  players: TopScorer[];
+  className?: string;
   /** Show more players (default: 5) */
-  limit?: number
+  limit?: number;
   /** Compact mode shows less info */
-  compact?: boolean
+  compact?: boolean;
 }
 
 export function StatLeaderCard({
@@ -93,25 +99,35 @@ export function StatLeaderCard({
   limit = 5,
   compact = false,
 }: StatLeaderCardProps) {
-  if (players.length === 0) return null
+  if (players.length === 0) return null;
 
-  const config = STAT_CONFIGS[type]
-  const Icon = config.icon
-  const displayPlayers = players.slice(0, limit)
+  const config = STAT_CONFIGS[type];
+  const Icon = config.icon;
+  const displayPlayers = players.slice(0, limit);
 
   // For rating, format as decimal (e.g., 7.82)
   const formatStat = (player: TopScorer) => {
-    const value = player[config.statKey] as number
+    const value = player[config.statKey] as number;
     if (type === "rating") {
-      return (value / 100).toFixed(2) // API returns 782 for 7.82
+      return (value / 100).toFixed(2); // API returns 782 for 7.82
     }
-    return value
-  }
+    return value;
+  };
 
   return (
-    <div className={cn("rounded-xl border border-border bg-card overflow-hidden", className)}>
+    <div
+      className={cn(
+        "rounded-xl border border-border bg-card overflow-hidden",
+        className,
+      )}
+    >
       {/* Header */}
-      <div className={cn("flex items-center gap-2 px-4 py-3 border-b border-border", config.bgColor)}>
+      <div
+        className={cn(
+          "flex items-center gap-2 px-4 py-3 border-b border-border",
+          config.bgColor,
+        )}
+      >
         <Icon className={cn("h-4 w-4", config.color)} />
         <h3 className="font-semibold text-sm">{config.label}</h3>
         <span className="text-xs text-muted-foreground ml-auto">
@@ -131,10 +147,13 @@ export function StatLeaderCard({
             <div
               className={cn(
                 "w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0",
-                index === 0 && "bg-yellow-500/20 text-yellow-600 dark:text-yellow-400",
-                index === 1 && "bg-gray-300/30 text-gray-600 dark:text-gray-400",
-                index === 2 && "bg-amber-600/20 text-amber-700 dark:text-amber-500",
-                index > 2 && "bg-muted text-muted-foreground"
+                index === 0 &&
+                  "bg-yellow-500/20 text-yellow-600 dark:text-yellow-400",
+                index === 1 &&
+                  "bg-gray-300/30 text-gray-600 dark:text-gray-400",
+                index === 2 &&
+                  "bg-amber-600/20 text-amber-700 dark:text-amber-500",
+                index > 2 && "bg-muted text-muted-foreground",
               )}
             >
               {player.position}
@@ -184,10 +203,12 @@ export function StatLeaderCard({
 
             {/* Stat Value */}
             <div className="shrink-0">
-              <span className={cn(
-                "inline-flex items-center justify-center min-w-[32px] px-2 py-1 rounded-full font-bold text-sm",
-                config.badgeColor
-              )}>
+              <span
+                className={cn(
+                  "inline-flex items-center justify-center min-w-[32px] px-2 py-1 rounded-full font-bold text-sm",
+                  config.badgeColor,
+                )}
+              >
                 {formatStat(player)}
               </span>
             </div>
@@ -204,5 +225,5 @@ export function StatLeaderCard({
         </div>
       )}
     </div>
-  )
+  );
 }

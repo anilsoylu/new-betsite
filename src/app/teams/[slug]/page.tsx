@@ -1,28 +1,28 @@
-import type { Metadata } from "next"
-import { notFound } from "next/navigation"
-import { getTeamById, getFixturesByTeam } from "@/lib/api/football-api"
-import { extractTeamId } from "@/lib/utils"
-import { TeamHeader } from "@/components/teams/team-header"
-import { TeamSquad } from "@/components/teams/team-squad"
-import { TeamFixtures } from "@/components/teams/team-fixtures"
-import { SITE } from "@/lib/constants"
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { getTeamById, getFixturesByTeam } from "@/lib/api/football-api";
+import { extractTeamId } from "@/lib/utils";
+import { TeamHeader } from "@/components/teams/team-header";
+import { TeamSquad } from "@/components/teams/team-squad";
+import { TeamFixtures } from "@/components/teams/team-fixtures";
+import { SITE } from "@/lib/constants";
 
 interface TeamDetailPageProps {
-  params: Promise<{ slug: string }>
+  params: Promise<{ slug: string }>;
 }
 
 export async function generateMetadata({
   params,
 }: TeamDetailPageProps): Promise<Metadata> {
-  const { slug } = await params
-  const teamId = extractTeamId(slug)
+  const { slug } = await params;
+  const teamId = extractTeamId(slug);
 
   if (!teamId) {
-    return { title: "Team Not Found" }
+    return { title: "Team Not Found" };
   }
 
   try {
-    const team = await getTeamById(teamId)
+    const team = await getTeamById(teamId);
 
     return {
       title: `${team.name} | ${SITE.name}`,
@@ -32,29 +32,29 @@ export async function generateMetadata({
         description: `${team.name} squad, fixtures and statistics.`,
         images: team.logo ? [{ url: team.logo }] : undefined,
       },
-    }
+    };
   } catch {
-    return { title: "Team Not Found" }
+    return { title: "Team Not Found" };
   }
 }
 
 export default async function TeamDetailPage({ params }: TeamDetailPageProps) {
-  const { slug } = await params
-  const teamId = extractTeamId(slug)
+  const { slug } = await params;
+  const teamId = extractTeamId(slug);
 
   if (!teamId) {
-    notFound()
+    notFound();
   }
 
-  let team
-  let fixtures
+  let team;
+  let fixtures;
   try {
-    ;[team, fixtures] = await Promise.all([
+    [team, fixtures] = await Promise.all([
       getTeamById(teamId),
       getFixturesByTeam(teamId, { past: 5, future: 5 }),
-    ])
+    ]);
   } catch {
-    notFound()
+    notFound();
   }
 
   return (
@@ -86,5 +86,5 @@ export default async function TeamDetailPage({ params }: TeamDetailPageProps) {
         </div>
       </div>
     </main>
-  )
+  );
 }

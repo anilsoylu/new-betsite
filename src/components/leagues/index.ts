@@ -1,9 +1,9 @@
-export { LeagueHeader } from "./league-header"
-export { LeagueTabs, type LeagueTab } from "./league-tabs"
-export { LeagueNavTabs } from "./league-nav-tabs"
-export { TopScorersCard } from "./top-scorers-card"
-export { FixturesCard } from "./fixtures-card"
-export { StandingsTable } from "./standings-table"
-export { LeagueAboutSection } from "./league-about-section"
-export { StatLeaderCard } from "./stat-leader-card"
-export { StatsDashboard } from "./stats-dashboard"
+export { LeagueHeader } from "./league-header";
+export { LeagueTabs, type LeagueTab } from "./league-tabs";
+export { LeagueNavTabs } from "./league-nav-tabs";
+export { TopScorersCard } from "./top-scorers-card";
+export { FixturesCard } from "./fixtures-card";
+export { StandingsTable } from "./standings-table";
+export { LeagueAboutSection } from "./league-about-section";
+export { StatLeaderCard } from "./stat-leader-card";
+export { StatsDashboard } from "./stats-dashboard";

@@ -1,85 +1,93 @@
-"use client"
+"use client";
 
-import { useState, useEffect, useTransition } from "react"
-import { format } from "date-fns"
-import { Loader2, Star } from "lucide-react"
-import { DatePicker } from "./date-picker"
-import { LeagueSection } from "./league-section"
-import { MatchRow } from "./match-row"
-import { useFavoritesStore } from "@/stores/favorites-store"
-import type { Fixture, LeagueCategory } from "@/types/football"
+import { useState, useEffect, useTransition } from "react";
+import { format } from "date-fns";
+import { Loader2, Star } from "lucide-react";
+import { DatePicker } from "./date-picker";
+import { LeagueSection } from "./league-section";
+import { MatchRow } from "./match-row";
+import { useFavoritesStore } from "@/stores/favorites-store";
+import type { Fixture, LeagueCategory } from "@/types/football";
 
 interface HomeContentProps {
-  initialFixtures: Fixture[]
-  initialLiveFixtures: Fixture[]
+  initialFixtures: Fixture[];
+  initialLiveFixtures: Fixture[];
 }
 
 interface GroupedFixtures {
   [leagueId: string]: {
-    leagueId: number
-    leagueName: string
-    leagueLogo?: string
-    countryName?: string
-    countryFlag?: string
-    fixtures: Fixture[]
-    hasLive: boolean
-    category: LeagueCategory
-  }
+    leagueId: number;
+    leagueName: string;
+    leagueLogo?: string;
+    countryName?: string;
+    countryFlag?: string;
+    fixtures: Fixture[];
+    hasLive: boolean;
+    category: LeagueCategory;
+  };
 }
 
-export function HomeContent({ initialFixtures, initialLiveFixtures }: HomeContentProps) {
-  const [selectedDate, setSelectedDate] = useState(new Date())
-  const [fixtures, setFixtures] = useState<Fixture[]>(initialFixtures)
-  const [liveFixtures, setLiveFixtures] = useState<Fixture[]>(initialLiveFixtures)
-  const [isPending, startTransition] = useTransition()
-  const [isLoading, setIsLoading] = useState(false)
-  const [hasMounted, setHasMounted] = useState(false)
+export function HomeContent({
+  initialFixtures,
+  initialLiveFixtures,
+}: HomeContentProps) {
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [fixtures, setFixtures] = useState<Fixture[]>(initialFixtures);
+  const [liveFixtures, setLiveFixtures] =
+    useState<Fixture[]>(initialLiveFixtures);
+  const [isPending, startTransition] = useTransition();
+  const [isLoading, setIsLoading] = useState(false);
+  const [hasMounted, setHasMounted] = useState(false);
 
-  const { isFavorite } = useFavoritesStore()
+  const { isFavorite } = useFavoritesStore();
 
   useEffect(() => {
-    setHasMounted(true)
-  }, [])
+    setHasMounted(true);
+  }, []);
 
   // Check if selected date is today
-  const isToday = format(selectedDate, "yyyy-MM-dd") === format(new Date(), "yyyy-MM-dd")
+  const isToday =
+    format(selectedDate, "yyyy-MM-dd") === format(new Date(), "yyyy-MM-dd");
 
   // Fetch fixtures when date changes
   const handleDateChange = async (date: Date) => {
-    setSelectedDate(date)
-    const dateStr = format(date, "yyyy-MM-dd")
-    const todayStr = format(new Date(), "yyyy-MM-dd")
+    setSelectedDate(date);
+    const dateStr = format(date, "yyyy-MM-dd");
+    const todayStr = format(new Date(), "yyyy-MM-dd");
 
     if (dateStr === todayStr) {
       // Reset to initial data for today
-      setFixtures(initialFixtures)
-      setLiveFixtures(initialLiveFixtures)
-      return
+      setFixtures(initialFixtures);
+      setLiveFixtures(initialLiveFixtures);
+      return;
     }
 
-    setIsLoading(true)
+    setIsLoading(true);
     try {
-      const response = await fetch(`/api/fixtures?date=${dateStr}`)
+      const response = await fetch(`/api/fixtures?date=${dateStr}`);
       if (response.ok) {
-        const data = await response.json()
-        setFixtures(data.fixtures || [])
-        setLiveFixtures([]) // No live fixtures for other days
+        const data = await response.json();
+        setFixtures(data.fixtures || []);
+        setLiveFixtures([]); // No live fixtures for other days
       }
     } catch (error) {
-      console.error("Failed to fetch fixtures:", error)
+      console.error("Failed to fetch fixtures:", error);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   // Group fixtures by league
-  const groupFixturesByLeague = (fixtures: Fixture[], live: Fixture[]): GroupedFixtures => {
-    const allFixtures = [...live, ...fixtures]
-    const liveIds = new Set(live.map(f => f.id))
+  const groupFixturesByLeague = (
+    fixtures: Fixture[],
+    live: Fixture[],
+  ): GroupedFixtures => {
+    const allFixtures = [...live, ...fixtures];
+    const liveIds = new Set(live.map((f) => f.id));
 
     return allFixtures.reduce((acc, fixture) => {
-      const leagueId = fixture.league?.id ?? 0
-      const leagueName = fixture.league?.name ?? "Diğer"
+      const leagueId = fixture.league?.id ?? 0;
+      const leagueName = fixture.league?.name ?? "Diğer";
 
       if (!acc[leagueId]) {
         acc[leagueId] = {
@@ -90,49 +98,53 @@ export function HomeContent({ initialFixtures, initialLiveFixtures }: HomeConten
           countryFlag: fixture.league?.country?.flag,
           fixtures: [],
           hasLive: false,
-          category: fixture.league?.category ?? 5 // Default to lowest priority
-        }
+          category: fixture.league?.category ?? 5, // Default to lowest priority
+        };
       }
 
       // Avoid duplicates
-      if (!acc[leagueId].fixtures.find(f => f.id === fixture.id)) {
-        acc[leagueId].fixtures.push(fixture)
+      if (!acc[leagueId].fixtures.find((f) => f.id === fixture.id)) {
+        acc[leagueId].fixtures.push(fixture);
         if (liveIds.has(fixture.id)) {
-          acc[leagueId].hasLive = true
+          acc[leagueId].hasLive = true;
         }
       }
 
-      return acc
-    }, {} as GroupedFixtures)
-  }
+      return acc;
+    }, {} as GroupedFixtures);
+  };
 
-  const grouped = groupFixturesByLeague(fixtures, liveFixtures)
+  const grouped = groupFixturesByLeague(fixtures, liveFixtures);
 
   // Sort leagues: live first, then by API category (1 = top tier), then by fixture count
   const sortedLeagues = Object.values(grouped).sort((a, b) => {
     // 1. Live matches first
-    if (a.hasLive && !b.hasLive) return -1
-    if (!a.hasLive && b.hasLive) return 1
+    if (a.hasLive && !b.hasLive) return -1;
+    if (!a.hasLive && b.hasLive) return 1;
 
     // 2. Sort by API category (lower = higher priority, e.g., category 1 = Premier League)
-    if (a.category !== b.category) return a.category - b.category
+    if (a.category !== b.category) return a.category - b.category;
 
     // 3. More fixtures = higher priority
-    return b.fixtures.length - a.fixtures.length
-  })
+    return b.fixtures.length - a.fixtures.length;
+  });
 
-  const totalMatches = sortedLeagues.reduce((sum, l) => sum + l.fixtures.length, 0)
-  const totalLive = liveFixtures.length
+  const totalMatches = sortedLeagues.reduce(
+    (sum, l) => sum + l.fixtures.length,
+    0,
+  );
+  const totalLive = liveFixtures.length;
 
   // Get favorite matches from current fixtures
-  const allCurrentFixtures = [...liveFixtures, ...fixtures]
+  const allCurrentFixtures = [...liveFixtures, ...fixtures];
   const favoriteMatches = hasMounted
-    ? allCurrentFixtures.filter(f =>
-        isFavorite("matches", f.id) ||
-        isFavorite("teams", f.homeTeam.id) ||
-        isFavorite("teams", f.awayTeam.id)
+    ? allCurrentFixtures.filter(
+        (f) =>
+          isFavorite("matches", f.id) ||
+          isFavorite("teams", f.homeTeam.id) ||
+          isFavorite("teams", f.awayTeam.id),
       )
-    : []
+    : [];
 
   return (
     <div className="flex flex-col gap-4">
@@ -148,14 +160,21 @@ export function HomeContent({ initialFixtures, initialLiveFixtures }: HomeConten
         <div className="border border-yellow-500/30 rounded-xl overflow-hidden bg-yellow-500/5">
           <div className="flex items-center gap-2 px-3 py-2.5 border-b border-yellow-500/20">
             <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
-            <span className="text-sm font-semibold text-foreground">My Favorites</span>
+            <span className="text-sm font-semibold text-foreground">
+              My Favorites
+            </span>
             <span className="text-xs text-muted-foreground ml-auto">
-              {favoriteMatches.length} {favoriteMatches.length === 1 ? "match" : "matches"}
+              {favoriteMatches.length}{" "}
+              {favoriteMatches.length === 1 ? "match" : "matches"}
             </span>
           </div>
           <div className="divide-y divide-yellow-500/10">
             {favoriteMatches.map((fixture) => (
-              <MatchRow key={`fav-${fixture.id}`} fixture={fixture} showFavorites={false} />
+              <MatchRow
+                key={`fav-${fixture.id}`}
+                fixture={fixture}
+                showFavorites={false}
+              />
             ))}
           </div>
         </div>
@@ -208,5 +227,5 @@ export function HomeContent({ initialFixtures, initialLiveFixtures }: HomeConten
         </div>
       )}
     </div>
-  )
+  );
 }

@@ -1,20 +1,20 @@
-"use client"
+"use client";
 
-import Image from "next/image"
-import Link from "next/link"
-import { format } from "date-fns"
-import { ArrowLeft, MapPin, Calendar, User } from "lucide-react"
-import { Badge } from "@/components/ui/badge"
-import { Card, CardContent } from "@/components/ui/card"
-import { getTeamUrl } from "@/lib/utils"
-import { useLiveFixture } from "@/hooks"
-import { FormStrip, getFormFromFixtures } from "@/components/teams/form-strip"
-import type { FixtureDetail, FormFixtureData } from "@/types/football"
+import Image from "next/image";
+import Link from "next/link";
+import { format } from "date-fns";
+import { ArrowLeft, MapPin, Calendar, User } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import { getTeamUrl } from "@/lib/utils";
+import { useLiveFixture } from "@/hooks";
+import { FormStrip, getFormFromFixtures } from "@/components/teams/form-strip";
+import type { FixtureDetail, FormFixtureData } from "@/types/football";
 
 interface MatchHeaderProps {
-  fixture: FixtureDetail
-  homeForm?: Array<FormFixtureData>
-  awayForm?: Array<FormFixtureData>
+  fixture: FixtureDetail;
+  homeForm?: Array<FormFixtureData>;
+  awayForm?: Array<FormFixtureData>;
 }
 
 export function MatchHeader({ fixture, homeForm, awayForm }: MatchHeaderProps) {
@@ -27,17 +27,17 @@ export function MatchHeader({ fixture, homeForm, awayForm }: MatchHeaderProps) {
     venue,
     startTime,
     referee,
-  } = fixture
+  } = fixture;
 
   // Convert form data to FormStrip format
-  const homeFormResults = homeForm ? getFormFromFixtures(homeForm) : []
-  const awayFormResults = awayForm ? getFormFromFixtures(awayForm) : []
-  const formattedDate = format(new Date(startTime), "dd MMM yyyy")
-  const formattedTime = format(new Date(startTime), "HH:mm")
+  const homeFormResults = homeForm ? getFormFromFixtures(homeForm) : [];
+  const awayFormResults = awayForm ? getFormFromFixtures(awayForm) : [];
+  const formattedDate = format(new Date(startTime), "dd MMM yyyy");
+  const formattedTime = format(new Date(startTime), "HH:mm");
 
   // Poll for live fixture updates
-  const liveData = useLiveFixture({ fixture, pollInterval: 30000 })
-  const { status, displayMinute, homeScore, awayScore, isLive } = liveData
+  const liveData = useLiveFixture({ fixture, pollInterval: 30000 });
+  const { status, displayMinute, homeScore, awayScore, isLive } = liveData;
 
   return (
     <div className="space-y-4">
@@ -242,5 +242,5 @@ export function MatchHeader({ fixture, homeForm, awayForm }: MatchHeaderProps) {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

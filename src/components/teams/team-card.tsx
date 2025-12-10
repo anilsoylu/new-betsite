@@ -1,25 +1,25 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import Link from "next/link"
-import Image from "next/image"
-import { Star, Shield } from "lucide-react"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { cn } from "@/lib/utils"
-import { generateTeamSlug } from "@/lib/utils"
-import { useFavoritesStore } from "@/stores/favorites-store"
-import { FormStrip } from "@/components/teams/form-strip"
-import type { TeamSearchResult } from "@/types/football"
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import { Star, Shield } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { generateTeamSlug } from "@/lib/utils";
+import { useFavoritesStore } from "@/stores/favorites-store";
+import { FormStrip } from "@/components/teams/form-strip";
+import type { TeamSearchResult } from "@/types/football";
 
-type FormResult = "W" | "D" | "L"
+type FormResult = "W" | "D" | "L";
 
 interface TeamCardProps {
-  team: TeamSearchResult
-  variant?: "default" | "compact"
-  showFavorite?: boolean
-  form?: FormResult[]
+  team: TeamSearchResult;
+  variant?: "default" | "compact";
+  showFavorite?: boolean;
+  form?: FormResult[];
 }
 
 export function TeamCard({
@@ -28,21 +28,21 @@ export function TeamCard({
   showFavorite = true,
   form,
 }: TeamCardProps) {
-  const { toggleFavorite, isFavorite } = useFavoritesStore()
-  const [hasMounted, setHasMounted] = useState(false)
+  const { toggleFavorite, isFavorite } = useFavoritesStore();
+  const [hasMounted, setHasMounted] = useState(false);
 
   useEffect(() => {
-    setHasMounted(true)
-  }, [])
+    setHasMounted(true);
+  }, []);
 
-  const slug = generateTeamSlug(team.name, team.id)
-  const isTeamFavorite = hasMounted && isFavorite("teams", team.id)
+  const slug = generateTeamSlug(team.name, team.id);
+  const isTeamFavorite = hasMounted && isFavorite("teams", team.id);
 
   const handleFavoriteClick = (e: React.MouseEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    toggleFavorite("teams", team.id)
-  }
+    e.preventDefault();
+    e.stopPropagation();
+    toggleFavorite("teams", team.id);
+  };
 
   if (variant === "compact") {
     return (
@@ -71,9 +71,7 @@ export function TeamCard({
                     {team.country.name}
                   </span>
                 )}
-                {form && form.length > 0 && (
-                  <FormStrip form={form} size="sm" />
-                )}
+                {form && form.length > 0 && <FormStrip form={form} size="sm" />}
               </div>
             </div>
             {showFavorite && (
@@ -88,7 +86,7 @@ export function TeamCard({
                     "h-4 w-4",
                     isTeamFavorite
                       ? "fill-yellow-500 text-yellow-500"
-                      : "text-muted-foreground"
+                      : "text-muted-foreground",
                   )}
                 />
               </Button>
@@ -96,7 +94,7 @@ export function TeamCard({
           </CardContent>
         </Card>
       </Link>
-    )
+    );
   }
 
   return (
@@ -125,7 +123,7 @@ export function TeamCard({
                 className={cn(
                   "absolute top-2 right-2 h-8 w-8 bg-background/80 backdrop-blur-sm",
                   "opacity-0 group-hover:opacity-100 transition-opacity",
-                  isTeamFavorite && "opacity-100"
+                  isTeamFavorite && "opacity-100",
                 )}
                 onClick={handleFavoriteClick}
               >
@@ -134,7 +132,7 @@ export function TeamCard({
                     "h-4 w-4",
                     isTeamFavorite
                       ? "fill-yellow-500 text-yellow-500"
-                      : "text-foreground"
+                      : "text-foreground",
                   )}
                 />
               </Button>
@@ -159,9 +157,7 @@ export function TeamCard({
                   <span className="truncate">{team.country.name}</span>
                 </div>
               )}
-              {form && form.length > 0 && (
-                <FormStrip form={form} size="md" />
-              )}
+              {form && form.length > 0 && <FormStrip form={form} size="md" />}
             </div>
             {team.shortCode && (
               <Badge variant="outline" className="text-xs">
@@ -172,5 +168,5 @@ export function TeamCard({
         </CardContent>
       </Card>
     </Link>
-  )
+  );
 }

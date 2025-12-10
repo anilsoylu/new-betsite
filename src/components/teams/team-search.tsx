@@ -1,58 +1,35 @@
-"use client"
+"use client";
 
-import { useState, useEffect, useCallback } from "react"
-import { useRouter } from "next/navigation"
-import Image from "next/image"
-import { Search, Loader2 } from "lucide-react"
-import { Input } from "@/components/ui/input"
-import { Card, CardContent } from "@/components/ui/card"
-import { generateTeamSlug } from "@/lib/utils"
-import type { TeamSearchResult } from "@/types/football"
+import { useRouter } from "next/navigation";
+import Image from "next/image";
+import { Search, Loader2 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent } from "@/components/ui/card";
+import { generateTeamSlug } from "@/lib/utils";
+import { useSearch } from "@/hooks";
+import type { TeamSearchResult } from "@/types/football";
 
 export function TeamSearch() {
-  const router = useRouter()
-  const [query, setQuery] = useState("")
-  const [results, setResults] = useState<TeamSearchResult[]>([])
-  const [isLoading, setIsLoading] = useState(false)
-  const [hasSearched, setHasSearched] = useState(false)
+  const router = useRouter();
 
-  const searchTeams = useCallback(async (searchQuery: string) => {
-    if (searchQuery.length < 2) {
-      setResults([])
-      setHasSearched(false)
-      return
-    }
-
-    setIsLoading(true)
-    setHasSearched(true)
-
-    try {
-      const response = await fetch(`/api/teams/search?q=${encodeURIComponent(searchQuery)}`)
-      if (response.ok) {
-        const data = await response.json()
-        setResults(data.teams || [])
-      }
-    } catch (error) {
-      console.error("Search error:", error)
-      setResults([])
-    } finally {
-      setIsLoading(false)
-    }
-  }, [])
-
-  // Debounced search
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      searchTeams(query)
-    }, 300)
-
-    return () => clearTimeout(timer)
-  }, [query, searchTeams])
+  const { query, setQuery, results, isLoading, hasSearched } = useSearch<
+    TeamSearchResult[]
+  >({
+    fetcher: async (q) => {
+      const response = await fetch(
+        `/api/teams/search?q=${encodeURIComponent(q)}`,
+      );
+      if (!response.ok) return [];
+      const data = await response.json();
+      return data.teams || [];
+    },
+    initialResults: [],
+  });
 
   const handleTeamClick = (team: TeamSearchResult) => {
-    const slug = generateTeamSlug(team.name, team.id)
-    router.push(`/teams/${slug}`)
-  }
+    const slug = generateTeamSlug(team.name, team.id);
+    router.push(`/teams/${slug}`);
+  };
 
   return (
     <div className="space-y-6">
@@ -115,9 +92,12 @@ export function TeamSearch() {
       )}
 
       {/* No Results */}
-      {!isLoading && hasSearched && results.length === 0 && query.length >= 2 && (
-        <p className="text-muted-foreground">No teams found for "{query}"</p>
-      )}
+      {!isLoading &&
+        hasSearched &&
+        results.length === 0 &&
+        query.length >= 2 && (
+          <p className="text-muted-foreground">No teams found for "{query}"</p>
+        )}
 
       {/* Initial State */}
       {!hasSearched && !isLoading && (
@@ -127,5 +107,5 @@ export function TeamSearch() {
         </div>
       )}
     </div>
-  )
+  );
 }

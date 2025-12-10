@@ -1,27 +1,27 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { Star } from "lucide-react"
-import Link from "next/link"
-import { Card, CardContent } from "@/components/ui/card"
-import { useFavoritesStore } from "@/stores/favorites-store"
-import { cn } from "@/lib/utils"
+import { useState, useEffect } from "react";
+import { Star } from "lucide-react";
+import Link from "next/link";
+import { Card, CardContent } from "@/components/ui/card";
+import { useFavoritesStore } from "@/stores/favorites-store";
+import { cn } from "@/lib/utils";
 
 interface FavoritesSectionProps {
-  className?: string
+  className?: string;
 }
 
 export function FavoritesSection({ className }: FavoritesSectionProps) {
-  const [hasMounted, setHasMounted] = useState(false)
-  const { matches } = useFavoritesStore()
+  const [hasMounted, setHasMounted] = useState(false);
+  const { matches } = useFavoritesStore();
 
   useEffect(() => {
-    setHasMounted(true)
-  }, [])
+    setHasMounted(true);
+  }, []);
 
   // Don't render until mounted (to avoid hydration mismatch) or if no favorite matches
   if (!hasMounted || matches.length === 0) {
-    return null
+    return null;
   }
 
   return (
@@ -41,11 +41,15 @@ export function FavoritesSection({ className }: FavoritesSectionProps) {
         </div>
 
         <div className="text-sm text-muted-foreground text-center py-4 rounded-lg bg-muted/50">
-          <Link href="/favorites" className="hover:text-foreground transition-colors">
-            View your {matches.length} favorite match{matches.length !== 1 && "es"} →
+          <Link
+            href="/favorites"
+            className="hover:text-foreground transition-colors"
+          >
+            View your {matches.length} favorite match
+            {matches.length !== 1 && "es"} →
           </Link>
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }

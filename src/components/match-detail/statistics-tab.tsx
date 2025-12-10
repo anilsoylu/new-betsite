@@ -10,7 +10,7 @@ interface StatisticsTabProps {
 // Priority order for statistics display
 const STAT_PRIORITY: Record<string, number> = {
   "Ball Possession": 1,
-  "Possession": 1,
+  Possession: 1,
   "Total Shots": 2,
   "Shots Total": 2,
   "Shots On Target": 3,
@@ -18,12 +18,12 @@ const STAT_PRIORITY: Record<string, number> = {
   "Shots Off Target": 4,
   "Shots off Goal": 4,
   "Corner Kicks": 5,
-  "Corners": 5,
-  "Fouls": 6,
-  "Offsides": 7,
+  Corners: 5,
+  Fouls: 6,
+  Offsides: 7,
   "Yellow Cards": 8,
   "Red Cards": 9,
-  "Saves": 10,
+  Saves: 10,
   "Goalkeeper Saves": 10,
   "Passes Total": 11,
   "Total Passes": 11,
@@ -32,7 +32,11 @@ const STAT_PRIORITY: Record<string, number> = {
   "Pass Accuracy": 13,
 };
 
-export function StatisticsTab({ statistics, homeTeam, awayTeam }: StatisticsTabProps) {
+export function StatisticsTab({
+  statistics,
+  homeTeam,
+  awayTeam,
+}: StatisticsTabProps) {
   // Sort statistics by priority
   const sortedStats = [...statistics].sort((a, b) => {
     const priorityA = STAT_PRIORITY[a.type] || 100;
@@ -75,8 +79,9 @@ function StatBar({ stat }: StatBarProps) {
   const awayPercent = total > 0 ? (awayValue / total) * 100 : 50;
 
   // Determine if it's a percentage stat (like possession)
-  const isPercentage = stat.type.toLowerCase().includes("possession") ||
-                       stat.type.toLowerCase().includes("accuracy");
+  const isPercentage =
+    stat.type.toLowerCase().includes("possession") ||
+    stat.type.toLowerCase().includes("accuracy");
 
   const homeDisplay = isPercentage ? `${homeValue}%` : homeValue;
   const awayDisplay = isPercentage ? `${awayValue}%` : awayValue;
@@ -89,11 +94,15 @@ function StatBar({ stat }: StatBarProps) {
     <div className="space-y-2">
       {/* Values and label */}
       <div className="flex justify-between items-center text-sm">
-        <span className={`font-medium tabular-nums ${homeWins ? "text-foreground" : "text-muted-foreground"}`}>
+        <span
+          className={`font-medium tabular-nums ${homeWins ? "text-foreground" : "text-muted-foreground"}`}
+        >
           {homeDisplay}
         </span>
         <span className="text-muted-foreground">{stat.type}</span>
-        <span className={`font-medium tabular-nums ${awayWins ? "text-foreground" : "text-muted-foreground"}`}>
+        <span
+          className={`font-medium tabular-nums ${awayWins ? "text-foreground" : "text-muted-foreground"}`}
+        >
           {awayDisplay}
         </span>
       </div>

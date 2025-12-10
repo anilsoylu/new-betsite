@@ -1,29 +1,29 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import Image from "next/image"
-import { Trophy, ChevronDown, ChevronUp } from "lucide-react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import type { PlayerTrophy } from "@/types/football"
+import { useState } from "react";
+import Image from "next/image";
+import { Trophy, ChevronDown, ChevronUp } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import type { PlayerTrophy } from "@/types/football";
 
 interface PlayerTrophiesProps {
-  trophies: Array<PlayerTrophy>
+  trophies: Array<PlayerTrophy>;
 }
 
 export function PlayerTrophies({ trophies }: PlayerTrophiesProps) {
-  const [showOthers, setShowOthers] = useState(false)
+  const [showOthers, setShowOthers] = useState(false);
 
   if (trophies.length === 0) {
-    return null
+    return null;
   }
 
   // Sort by season (newest first)
-  const sortedTrophies = [...trophies].sort((a, b) => b.seasonId - a.seasonId)
+  const sortedTrophies = [...trophies].sort((a, b) => b.seasonId - a.seasonId);
 
   // Separate winners from others
-  const winners = sortedTrophies.filter((t) => t.position === 1)
-  const others = sortedTrophies.filter((t) => t.position !== 1)
+  const winners = sortedTrophies.filter((t) => t.position === 1);
+  const others = sortedTrophies.filter((t) => t.position !== 1);
 
   return (
     <Card>
@@ -136,8 +136,15 @@ export function PlayerTrophies({ trophies }: PlayerTrophiesProps) {
                             {trophy.leagueName}
                           </span>
                         </div>
-                        <Badge variant="outline" className="h-4 text-[9px] px-1 text-muted-foreground">
-                          {trophy.position === 2 ? "2nd" : trophy.position === 3 ? "3rd" : `${trophy.position}th`}
+                        <Badge
+                          variant="outline"
+                          className="h-4 text-[9px] px-1 text-muted-foreground"
+                        >
+                          {trophy.position === 2
+                            ? "2nd"
+                            : trophy.position === 3
+                              ? "3rd"
+                              : `${trophy.position}th`}
                         </Badge>
                         <span className="text-[10px] text-muted-foreground">
                           {trophy.seasonName}
@@ -152,5 +159,5 @@ export function PlayerTrophies({ trophies }: PlayerTrophiesProps) {
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }

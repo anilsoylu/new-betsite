@@ -1,27 +1,38 @@
-"use client"
+"use client";
 
-import Image from "next/image"
-import Link from "next/link"
-import { Trophy, Target } from "lucide-react"
-import { cn, getPlayerUrl } from "@/lib/utils"
-import type { TopScorer } from "@/types/football"
+import Image from "next/image";
+import Link from "next/link";
+import { Trophy, Target } from "lucide-react";
+import { cn, getPlayerUrl } from "@/lib/utils";
+import type { TopScorer } from "@/types/football";
 
 interface TopScorersCardProps {
-  title: string
-  type: "goals" | "assists"
-  scorers: TopScorer[]
-  className?: string
-  onViewAll?: () => void
+  title: string;
+  type: "goals" | "assists";
+  scorers: TopScorer[];
+  className?: string;
+  onViewAll?: () => void;
 }
 
-export function TopScorersCard({ title, type, scorers, className, onViewAll }: TopScorersCardProps) {
-  if (scorers.length === 0) return null
+export function TopScorersCard({
+  title,
+  type,
+  scorers,
+  className,
+  onViewAll,
+}: TopScorersCardProps) {
+  if (scorers.length === 0) return null;
 
-  const Icon = type === "goals" ? Trophy : Target
-  const statKey = type === "goals" ? "goals" : "assists"
+  const Icon = type === "goals" ? Trophy : Target;
+  const statKey = type === "goals" ? "goals" : "assists";
 
   return (
-    <div className={cn("rounded-xl border border-border bg-card overflow-hidden", className)}>
+    <div
+      className={cn(
+        "rounded-xl border border-border bg-card overflow-hidden",
+        className,
+      )}
+    >
       {/* Header */}
       <div className="flex items-center gap-2 px-4 py-3 border-b border-border bg-muted/30">
         <Icon className="h-4 w-4 text-primary" />
@@ -40,10 +51,13 @@ export function TopScorersCard({ title, type, scorers, className, onViewAll }: T
             <div
               className={cn(
                 "w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold",
-                index === 0 && "bg-yellow-500/20 text-yellow-600 dark:text-yellow-400",
-                index === 1 && "bg-gray-300/30 text-gray-600 dark:text-gray-400",
-                index === 2 && "bg-amber-600/20 text-amber-700 dark:text-amber-500",
-                index > 2 && "bg-muted text-muted-foreground"
+                index === 0 &&
+                  "bg-yellow-500/20 text-yellow-600 dark:text-yellow-400",
+                index === 1 &&
+                  "bg-gray-300/30 text-gray-600 dark:text-gray-400",
+                index === 2 &&
+                  "bg-amber-600/20 text-amber-700 dark:text-amber-500",
+                index > 2 && "bg-muted text-muted-foreground",
               )}
             >
               {scorer.position}
@@ -109,5 +123,5 @@ export function TopScorersCard({ title, type, scorers, className, onViewAll }: T
         </div>
       )}
     </div>
-  )
+  );
 }

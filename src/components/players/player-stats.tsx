@@ -1,10 +1,10 @@
-import Image from "next/image"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import type { PlayerSeasonStats } from "@/types/football"
+import Image from "next/image";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import type { PlayerSeasonStats } from "@/types/football";
 
 interface PlayerStatsProps {
-  stats: Array<PlayerSeasonStats>
+  stats: Array<PlayerSeasonStats>;
 }
 
 export function PlayerStats({ stats }: PlayerStatsProps) {
@@ -15,10 +15,12 @@ export function PlayerStats({ stats }: PlayerStatsProps) {
           <CardTitle className="text-base">Season Statistics</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-muted-foreground">No statistics available</p>
+          <p className="text-sm text-muted-foreground">
+            No statistics available
+          </p>
         </CardContent>
       </Card>
-    )
+    );
   }
 
   // Calculate career totals
@@ -31,8 +33,15 @@ export function PlayerStats({ stats }: PlayerStatsProps) {
       yellowCards: acc.yellowCards + s.yellowCards,
       redCards: acc.redCards + s.redCards,
     }),
-    { appearances: 0, goals: 0, assists: 0, minutesPlayed: 0, yellowCards: 0, redCards: 0 }
-  )
+    {
+      appearances: 0,
+      goals: 0,
+      assists: 0,
+      minutesPlayed: 0,
+      yellowCards: 0,
+      redCards: 0,
+    },
+  );
 
   return (
     <Card>
@@ -49,7 +58,9 @@ export function PlayerStats({ stats }: PlayerStatsProps) {
         <div className="px-4 pb-4 grid grid-cols-3 gap-2">
           <div className="text-center p-2 rounded-lg bg-muted/50">
             <p className="text-xl font-bold">{careerTotals.appearances}</p>
-            <p className="text-[10px] text-muted-foreground uppercase">Matches</p>
+            <p className="text-[10px] text-muted-foreground uppercase">
+              Matches
+            </p>
           </div>
           <div className="text-center p-2 rounded-lg bg-muted/50">
             <p className="text-xl font-bold">{careerTotals.goals}</p>
@@ -57,7 +68,9 @@ export function PlayerStats({ stats }: PlayerStatsProps) {
           </div>
           <div className="text-center p-2 rounded-lg bg-muted/50">
             <p className="text-xl font-bold">{careerTotals.assists}</p>
-            <p className="text-[10px] text-muted-foreground uppercase">Assists</p>
+            <p className="text-[10px] text-muted-foreground uppercase">
+              Assists
+            </p>
           </div>
         </div>
 
@@ -81,7 +94,10 @@ export function PlayerStats({ stats }: PlayerStatsProps) {
             </thead>
             <tbody>
               {stats.map((season) => (
-                <tr key={`${season.seasonId}-${season.teamId}`} className="border-t hover:bg-muted/30">
+                <tr
+                  key={`${season.seasonId}-${season.teamId}`}
+                  className="border-t hover:bg-muted/30"
+                >
                   <td className="p-2">
                     <div className="flex items-center gap-2">
                       {season.teamLogo && (
@@ -94,7 +110,9 @@ export function PlayerStats({ stats }: PlayerStatsProps) {
                         />
                       )}
                       <div className="min-w-0">
-                        <p className="font-medium truncate">{season.seasonName}</p>
+                        <p className="font-medium truncate">
+                          {season.seasonName}
+                        </p>
                         {season.leagueName && (
                           <p className="text-[10px] text-muted-foreground truncate">
                             {season.leagueName}
@@ -103,16 +121,24 @@ export function PlayerStats({ stats }: PlayerStatsProps) {
                       </div>
                     </div>
                   </td>
-                  <td className="text-center p-2 tabular-nums">{season.appearances || "-"}</td>
+                  <td className="text-center p-2 tabular-nums">
+                    {season.appearances || "-"}
+                  </td>
                   <td className="text-center p-2 tabular-nums font-medium">
                     {season.goals || "-"}
                   </td>
-                  <td className="text-center p-2 tabular-nums">{season.assists || "-"}</td>
+                  <td className="text-center p-2 tabular-nums">
+                    {season.assists || "-"}
+                  </td>
                   <td className="text-center p-2 tabular-nums text-muted-foreground">
                     {season.minutesPlayed || "-"}
                   </td>
-                  <td className="text-center p-2 tabular-nums">{season.yellowCards || "-"}</td>
-                  <td className="text-center p-2 tabular-nums">{season.redCards || "-"}</td>
+                  <td className="text-center p-2 tabular-nums">
+                    {season.yellowCards || "-"}
+                  </td>
+                  <td className="text-center p-2 tabular-nums">
+                    {season.redCards || "-"}
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -120,5 +146,5 @@ export function PlayerStats({ stats }: PlayerStatsProps) {
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }

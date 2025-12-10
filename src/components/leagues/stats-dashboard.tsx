@@ -1,7 +1,7 @@
-"use client"
+"use client";
 
-import Image from "next/image"
-import Link from "next/link"
+import Image from "next/image";
+import Link from "next/link";
 import {
   Trophy,
   Target,
@@ -9,31 +9,31 @@ import {
   Shield,
   Star,
   TrendingUp,
-} from "lucide-react"
-import { cn, getPlayerUrl } from "@/lib/utils"
-import type { TopScorer, League } from "@/types/football"
+} from "lucide-react";
+import { cn, getPlayerUrl } from "@/lib/utils";
+import type { TopScorer, League } from "@/types/football";
 
 interface StatsSummary {
-  goals: TopScorer[]
-  assists: TopScorer[]
-  yellowCards: TopScorer[]
-  cleanSheets: TopScorer[]
-  ratings: TopScorer[]
+  goals: TopScorer[];
+  assists: TopScorer[];
+  yellowCards: TopScorer[];
+  cleanSheets: TopScorer[];
+  ratings: TopScorer[];
 }
 
 interface StatsDashboardProps {
-  league: League
-  stats: StatsSummary
-  className?: string
+  league: League;
+  stats: StatsSummary;
+  className?: string;
 }
 
 interface StatHighlightProps {
-  icon: React.ElementType
-  label: string
-  player: TopScorer | null
-  value: string | number
-  color: string
-  bgColor: string
+  icon: React.ElementType;
+  label: string;
+  player: TopScorer | null;
+  value: string | number;
+  color: string;
+  bgColor: string;
 }
 
 function StatHighlight({
@@ -44,7 +44,7 @@ function StatHighlight({
   color,
   bgColor,
 }: StatHighlightProps) {
-  if (!player) return null
+  if (!player) return null;
 
   return (
     <Link
@@ -52,7 +52,7 @@ function StatHighlight({
       className={cn(
         "relative overflow-hidden rounded-xl border border-border p-4",
         "hover:border-primary/50 transition-all group",
-        bgColor
+        bgColor,
       )}
     >
       {/* Background Icon */}
@@ -113,7 +113,7 @@ function StatHighlight({
         </div>
       </div>
     </Link>
-  )
+  );
 }
 
 export function StatsDashboard({
@@ -121,17 +121,17 @@ export function StatsDashboard({
   stats,
   className,
 }: StatsDashboardProps) {
-  const topScorer = stats.goals[0] || null
-  const topAssister = stats.assists[0] || null
-  const mostCards = stats.yellowCards[0] || null
-  const topCleanSheet = stats.cleanSheets[0] || null
-  const topRated = stats.ratings[0] || null
+  const topScorer = stats.goals[0] || null;
+  const topAssister = stats.assists[0] || null;
+  const mostCards = stats.yellowCards[0] || null;
+  const topCleanSheet = stats.cleanSheets[0] || null;
+  const topRated = stats.ratings[0] || null;
 
   // Format rating (API returns 782 for 7.82)
   const formatRating = (player: TopScorer | null) => {
-    if (!player) return "-"
-    return (player.goals / 100).toFixed(2)
-  }
+    if (!player) return "-";
+    return (player.goals / 100).toFixed(2);
+  };
 
   return (
     <div className={cn("space-y-4", className)}>
@@ -189,5 +189,5 @@ export function StatsDashboard({
         />
       </div>
     </div>
-  )
+  );
 }

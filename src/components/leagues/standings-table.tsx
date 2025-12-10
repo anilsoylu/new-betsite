@@ -1,21 +1,21 @@
-"use client"
+"use client";
 
-import Image from "next/image"
-import Link from "next/link"
-import { cn, getTeamUrl } from "@/lib/utils"
-import type { Standing, StandingRuleType } from "@/types/football"
+import Image from "next/image";
+import Link from "next/link";
+import { cn, getTeamUrl } from "@/lib/utils";
+import type { Standing, StandingRuleType } from "@/types/football";
 
 interface StandingsTableProps {
-  standings: Standing[]
-  compact?: boolean
-  className?: string
+  standings: Standing[];
+  compact?: boolean;
+  className?: string;
 }
 
 // Get position indicator color based on rule type from API
 function getPositionStyle(ruleTypeId: StandingRuleType): {
-  bg: string
-  text: string
-  border: string
+  bg: string;
+  text: string;
+  border: string;
 } {
   switch (ruleTypeId) {
     case 180: // UCL qualification
@@ -23,49 +23,60 @@ function getPositionStyle(ruleTypeId: StandingRuleType): {
         bg: "bg-green-500/20",
         text: "text-green-600 dark:text-green-400",
         border: "border-l-green-500",
-      }
+      };
     case 181: // UEL/UECL qualification
       return {
         bg: "bg-blue-500/20",
         text: "text-blue-600 dark:text-blue-400",
         border: "border-l-blue-500",
-      }
+      };
     case 182: // Relegation
       return {
         bg: "bg-red-500/20",
         text: "text-red-600 dark:text-red-400",
         border: "border-l-red-500",
-      }
+      };
     case 183: // Promotion playoff
     case 184: // Championship playoff
       return {
         bg: "bg-amber-500/20",
         text: "text-amber-600 dark:text-amber-400",
         border: "border-l-amber-500",
-      }
+      };
     default:
       return {
         bg: "",
         text: "text-muted-foreground",
         border: "border-l-transparent",
-      }
+      };
   }
 }
 
-export function StandingsTable({ standings, compact = false, className }: StandingsTableProps) {
+export function StandingsTable({
+  standings,
+  compact = false,
+  className,
+}: StandingsTableProps) {
   if (standings.length === 0) {
     return (
       <div className={cn("text-center py-8 text-muted-foreground", className)}>
         No standings available
       </div>
-    )
+    );
   }
 
   // Get unique position types for legend
-  const positionTypes = new Set(standings.map((s) => s.ruleTypeId).filter(Boolean))
+  const positionTypes = new Set(
+    standings.map((s) => s.ruleTypeId).filter(Boolean),
+  );
 
   return (
-    <div className={cn("rounded-xl border border-border bg-card overflow-hidden", className)}>
+    <div
+      className={cn(
+        "rounded-xl border border-border bg-card overflow-hidden",
+        className,
+      )}
+    >
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
@@ -87,21 +98,23 @@ export function StandingsTable({ standings, compact = false, className }: Standi
               {!compact && (
                 <>
                   <th className="text-center font-medium py-3 w-24">Form</th>
-                  <th className="text-center font-medium py-3 pr-4 w-20">Next</th>
+                  <th className="text-center font-medium py-3 pr-4 w-20">
+                    Next
+                  </th>
                 </>
               )}
             </tr>
           </thead>
           <tbody className="divide-y divide-border/50">
             {standings.map((team) => {
-              const positionStyle = getPositionStyle(team.ruleTypeId)
+              const positionStyle = getPositionStyle(team.ruleTypeId);
 
               return (
                 <tr
                   key={team.teamId}
                   className={cn(
                     "transition-colors hover:bg-muted/30 border-l-2",
-                    positionStyle.border
+                    positionStyle.border,
                   )}
                 >
                   {/* Position */}
@@ -110,7 +123,7 @@ export function StandingsTable({ standings, compact = false, className }: Standi
                       className={cn(
                         "w-6 h-6 rounded flex items-center justify-center text-xs font-bold",
                         positionStyle.bg,
-                        positionStyle.text
+                        positionStyle.text,
                       )}
                     >
                       {team.position}
@@ -137,20 +150,32 @@ export function StandingsTable({ standings, compact = false, className }: Standi
                   </td>
 
                   {/* Played */}
-                  <td className="py-3 text-center text-muted-foreground">{team.played}</td>
+                  <td className="py-3 text-center text-muted-foreground">
+                    {team.played}
+                  </td>
 
                   {!compact && (
                     <>
                       {/* Won */}
-                      <td className="py-3 text-center text-muted-foreground">{team.won}</td>
+                      <td className="py-3 text-center text-muted-foreground">
+                        {team.won}
+                      </td>
                       {/* Drawn */}
-                      <td className="py-3 text-center text-muted-foreground">{team.drawn}</td>
+                      <td className="py-3 text-center text-muted-foreground">
+                        {team.drawn}
+                      </td>
                       {/* Lost */}
-                      <td className="py-3 text-center text-muted-foreground">{team.lost}</td>
+                      <td className="py-3 text-center text-muted-foreground">
+                        {team.lost}
+                      </td>
                       {/* Goals For */}
-                      <td className="py-3 text-center text-muted-foreground">{team.goalsFor}</td>
+                      <td className="py-3 text-center text-muted-foreground">
+                        {team.goalsFor}
+                      </td>
                       {/* Goals Against */}
-                      <td className="py-3 text-center text-muted-foreground">{team.goalsAgainst}</td>
+                      <td className="py-3 text-center text-muted-foreground">
+                        {team.goalsAgainst}
+                      </td>
                     </>
                   )}
 
@@ -158,12 +183,16 @@ export function StandingsTable({ standings, compact = false, className }: Standi
                   <td
                     className={cn(
                       "py-3 text-center font-medium",
-                      team.goalDifference > 0 && "text-green-600 dark:text-green-400",
-                      team.goalDifference < 0 && "text-red-600 dark:text-red-400",
-                      team.goalDifference === 0 && "text-muted-foreground"
+                      team.goalDifference > 0 &&
+                        "text-green-600 dark:text-green-400",
+                      team.goalDifference < 0 &&
+                        "text-red-600 dark:text-red-400",
+                      team.goalDifference === 0 && "text-muted-foreground",
                     )}
                   >
-                    {team.goalDifference > 0 ? `+${team.goalDifference}` : team.goalDifference}
+                    {team.goalDifference > 0
+                      ? `+${team.goalDifference}`
+                      : team.goalDifference}
                   </td>
 
                   {/* Points */}
@@ -185,7 +214,7 @@ export function StandingsTable({ standings, compact = false, className }: Standi
                                 "w-5 h-5 rounded-sm flex items-center justify-center text-[10px] font-bold text-white",
                                 result === "W" && "bg-green-500",
                                 result === "D" && "bg-gray-400",
-                                result === "L" && "bg-red-500"
+                                result === "L" && "bg-red-500",
                               )}
                             >
                               {result}
@@ -211,13 +240,15 @@ export function StandingsTable({ standings, compact = false, className }: Standi
                             />
                           </div>
                         ) : (
-                          <span className="text-muted-foreground text-xs">-</span>
+                          <span className="text-muted-foreground text-xs">
+                            -
+                          </span>
                         )}
                       </td>
                     </>
                   )}
                 </tr>
-              )
+              );
             })}
           </tbody>
         </table>
@@ -255,5 +286,5 @@ export function StandingsTable({ standings, compact = false, className }: Standi
         </div>
       )}
     </div>
-  )
+  );
 }

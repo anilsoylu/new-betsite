@@ -1,30 +1,35 @@
-"use client"
+"use client";
 
-import { useState, useRef, useEffect, useCallback } from "react"
-import Image from "next/image"
-import Link from "next/link"
-import { cn, getTeamUrl, getLeagueUrl } from "@/lib/utils"
-import { ChevronLeft, ChevronRight, ChevronDown, ChevronUp } from "lucide-react"
-import type { Standing, StandingRuleType } from "@/types/football"
+import { useState, useRef, useEffect, useCallback } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { cn, getTeamUrl, getLeagueUrl } from "@/lib/utils";
+import {
+  ChevronLeft,
+  ChevronRight,
+  ChevronDown,
+  ChevronUp,
+} from "lucide-react";
+import type { Standing, StandingRuleType } from "@/types/football";
 
 interface LeagueStandings {
-  leagueId: number
-  leagueName: string
-  leagueLogo: string
-  standings: Standing[]
+  leagueId: number;
+  leagueName: string;
+  leagueLogo: string;
+  standings: Standing[];
 }
 
 interface StandingsWidgetProps {
-  leagueStandings: LeagueStandings[]
-  className?: string
+  leagueStandings: LeagueStandings[];
+  className?: string;
 }
 
 // Get position indicator color based on rule type from API
 function getPositionColor(ruleTypeId: StandingRuleType): {
-  bg: string
-  text: string
-  border: string
-  label: string
+  bg: string;
+  text: string;
+  border: string;
+  label: string;
 } {
   switch (ruleTypeId) {
     case 180: // UCL qualification
@@ -32,113 +37,118 @@ function getPositionColor(ruleTypeId: StandingRuleType): {
         bg: "bg-green-500/20",
         text: "text-green-600 dark:text-green-400",
         border: "border-l-green-500",
-        label: "UCL"
-      }
+        label: "UCL",
+      };
     case 181: // UEL/UECL qualification
       return {
         bg: "bg-blue-500/20",
         text: "text-blue-600 dark:text-blue-400",
         border: "border-l-blue-500",
-        label: "UEL"
-      }
+        label: "UEL",
+      };
     case 182: // Relegation
       return {
         bg: "bg-red-500/20",
         text: "text-red-600 dark:text-red-400",
         border: "border-l-red-500",
-        label: "REL"
-      }
+        label: "REL",
+      };
     case 183: // Promotion playoff
     case 184: // Championship playoff
       return {
         bg: "bg-amber-500/20",
         text: "text-amber-600 dark:text-amber-400",
         border: "border-l-amber-500",
-        label: "PO"
-      }
+        label: "PO",
+      };
     default:
       return {
         bg: "",
         text: "text-muted-foreground",
         border: "border-l-transparent",
-        label: ""
-      }
+        label: "",
+      };
   }
 }
 
-export function StandingsWidget({ leagueStandings, className }: StandingsWidgetProps) {
-  const [activeIndex, setActiveIndex] = useState(0)
-  const [isExpanded, setIsExpanded] = useState(false)
-  const [isDragging, setIsDragging] = useState(false)
-  const [startX, setStartX] = useState(0)
-  const [translateX, setTranslateX] = useState(0)
-  const containerRef = useRef<HTMLDivElement>(null)
+export function StandingsWidget({
+  leagueStandings,
+  className,
+}: StandingsWidgetProps) {
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [translateX, setTranslateX] = useState(0);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const handlePrev = useCallback(() => {
     if (activeIndex > 0) {
-      setActiveIndex(activeIndex - 1)
-      setIsExpanded(false)
+      setActiveIndex(activeIndex - 1);
+      setIsExpanded(false);
     }
-  }, [activeIndex])
+  }, [activeIndex]);
 
   const handleNext = useCallback(() => {
     if (activeIndex < leagueStandings.length - 1) {
-      setActiveIndex(activeIndex + 1)
-      setIsExpanded(false)
+      setActiveIndex(activeIndex + 1);
+      setIsExpanded(false);
     }
-  }, [activeIndex, leagueStandings.length])
+  }, [activeIndex, leagueStandings.length]);
 
   // Touch/Mouse handlers for swipe
   const handleDragStart = (clientX: number) => {
-    setIsDragging(true)
-    setStartX(clientX)
-  }
+    setIsDragging(true);
+    setStartX(clientX);
+  };
 
   const handleDragMove = (clientX: number) => {
-    if (!isDragging) return
-    const diff = clientX - startX
+    if (!isDragging) return;
+    const diff = clientX - startX;
     // Limit drag distance
-    const maxDrag = 100
-    setTranslateX(Math.max(-maxDrag, Math.min(maxDrag, diff)))
-  }
+    const maxDrag = 100;
+    setTranslateX(Math.max(-maxDrag, Math.min(maxDrag, diff)));
+  };
 
   const handleDragEnd = () => {
-    if (!isDragging) return
-    setIsDragging(false)
+    if (!isDragging) return;
+    setIsDragging(false);
 
-    const threshold = 50
+    const threshold = 50;
     if (translateX > threshold) {
-      handlePrev()
+      handlePrev();
     } else if (translateX < -threshold) {
-      handleNext()
+      handleNext();
     }
-    setTranslateX(0)
-  }
+    setTranslateX(0);
+  };
 
   // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "ArrowLeft") handlePrev()
-      if (e.key === "ArrowRight") handleNext()
-    }
+      if (e.key === "ArrowLeft") handlePrev();
+      if (e.key === "ArrowRight") handleNext();
+    };
 
-    const container = containerRef.current
+    const container = containerRef.current;
     if (container) {
-      container.addEventListener("keydown", handleKeyDown)
-      return () => container.removeEventListener("keydown", handleKeyDown)
+      container.addEventListener("keydown", handleKeyDown);
+      return () => container.removeEventListener("keydown", handleKeyDown);
     }
-  }, [handlePrev, handleNext])
+  }, [handlePrev, handleNext]);
 
-  if (leagueStandings.length === 0) return null
+  if (leagueStandings.length === 0) return null;
 
-  const activeLeague = leagueStandings[activeIndex]
+  const activeLeague = leagueStandings[activeIndex];
   const displayedTeams = isExpanded
     ? activeLeague.standings
-    : activeLeague.standings.slice(0, 6)
-  const hasMoreTeams = activeLeague.standings.length > 6
+    : activeLeague.standings.slice(0, 6);
+  const hasMoreTeams = activeLeague.standings.length > 6;
 
   // Get unique position types for legend
-  const positionTypes = new Set(activeLeague.standings.map(s => s.ruleTypeId).filter(Boolean))
+  const positionTypes = new Set(
+    activeLeague.standings.map((s) => s.ruleTypeId).filter(Boolean),
+  );
 
   return (
     <div
@@ -146,7 +156,7 @@ export function StandingsWidget({ leagueStandings, className }: StandingsWidgetP
       tabIndex={0}
       className={cn(
         "rounded-xl border border-border bg-card overflow-hidden shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/50",
-        className
+        className,
       )}
     >
       {/* Header with Navigation */}
@@ -158,7 +168,7 @@ export function StandingsWidget({ leagueStandings, className }: StandingsWidgetP
             "p-1.5 rounded-lg transition-all",
             activeIndex === 0
               ? "text-muted-foreground/30 cursor-not-allowed"
-              : "text-muted-foreground hover:text-foreground hover:bg-muted"
+              : "text-muted-foreground hover:text-foreground hover:bg-muted",
           )}
         >
           <ChevronLeft className="w-4 h-4" />
@@ -173,7 +183,7 @@ export function StandingsWidget({ leagueStandings, className }: StandingsWidgetP
             "p-1.5 rounded-lg transition-all",
             activeIndex === leagueStandings.length - 1
               ? "text-muted-foreground/30 cursor-not-allowed"
-              : "text-muted-foreground hover:text-foreground hover:bg-muted"
+              : "text-muted-foreground hover:text-foreground hover:bg-muted",
           )}
         >
           <ChevronRight className="w-4 h-4" />
@@ -194,7 +204,7 @@ export function StandingsWidget({ leagueStandings, className }: StandingsWidgetP
         <div
           className={cn(
             "transition-transform duration-200",
-            isDragging && "transition-none"
+            isDragging && "transition-none",
           )}
           style={{ transform: `translateX(${translateX}px)` }}
         >
@@ -228,14 +238,14 @@ export function StandingsWidget({ leagueStandings, className }: StandingsWidgetP
               <button
                 key={idx}
                 onClick={() => {
-                  setActiveIndex(idx)
-                  setIsExpanded(false)
+                  setActiveIndex(idx);
+                  setIsExpanded(false);
                 }}
                 className={cn(
                   "w-1.5 h-1.5 rounded-full transition-all",
                   idx === activeIndex
                     ? "bg-primary w-4"
-                    : "bg-muted-foreground/30 hover:bg-muted-foreground/50"
+                    : "bg-muted-foreground/30 hover:bg-muted-foreground/50",
                 )}
               />
             ))}
@@ -255,7 +265,7 @@ export function StandingsWidget({ leagueStandings, className }: StandingsWidgetP
               </thead>
               <tbody>
                 {displayedTeams.map((team, idx) => {
-                  const positionColor = getPositionColor(team.ruleTypeId)
+                  const positionColor = getPositionColor(team.ruleTypeId);
                   return (
                     <tr
                       key={team.teamId}
@@ -264,16 +274,18 @@ export function StandingsWidget({ leagueStandings, className }: StandingsWidgetP
                         positionColor.border,
                         "hover:bg-muted/40",
                         idx % 2 === 1 && "bg-muted/10",
-                        "border-b border-border/30 last:border-b-0"
+                        "border-b border-border/30 last:border-b-0",
                       )}
                     >
                       {/* Position */}
                       <td className="py-2 pl-2">
-                        <div className={cn(
-                          "w-5 h-5 rounded flex items-center justify-center text-[10px] font-bold",
-                          positionColor.bg,
-                          positionColor.text
-                        )}>
+                        <div
+                          className={cn(
+                            "w-5 h-5 rounded flex items-center justify-center text-[10px] font-bold",
+                            positionColor.bg,
+                            positionColor.text,
+                          )}
+                        >
                           {team.position}
                         </div>
                       </td>
@@ -303,13 +315,19 @@ export function StandingsWidget({ leagueStandings, className }: StandingsWidgetP
                       </td>
 
                       {/* Goal Difference */}
-                      <td className={cn(
-                        "py-2 text-center text-[11px] font-medium",
-                        team.goalDifference > 0 && "text-green-600 dark:text-green-400",
-                        team.goalDifference < 0 && "text-red-600 dark:text-red-400",
-                        team.goalDifference === 0 && "text-muted-foreground"
-                      )}>
-                        {team.goalDifference > 0 ? `+${team.goalDifference}` : team.goalDifference}
+                      <td
+                        className={cn(
+                          "py-2 text-center text-[11px] font-medium",
+                          team.goalDifference > 0 &&
+                            "text-green-600 dark:text-green-400",
+                          team.goalDifference < 0 &&
+                            "text-red-600 dark:text-red-400",
+                          team.goalDifference === 0 && "text-muted-foreground",
+                        )}
+                      >
+                        {team.goalDifference > 0
+                          ? `+${team.goalDifference}`
+                          : team.goalDifference}
                       </td>
 
                       {/* Points */}
@@ -319,7 +337,7 @@ export function StandingsWidget({ leagueStandings, className }: StandingsWidgetP
                         </span>
                       </td>
                     </tr>
-                  )
+                  );
                 })}
               </tbody>
             </table>
@@ -379,5 +397,5 @@ export function StandingsWidget({ leagueStandings, className }: StandingsWidgetP
         </div>
       )}
     </div>
-  )
+  );
 }

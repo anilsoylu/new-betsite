@@ -1,24 +1,24 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { LeagueTabs, type LeagueTab } from "./league-tabs"
-import { TopScorersCard } from "./top-scorers-card"
-import { FixturesCard } from "./fixtures-card"
-import { StandingsTable } from "./standings-table"
-import { LeagueAboutSection } from "./league-about-section"
-import { AdSpace } from "@/components/sidebar"
-import type { LeaguePageData } from "@/types/football"
+import { useState } from "react";
+import { LeagueTabs, type LeagueTab } from "./league-tabs";
+import { TopScorersCard } from "./top-scorers-card";
+import { FixturesCard } from "./fixtures-card";
+import { StandingsTable } from "./standings-table";
+import { LeagueAboutSection } from "./league-about-section";
+import { AdSpace } from "@/components/sidebar";
+import type { LeaguePageData } from "@/types/football";
 
 interface LeagueContentProps {
-  data: LeaguePageData
+  data: LeaguePageData;
 }
 
 export function LeagueContent({ data }: LeagueContentProps) {
-  const [activeTab, setActiveTab] = useState<LeagueTab>("overview")
+  const [activeTab, setActiveTab] = useState<LeagueTab>("overview");
 
   const hasStandings =
-    data.standings.length > 0 && data.standings[0].standings.length > 0
-  const standings = hasStandings ? data.standings[0].standings : []
+    data.standings.length > 0 && data.standings[0].standings.length > 0;
+  const standings = hasStandings ? data.standings[0].standings : [];
 
   return (
     <div>
@@ -161,5 +161,5 @@ export function LeagueContent({ data }: LeagueContentProps) {
         />
       </div>
     </div>
-  )
+  );
 }

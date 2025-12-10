@@ -10,7 +10,7 @@ export const SITE = {
   url: process.env.NEXT_PUBLIC_SITE_URL || "https://socceroffices.com",
   defaultImage: "/og-image.png",
   twitter: "@soccername",
-} as const
+} as const;
 
 // SEO metadata templates
 export const SEO = {
@@ -26,7 +26,7 @@ export const SEO = {
       home: string,
       away: string,
       league: string,
-      date: string
+      date: string,
     ) =>
       `${home} vs ${away} - ${league} match on ${date}. Get live scores, lineups, statistics and match details.`,
   },
@@ -40,7 +40,7 @@ export const SEO = {
     description:
       "Browse all football leagues and competitions. Find fixtures, standings and statistics for every league.",
   },
-} as const
+} as const;
 
 // Page titles and headings
 export const PAGES = {
@@ -63,7 +63,26 @@ export const PAGES = {
   leagues: {
     title: "Leagues",
   },
-} as const
+} as const;
+
+// Cache profiles (in seconds)
+// Used by sportmonks-client.ts for Next.js revalidation
+export const CACHE_PROFILES = {
+  /** Live/real-time data: scores, match status (30 seconds) */
+  live: 30,
+  /** Short-term data: today's fixtures, recent results (5 minutes) */
+  short: 300,
+  /** Medium-term data: standings, team info (1 hour) */
+  medium: 3600,
+  /** Long-term data: league metadata, player profiles (6 hours) */
+  long: 21600,
+  /** Static data: country info, historical data (24 hours) */
+  static: 86400,
+  /** No caching: force-dynamic routes */
+  none: 0,
+} as const;
+
+export type CacheProfile = keyof typeof CACHE_PROFILES;
 
 // API configuration
 export const API = {
@@ -74,7 +93,7 @@ export const API = {
     maxFixturesPerPage: 100,
     maxPaginationPages: 20,
   },
-} as const
+} as const;
 
 // UI configuration
 export const UI = {
@@ -85,7 +104,7 @@ export const UI = {
   pagination: {
     defaultPageSize: 25,
   },
-} as const
+} as const;
 
 // Date/time formats
 export const DATE_FORMATS = {
@@ -93,15 +112,35 @@ export const DATE_FORMATS = {
   date: "dd MMM yyyy",
   dateTime: "dd MMM yyyy HH:mm",
   apiDate: "yyyy-MM-dd",
-} as const
+} as const;
 
 // Popular leagues for sidebar
 export const POPULAR_LEAGUES = [
-  { id: 8, name: "Premier League", shortCode: "ENG", logo: "/leagues/premier-league.png" },
+  {
+    id: 8,
+    name: "Premier League",
+    shortCode: "ENG",
+    logo: "/leagues/premier-league.png",
+  },
   { id: 564, name: "La Liga", shortCode: "ESP", logo: "/leagues/la-liga.png" },
-  { id: 82, name: "Bundesliga", shortCode: "GER", logo: "/leagues/bundesliga.png" },
+  {
+    id: 82,
+    name: "Bundesliga",
+    shortCode: "GER",
+    logo: "/leagues/bundesliga.png",
+  },
   { id: 384, name: "Serie A", shortCode: "ITA", logo: "/leagues/serie-a.png" },
   { id: 301, name: "Ligue 1", shortCode: "FRA", logo: "/leagues/ligue-1.png" },
-  { id: 2, name: "Champions League", shortCode: "UEFA", logo: "/leagues/champions-league.png" },
-  { id: 5, name: "Europa League", shortCode: "UEFA", logo: "/leagues/europa-league.png" },
-] as const
+  {
+    id: 2,
+    name: "Champions League",
+    shortCode: "UEFA",
+    logo: "/leagues/champions-league.png",
+  },
+  {
+    id: 5,
+    name: "Europa League",
+    shortCode: "UEFA",
+    logo: "/leagues/europa-league.png",
+  },
+] as const;

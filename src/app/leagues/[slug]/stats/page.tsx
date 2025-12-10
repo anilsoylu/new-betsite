@@ -1,29 +1,29 @@
-import { notFound } from "next/navigation"
-import { getLeagueStatsData } from "@/lib/api/football-api"
-import { extractLeagueId } from "@/lib/utils"
+import { notFound } from "next/navigation";
+import { getLeagueStatsData } from "@/lib/api/football-api";
+import { extractLeagueId } from "@/lib/utils";
 import {
   StatLeaderCard,
   StatsDashboard,
   LeagueAboutSection,
-} from "@/components/leagues"
+} from "@/components/leagues";
 
 interface StatsPageProps {
-  params: Promise<{ slug: string }>
+  params: Promise<{ slug: string }>;
 }
 
 export default async function StatsPage({ params }: StatsPageProps) {
-  const { slug } = await params
-  const leagueId = extractLeagueId(slug)
+  const { slug } = await params;
+  const leagueId = extractLeagueId(slug);
 
   if (!leagueId) {
-    notFound()
+    notFound();
   }
 
-  let data
+  let data;
   try {
-    data = await getLeagueStatsData(leagueId)
+    data = await getLeagueStatsData(leagueId);
   } catch {
-    notFound()
+    notFound();
   }
 
   return (
@@ -64,5 +64,5 @@ export default async function StatsPage({ params }: StatsPageProps) {
         recentFixtures={data.recentFixtures}
       />
     </div>
-  )
+  );
 }

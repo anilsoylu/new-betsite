@@ -1,85 +1,104 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import Image from "next/image"
-import Link from "next/link"
-import { format } from "date-fns"
-import { Star, MapPin } from "lucide-react"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { getFixtureUrl, cn } from "@/lib/utils"
-import { useFavoritesStore } from "@/stores/favorites-store"
-import { useLiveFixture } from "@/hooks"
-import type { Fixture } from "@/types/football"
+import { useState, useEffect } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { format } from "date-fns";
+import { Star, MapPin } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { StatusBadge } from "@/components/ui/status-badge";
+import { getFixtureUrl, cn } from "@/lib/utils";
+import { useFavoritesStore } from "@/stores/favorites-store";
+import { useLiveFixture } from "@/hooks";
+import type { Fixture } from "@/types/football";
 
 interface FixtureCardProps {
-  fixture: Fixture
-  showFavorites?: boolean
-  showLeague?: boolean
-  variant?: "default" | "compact" | "featured"
+  fixture: Fixture;
+  showFavorites?: boolean;
+  showLeague?: boolean;
+  variant?: "default" | "compact" | "featured";
 }
 
 export function FixtureCard({
   fixture,
   showFavorites = true,
   showLeague = true,
-  variant = "default"
+  variant = "default",
 }: FixtureCardProps) {
-  const { homeTeam, awayTeam, score, statusDetail, startTime, id: fixtureId, league, venue } = fixture
-  const { isFavorite, toggleFavorite } = useFavoritesStore()
-  const [hasMounted, setHasMounted] = useState(false)
-  const [animatingStars, setAnimatingStars] = useState<Record<string, boolean>>({})
+  const {
+    homeTeam,
+    awayTeam,
+    score,
+    statusDetail,
+    startTime,
+    id: fixtureId,
+    league,
+    venue,
+  } = fixture;
+  const { isFavorite, toggleFavorite } = useFavoritesStore();
+  const [hasMounted, setHasMounted] = useState(false);
+  const [animatingStars, setAnimatingStars] = useState<Record<string, boolean>>(
+    {},
+  );
 
   // Poll for live fixture updates (status, minute, scores)
-  const liveData = useLiveFixture({ fixture, pollInterval: 30000 })
-  const { status, displayMinute, homeScore, awayScore, isLive } = liveData
+  const liveData = useLiveFixture({ fixture, pollInterval: 30000 });
+  const { status, displayMinute, homeScore, awayScore, isLive } = liveData;
 
   useEffect(() => {
-    setHasMounted(true)
-  }, [])
+    setHasMounted(true);
+  }, []);
 
   // Format time only on client to avoid hydration mismatch (server vs user timezone)
-  const formattedTime = hasMounted ? format(new Date(startTime), "HH:mm") : "--:--"
-  const formattedDate = hasMounted ? format(new Date(startTime), "dd MMM") : "-- ---"
+  const formattedTime = hasMounted
+    ? format(new Date(startTime), "HH:mm")
+    : "--:--";
+  const formattedDate = hasMounted
+    ? format(new Date(startTime), "dd MMM")
+    : "-- ---";
 
   // Only check favorites after mount to avoid hydration mismatch
-  const isHomeFavorite = hasMounted && isFavorite("teams", homeTeam.id)
-  const isAwayFavorite = hasMounted && isFavorite("teams", awayTeam.id)
-  const isMatchFavorite = hasMounted && isFavorite("matches", fixtureId)
-  const hasFavoriteTeam = isHomeFavorite || isAwayFavorite
+  const isHomeFavorite = hasMounted && isFavorite("teams", homeTeam.id);
+  const isAwayFavorite = hasMounted && isFavorite("teams", awayTeam.id);
+  const isMatchFavorite = hasMounted && isFavorite("matches", fixtureId);
+  const hasFavoriteTeam = isHomeFavorite || isAwayFavorite;
 
   const triggerStarAnimation = (key: string) => {
-    setAnimatingStars(prev => ({ ...prev, [key]: true }))
+    setAnimatingStars((prev) => ({ ...prev, [key]: true }));
     setTimeout(() => {
-      setAnimatingStars(prev => ({ ...prev, [key]: false }))
-    }, 400)
-  }
+      setAnimatingStars((prev) => ({ ...prev, [key]: false }));
+    }, 400);
+  };
 
-  const handleTeamFavoriteClick = (e: React.MouseEvent, teamId: number, key: string) => {
-    e.preventDefault()
-    e.stopPropagation()
-    triggerStarAnimation(key)
-    toggleFavorite("teams", teamId)
-  }
+  const handleTeamFavoriteClick = (
+    e: React.MouseEvent,
+    teamId: number,
+    key: string,
+  ) => {
+    e.preventDefault();
+    e.stopPropagation();
+    triggerStarAnimation(key);
+    toggleFavorite("teams", teamId);
+  };
 
   const handleMatchFavoriteClick = (e: React.MouseEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    triggerStarAnimation("match")
-    toggleFavorite("matches", fixtureId)
-  }
+    e.preventDefault();
+    e.stopPropagation();
+    triggerStarAnimation("match");
+    toggleFavorite("matches", fixtureId);
+  };
 
   // Star button component for reuse
   const StarButton = ({
     isFavorited,
     onClick,
     animKey,
-    size = "sm"
+    size = "sm",
   }: {
-    isFavorited: boolean
-    onClick: (e: React.MouseEvent) => void
-    animKey: string
-    size?: "sm" | "md"
+    isFavorited: boolean;
+    onClick: (e: React.MouseEvent) => void;
+    animKey: string;
+    size?: "sm" | "md";
   }) => (
     <button
       onClick={onClick}
@@ -88,7 +107,7 @@ export function FixtureCard({
         size === "sm" ? "h-7 w-7" : "h-8 w-8",
         isFavorited
           ? "text-yellow-500"
-          : "text-muted-foreground/50 hover:text-muted-foreground"
+          : "text-muted-foreground/50 hover:text-muted-foreground",
       )}
     >
       <Star
@@ -96,11 +115,11 @@ export function FixtureCard({
           "transition-transform",
           size === "sm" ? "h-4 w-4" : "h-5 w-5",
           isFavorited && "fill-yellow-500",
-          animatingStars[animKey] && "animate-star-pop"
+          animatingStars[animKey] && "animate-star-pop",
         )}
       />
     </button>
-  )
+  );
 
   return (
     <Link href={getFixtureUrl(fixture)}>
@@ -108,7 +127,9 @@ export function FixtureCard({
         className={cn(
           "overflow-hidden transition-all cursor-pointer hover-lift",
           isLive && "ring-2 ring-red-500/30 bg-red-500/5",
-          !isLive && (hasFavoriteTeam || isMatchFavorite) && "ring-1 ring-yellow-500/30 bg-yellow-500/5"
+          !isLive &&
+            (hasFavoriteTeam || isMatchFavorite) &&
+            "ring-1 ring-yellow-500/30 bg-yellow-500/5",
         )}
       >
         {/* League Header */}
@@ -156,21 +177,27 @@ export function FixtureCard({
                     className="object-contain w-auto h-auto"
                   />
                 ) : (
-                  <div className={cn(
-                    "rounded bg-muted flex items-center justify-center font-semibold text-muted-foreground",
-                    variant === "featured" ? "w-8 h-8 text-sm" : "w-6 h-6 text-xs"
-                  )}>
+                  <div
+                    className={cn(
+                      "rounded bg-muted flex items-center justify-center font-semibold text-muted-foreground",
+                      variant === "featured"
+                        ? "w-8 h-8 text-sm"
+                        : "w-6 h-6 text-xs",
+                    )}
+                  >
                     {homeTeam.name.charAt(0)}
                   </div>
                 )}
               </div>
 
               {/* Team Name */}
-              <span className={cn(
-                "flex-1 truncate",
-                homeTeam.isWinner ? "font-semibold" : "text-muted-foreground",
-                variant === "featured" ? "text-base" : "text-sm"
-              )}>
+              <span
+                className={cn(
+                  "flex-1 truncate",
+                  homeTeam.isWinner ? "font-semibold" : "text-muted-foreground",
+                  variant === "featured" ? "text-base" : "text-sm",
+                )}
+              >
                 {homeTeam.name}
               </span>
 
@@ -178,7 +205,9 @@ export function FixtureCard({
               {showFavorites && (
                 <StarButton
                   isFavorited={isHomeFavorite}
-                  onClick={(e) => handleTeamFavoriteClick(e, homeTeam.id, "home")}
+                  onClick={(e) =>
+                    handleTeamFavoriteClick(e, homeTeam.id, "home")
+                  }
                   animKey="home"
                   size="sm"
                 />
@@ -186,11 +215,15 @@ export function FixtureCard({
 
               {/* Score */}
               {(score || isLive) && (
-                <span className={cn(
-                  "font-bold tabular-nums w-6 text-center",
-                  homeTeam.isWinner ? "text-foreground" : "text-muted-foreground",
-                  variant === "featured" ? "text-xl" : "text-base"
-                )}>
+                <span
+                  className={cn(
+                    "font-bold tabular-nums w-6 text-center",
+                    homeTeam.isWinner
+                      ? "text-foreground"
+                      : "text-muted-foreground",
+                    variant === "featured" ? "text-xl" : "text-base",
+                  )}
+                >
                   {homeScore}
                 </span>
               )}
@@ -209,21 +242,27 @@ export function FixtureCard({
                     className="object-contain w-auto h-auto"
                   />
                 ) : (
-                  <div className={cn(
-                    "rounded bg-muted flex items-center justify-center font-semibold text-muted-foreground",
-                    variant === "featured" ? "w-8 h-8 text-sm" : "w-6 h-6 text-xs"
-                  )}>
+                  <div
+                    className={cn(
+                      "rounded bg-muted flex items-center justify-center font-semibold text-muted-foreground",
+                      variant === "featured"
+                        ? "w-8 h-8 text-sm"
+                        : "w-6 h-6 text-xs",
+                    )}
+                  >
                     {awayTeam.name.charAt(0)}
                   </div>
                 )}
               </div>
 
               {/* Team Name */}
-              <span className={cn(
-                "flex-1 truncate",
-                awayTeam.isWinner ? "font-semibold" : "text-muted-foreground",
-                variant === "featured" ? "text-base" : "text-sm"
-              )}>
+              <span
+                className={cn(
+                  "flex-1 truncate",
+                  awayTeam.isWinner ? "font-semibold" : "text-muted-foreground",
+                  variant === "featured" ? "text-base" : "text-sm",
+                )}
+              >
                 {awayTeam.name}
               </span>
 
@@ -231,7 +270,9 @@ export function FixtureCard({
               {showFavorites && (
                 <StarButton
                   isFavorited={isAwayFavorite}
-                  onClick={(e) => handleTeamFavoriteClick(e, awayTeam.id, "away")}
+                  onClick={(e) =>
+                    handleTeamFavoriteClick(e, awayTeam.id, "away")
+                  }
                   animKey="away"
                   size="sm"
                 />
@@ -239,11 +280,15 @@ export function FixtureCard({
 
               {/* Score */}
               {(score || isLive) && (
-                <span className={cn(
-                  "font-bold tabular-nums w-6 text-center",
-                  awayTeam.isWinner ? "text-foreground" : "text-muted-foreground",
-                  variant === "featured" ? "text-xl" : "text-base"
-                )}>
+                <span
+                  className={cn(
+                    "font-bold tabular-nums w-6 text-center",
+                    awayTeam.isWinner
+                      ? "text-foreground"
+                      : "text-muted-foreground",
+                    variant === "featured" ? "text-xl" : "text-base",
+                  )}
+                >
                   {awayScore}
                 </span>
               )}
@@ -253,27 +298,13 @@ export function FixtureCard({
           {/* Match Info Footer */}
           <div className="flex items-center gap-2 mt-3 pt-2 border-t">
             {/* Status Badge */}
-            {status === "halftime" ? (
-              <Badge variant="secondary" className="text-xs h-5 px-1.5 bg-amber-500/20 text-amber-600 border-amber-500/30">
-                HT
-              </Badge>
-            ) : isLive ? (
-              <Badge variant="destructive" className="animate-pulse text-xs h-5 px-1.5 gap-1">
-                <span className="relative flex h-1.5 w-1.5">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75" />
-                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-white" />
-                </span>
-                {displayMinute || "LIVE"}
-              </Badge>
-            ) : status === "finished" ? (
-              <Badge variant="secondary" className="text-xs h-5 px-1.5">FT</Badge>
-            ) : status === "scheduled" ? (
-              <span className="text-xs font-medium text-muted-foreground">
-                {formattedTime}
-              </span>
-            ) : (
-              <Badge variant="outline" className="text-xs h-5 px-1.5">{statusDetail}</Badge>
-            )}
+            <StatusBadge
+              status={status}
+              isLive={isLive}
+              displayMinute={displayMinute}
+              formattedTime={formattedTime}
+              statusDetail={statusDetail}
+            />
 
             {/* Venue */}
             {venue?.name && (
@@ -301,5 +332,5 @@ export function FixtureCard({
         </CardContent>
       </Card>
     </Link>
-  )
+  );
 }

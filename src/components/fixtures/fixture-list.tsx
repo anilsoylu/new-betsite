@@ -49,7 +49,7 @@ export function FixtureList({
         country: string | undefined;
         fixtures: Array<Fixture>;
       }
-    >
+    >,
   );
 
   return (
@@ -61,7 +61,8 @@ export function FixtureList({
           <div
             className={cn(
               "flex items-center gap-2 py-2 text-sm font-medium",
-              showStickyHeaders && "sticky top-14 z-10 bg-background/95 backdrop-blur-sm -mx-1 px-1"
+              showStickyHeaders &&
+                "sticky top-14 z-10 bg-background/95 backdrop-blur-sm -mx-1 px-1",
             )}
           >
             {league.logo && (

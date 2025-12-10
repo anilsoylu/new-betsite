@@ -14,7 +14,9 @@ export function OddsCard({ odds, homeTeam, awayTeam }: OddsCardProps) {
         <div className="flex items-center justify-between">
           <CardTitle className="text-sm font-medium">Match Odds</CardTitle>
           {odds.bookmaker && (
-            <span className="text-xs text-muted-foreground">{odds.bookmaker}</span>
+            <span className="text-xs text-muted-foreground">
+              {odds.bookmaker}
+            </span>
           )}
         </div>
       </CardHeader>
@@ -68,7 +70,10 @@ function OddButton({ label, teamName, value, probability }: OddButtonProps) {
 
   return (
     <div className="text-center p-3 rounded-lg bg-muted hover:bg-muted/80 transition-colors cursor-pointer">
-      <p className="text-xs text-muted-foreground mb-1 truncate" title={teamName}>
+      <p
+        className="text-xs text-muted-foreground mb-1 truncate"
+        title={teamName}
+      >
         {label}
       </p>
       <p className="text-lg font-bold tabular-nums">{value.toFixed(2)}</p>

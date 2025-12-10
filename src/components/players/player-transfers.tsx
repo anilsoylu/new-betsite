@@ -1,49 +1,49 @@
-import Image from "next/image"
-import { format } from "date-fns"
-import { ArrowRight, Repeat, Gift } from "lucide-react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import type { PlayerTransfer } from "@/types/football"
+import Image from "next/image";
+import { format } from "date-fns";
+import { ArrowRight, Repeat, Gift } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import type { PlayerTransfer } from "@/types/football";
 
 interface PlayerTransfersProps {
-  transfers: Array<PlayerTransfer>
+  transfers: Array<PlayerTransfer>;
 }
 
 function formatTransferAmount(amount: number | null): string {
-  if (!amount) return "Free"
+  if (!amount) return "Free";
   if (amount >= 1000000) {
-    return `€${(amount / 1000000).toFixed(1)}M`
+    return `€${(amount / 1000000).toFixed(1)}M`;
   }
   if (amount >= 1000) {
-    return `€${(amount / 1000).toFixed(0)}K`
+    return `€${(amount / 1000).toFixed(0)}K`;
   }
-  return `€${amount}`
+  return `€${amount}`;
 }
 
 function getTransferIcon(type: PlayerTransfer["type"]) {
   switch (type) {
     case "loan":
     case "end_of_loan":
-      return <Repeat className="h-3 w-3" />
+      return <Repeat className="h-3 w-3" />;
     case "free":
-      return <Gift className="h-3 w-3" />
+      return <Gift className="h-3 w-3" />;
     default:
-      return <ArrowRight className="h-3 w-3" />
+      return <ArrowRight className="h-3 w-3" />;
   }
 }
 
 function getTransferLabel(type: PlayerTransfer["type"]): string {
   switch (type) {
     case "loan":
-      return "Loan"
+      return "Loan";
     case "end_of_loan":
-      return "End of Loan"
+      return "End of Loan";
     case "free":
-      return "Free Transfer"
+      return "Free Transfer";
     case "permanent":
-      return "Transfer"
+      return "Transfer";
     default:
-      return "Transfer"
+      return "Transfer";
   }
 }
 
@@ -55,10 +55,12 @@ export function PlayerTransfers({ transfers }: PlayerTransfersProps) {
           <CardTitle className="text-base">Transfer History</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-muted-foreground">No transfer history available</p>
+          <p className="text-sm text-muted-foreground">
+            No transfer history available
+          </p>
         </CardContent>
       </Card>
-    )
+    );
   }
 
   return (
@@ -74,7 +76,10 @@ export function PlayerTransfers({ transfers }: PlayerTransfersProps) {
       <CardContent className="p-0">
         <div className="divide-y">
           {transfers.map((transfer) => (
-            <div key={transfer.id} className="p-3 hover:bg-muted/30 transition-colors">
+            <div
+              key={transfer.id}
+              className="p-3 hover:bg-muted/30 transition-colors"
+            >
               {/* Date and Type */}
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
@@ -110,7 +115,9 @@ export function PlayerTransfers({ transfers }: PlayerTransfersProps) {
                       {transfer.fromTeamName.charAt(0)}
                     </div>
                   )}
-                  <span className="text-sm truncate">{transfer.fromTeamName}</span>
+                  <span className="text-sm truncate">
+                    {transfer.fromTeamName}
+                  </span>
                 </div>
 
                 {/* Arrow */}
@@ -131,7 +138,9 @@ export function PlayerTransfers({ transfers }: PlayerTransfersProps) {
                       {transfer.toTeamName.charAt(0)}
                     </div>
                   )}
-                  <span className="text-sm truncate">{transfer.toTeamName}</span>
+                  <span className="text-sm truncate">
+                    {transfer.toTeamName}
+                  </span>
                 </div>
               </div>
             </div>
@@ -139,5 +148,5 @@ export function PlayerTransfers({ transfers }: PlayerTransfersProps) {
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }

@@ -1,8 +1,8 @@
-import type { Metadata } from "next"
-import { notFound } from "next/navigation"
-import { getPlayerById } from "@/lib/api/football-api"
-import { getTopLeaguesStandings } from "@/lib/queries"
-import { extractPlayerId } from "@/lib/utils"
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { getPlayerById } from "@/lib/api/football-api";
+import { getTopLeaguesStandings } from "@/lib/queries";
+import { extractPlayerId } from "@/lib/utils";
 import {
   PlayerHeader,
   PlayerCurrentSeason,
@@ -12,57 +12,60 @@ import {
   PlayerCareer,
   PlayerAboutSection,
   PlayerAttributes,
-} from "@/components/players"
-import { StandingsWidget } from "@/components/sidebar"
-import { SITE } from "@/lib/constants"
+} from "@/components/players";
+import { StandingsWidget } from "@/components/sidebar";
+import { SITE } from "@/lib/constants";
 
 interface PlayerDetailPageProps {
-  params: Promise<{ slug: string }>
+  params: Promise<{ slug: string }>;
 }
 
 export async function generateMetadata({
   params,
 }: PlayerDetailPageProps): Promise<Metadata> {
-  const { slug } = await params
-  const playerId = extractPlayerId(slug)
+  const { slug } = await params;
+  const playerId = extractPlayerId(slug);
 
   if (!playerId) {
-    return { title: "Player Not Found" }
+    return { title: "Player Not Found" };
   }
 
   try {
-    const player = await getPlayerById(playerId)
+    const player = await getPlayerById(playerId);
 
     return {
       title: `${player.displayName} | ${SITE.name}`,
-      description: `${player.displayName} profile, statistics and career history. ${player.position || ""} ${player.currentTeam?.teamName ? `at ${player.currentTeam.teamName}` : ""}`.trim(),
+      description:
+        `${player.displayName} profile, statistics and career history. ${player.position || ""} ${player.currentTeam?.teamName ? `at ${player.currentTeam.teamName}` : ""}`.trim(),
       openGraph: {
         title: `${player.displayName} | ${SITE.name}`,
         description: `${player.displayName} profile and career history.`,
         images: player.image ? [{ url: player.image }] : undefined,
       },
-    }
+    };
   } catch {
-    return { title: "Player Not Found" }
+    return { title: "Player Not Found" };
   }
 }
 
-export default async function PlayerDetailPage({ params }: PlayerDetailPageProps) {
-  const { slug } = await params
-  const playerId = extractPlayerId(slug)
+export default async function PlayerDetailPage({
+  params,
+}: PlayerDetailPageProps) {
+  const { slug } = await params;
+  const playerId = extractPlayerId(slug);
 
   if (!playerId) {
-    notFound()
+    notFound();
   }
 
   // Fetch player and standings in parallel
   const [player, leagueStandings] = await Promise.all([
     getPlayerById(playerId).catch(() => null),
     getTopLeaguesStandings().catch(() => []),
-  ])
+  ]);
 
   if (!player) {
-    notFound()
+    notFound();
   }
 
   return (
@@ -106,7 +109,10 @@ export default async function PlayerDetailPage({ params }: PlayerDetailPageProps
             <PlayerTrophies trophies={player.trophies} />
 
             {/* Recent Matches */}
-            <PlayerMatches matches={player.recentMatches} playerId={player.id} />
+            <PlayerMatches
+              matches={player.recentMatches}
+              playerId={player.id}
+            />
 
             {/* Standings Widget */}
             <StandingsWidget leagueStandings={leagueStandings} />
@@ -114,5 +120,5 @@ export default async function PlayerDetailPage({ params }: PlayerDetailPageProps
         </div>
       </div>
     </main>
-  )
+  );
 }

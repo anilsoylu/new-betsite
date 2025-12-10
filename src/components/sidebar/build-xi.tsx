@@ -1,16 +1,19 @@
-"use client"
-
-import Link from "next/link"
-import { Users, ChevronRight } from "lucide-react"
-import { cn } from "@/lib/utils"
+import Link from "next/link";
+import { Users, ChevronRight } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface BuildXIProps {
-  className?: string
+  className?: string;
 }
 
 export function BuildXI({ className }: BuildXIProps) {
   return (
-    <div className={cn("rounded-xl border border-border bg-card overflow-hidden", className)}>
+    <div
+      className={cn(
+        "rounded-xl border border-border bg-card overflow-hidden",
+        className,
+      )}
+    >
       {/* Mini Pitch Background */}
       <div className="relative bg-gradient-to-b from-green-600 to-green-700 p-4">
         {/* Pitch markings */}
@@ -41,12 +44,12 @@ export function BuildXI({ className }: BuildXIProps) {
         href="/build-xi"
         className={cn(
           "flex items-center justify-between px-4 py-3 transition-colors",
-          "hover:bg-muted/50 group"
+          "hover:bg-muted/50 group",
         )}
       >
         <span className="text-sm font-medium">Start Building</span>
         <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:translate-x-0.5 transition-transform" />
       </Link>
     </div>
-  )
+  );
 }

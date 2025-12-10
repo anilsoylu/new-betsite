@@ -9,7 +9,11 @@ interface StandingsTabProps {
   awayTeamId: number;
 }
 
-export function StandingsTab({ standings, homeTeamId, awayTeamId }: StandingsTabProps) {
+export function StandingsTab({
+  standings,
+  homeTeamId,
+  awayTeamId,
+}: StandingsTabProps) {
   // Use first standing table (main table)
   const mainTable = standings[0];
 
@@ -43,7 +47,9 @@ export function StandingsTab({ standings, homeTeamId, awayTeamId }: StandingsTab
                 <th className="text-center p-3 w-10">L</th>
                 <th className="text-center p-3 w-12">GD</th>
                 <th className="text-center p-3 w-10 font-semibold">Pts</th>
-                <th className="text-center p-3 w-24 hidden sm:table-cell">Form</th>
+                <th className="text-center p-3 w-24 hidden sm:table-cell">
+                  Form
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -51,7 +57,10 @@ export function StandingsTab({ standings, homeTeamId, awayTeamId }: StandingsTab
                 <StandingRow
                   key={standing.teamId}
                   standing={standing}
-                  isHighlighted={standing.teamId === homeTeamId || standing.teamId === awayTeamId}
+                  isHighlighted={
+                    standing.teamId === homeTeamId ||
+                    standing.teamId === awayTeamId
+                  }
                 />
               ))}
             </tbody>
@@ -69,10 +78,12 @@ interface StandingRowProps {
 
 function StandingRow({ standing, isHighlighted }: StandingRowProps) {
   return (
-    <tr className={cn(
-      "border-b last:border-0 hover:bg-muted/30 transition-colors",
-      isHighlighted && "bg-primary/5"
-    )}>
+    <tr
+      className={cn(
+        "border-b last:border-0 hover:bg-muted/30 transition-colors",
+        isHighlighted && "bg-primary/5",
+      )}
+    >
       <td className="p-3 text-muted-foreground">{standing.position}</td>
       <td className="p-3">
         <div className="flex items-center gap-2">
@@ -85,7 +96,12 @@ function StandingRow({ standing, isHighlighted }: StandingRowProps) {
               className="object-contain w-auto h-auto"
             />
           )}
-          <span className={cn("truncate max-w-[120px] sm:max-w-[180px]", isHighlighted && "font-semibold")}>
+          <span
+            className={cn(
+              "truncate max-w-[120px] sm:max-w-[180px]",
+              isHighlighted && "font-semibold",
+            )}
+          >
             {standing.teamName}
           </span>
         </div>
@@ -95,14 +111,20 @@ function StandingRow({ standing, isHighlighted }: StandingRowProps) {
       <td className="p-3 text-center tabular-nums">{standing.drawn}</td>
       <td className="p-3 text-center tabular-nums">{standing.lost}</td>
       <td className="p-3 text-center tabular-nums">
-        <span className={cn(
-          standing.goalDifference > 0 && "text-green-600 dark:text-green-400",
-          standing.goalDifference < 0 && "text-red-600 dark:text-red-400"
-        )}>
-          {standing.goalDifference > 0 ? `+${standing.goalDifference}` : standing.goalDifference}
+        <span
+          className={cn(
+            standing.goalDifference > 0 && "text-green-600 dark:text-green-400",
+            standing.goalDifference < 0 && "text-red-600 dark:text-red-400",
+          )}
+        >
+          {standing.goalDifference > 0
+            ? `+${standing.goalDifference}`
+            : standing.goalDifference}
         </span>
       </td>
-      <td className="p-3 text-center font-semibold tabular-nums">{standing.points}</td>
+      <td className="p-3 text-center font-semibold tabular-nums">
+        {standing.points}
+      </td>
       <td className="p-3 hidden sm:table-cell">
         <div className="flex justify-center gap-1">
           {standing.form.slice(0, 5).map((result, index) => (
@@ -122,10 +144,12 @@ function FormBadge({ result }: { result: "W" | "D" | "L" }) {
   };
 
   return (
-    <span className={cn(
-      "w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold text-white",
-      colors[result]
-    )}>
+    <span
+      className={cn(
+        "w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold text-white",
+        colors[result],
+      )}
+    >
       {result}
     </span>
   );

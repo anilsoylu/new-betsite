@@ -1,55 +1,55 @@
-"use client"
+"use client";
 
-import Image from "next/image"
-import { format } from "date-fns"
+import Image from "next/image";
+import { format } from "date-fns";
 import {
   BarChart3,
   ArrowLeftRight,
   ArrowRight,
   Repeat,
   Gift,
-} from "lucide-react"
-import { Card, CardContent, CardHeader } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import type { PlayerSeasonStats, PlayerTransfer } from "@/types/football"
+} from "lucide-react";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import type { PlayerSeasonStats, PlayerTransfer } from "@/types/football";
 
 interface PlayerDataTabsProps {
-  stats: Array<PlayerSeasonStats>
-  transfers: Array<PlayerTransfer>
+  stats: Array<PlayerSeasonStats>;
+  transfers: Array<PlayerTransfer>;
 }
 
 function formatTransferAmount(amount: number | null): string {
-  if (!amount) return "Free"
-  if (amount >= 1000000) return `€${(amount / 1000000).toFixed(1)}M`
-  if (amount >= 1000) return `€${(amount / 1000).toFixed(0)}K`
-  return `€${amount}`
+  if (!amount) return "Free";
+  if (amount >= 1000000) return `€${(amount / 1000000).toFixed(1)}M`;
+  if (amount >= 1000) return `€${(amount / 1000).toFixed(0)}K`;
+  return `€${amount}`;
 }
 
 function getTransferIcon(type: PlayerTransfer["type"]) {
   switch (type) {
     case "loan":
     case "end_of_loan":
-      return <Repeat className="h-3 w-3" />
+      return <Repeat className="h-3 w-3" />;
     case "free":
-      return <Gift className="h-3 w-3" />
+      return <Gift className="h-3 w-3" />;
     default:
-      return <ArrowRight className="h-3 w-3" />
+      return <ArrowRight className="h-3 w-3" />;
   }
 }
 
 function getTransferLabel(type: PlayerTransfer["type"]): string {
   switch (type) {
     case "loan":
-      return "Loan"
+      return "Loan";
     case "end_of_loan":
-      return "End of Loan"
+      return "End of Loan";
     case "free":
-      return "Free"
+      return "Free";
     case "permanent":
-      return "Transfer"
+      return "Transfer";
     default:
-      return "Transfer"
+      return "Transfer";
   }
 }
 
@@ -71,8 +71,8 @@ export function PlayerDataTabs({ stats, transfers }: PlayerDataTabsProps) {
       minutesPlayed: 0,
       yellowCards: 0,
       redCards: 0,
-    }
-  )
+    },
+  );
 
   return (
     <Card>
@@ -305,5 +305,5 @@ export function PlayerDataTabs({ stats, transfers }: PlayerDataTabsProps) {
       </CardHeader>
       <CardContent className="p-0" />
     </Card>
-  )
+  );
 }

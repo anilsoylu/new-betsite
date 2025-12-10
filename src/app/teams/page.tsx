@@ -1,26 +1,33 @@
-import type { Metadata } from "next"
-import Image from "next/image"
-import Link from "next/link"
-import { Search, ChevronRight } from "lucide-react"
-import { SITE } from "@/lib/constants"
-import { getTeamsForPopularLeagues, getTopLeaguesStandings } from "@/lib/queries"
-import { slugify } from "@/lib/utils"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { TopLeagues, AdSpace, StandingsWidget } from "@/components/sidebar"
+import type { Metadata } from "next";
+import Image from "next/image";
+import Link from "next/link";
+import { Search, ChevronRight } from "lucide-react";
+import { SITE } from "@/lib/constants";
+import {
+  getTeamsForPopularLeagues,
+  getTopLeaguesStandings,
+} from "@/lib/queries";
+import { slugify } from "@/lib/utils";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { TopLeagues, AdSpace, StandingsWidget } from "@/components/sidebar";
 
 export const metadata: Metadata = {
   title: `Teams | ${SITE.name}`,
-  description: "Discover and browse football teams from top leagues. Find team information, squad, fixtures and statistics.",
-}
+  description:
+    "Discover and browse football teams from top leagues. Find team information, squad, fixtures and statistics.",
+};
 
 export default async function TeamsPage() {
   // Fetch teams and standings in parallel
   const [leagueTeams, leagueStandings] = await Promise.all([
     getTeamsForPopularLeagues(),
     getTopLeaguesStandings(),
-  ])
+  ]);
 
-  const totalTeams = leagueTeams.reduce((sum, league) => sum + league.teams.length, 0)
+  const totalTeams = leagueTeams.reduce(
+    (sum, league) => sum + league.teams.length,
+    0,
+  );
 
   return (
     <main className="flex-1 overflow-auto">
@@ -52,7 +59,11 @@ export default async function TeamsPage() {
                 <div className="flex-1">
                   <p className="text-sm font-medium">Search for any team</p>
                   <p className="text-xs text-muted-foreground">
-                    Press <kbd className="inline-flex h-5 items-center gap-1 rounded border bg-background px-1.5 font-mono text-[10px] font-medium">⌘K</kbd> or use the search in header
+                    Press{" "}
+                    <kbd className="inline-flex h-5 items-center gap-1 rounded border bg-background px-1.5 font-mono text-[10px] font-medium">
+                      ⌘K
+                    </kbd>{" "}
+                    or use the search in header
                   </p>
                 </div>
               </div>
@@ -103,7 +114,8 @@ export default async function TeamsPage() {
                             />
                           ) : (
                             <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center text-sm font-bold text-muted-foreground">
-                              {team.shortCode?.slice(0, 2) || team.name.charAt(0)}
+                              {team.shortCode?.slice(0, 2) ||
+                                team.name.charAt(0)}
                             </div>
                           )}
                           <div className="text-center">
@@ -140,5 +152,5 @@ export default async function TeamsPage() {
         </div>
       </div>
     </main>
-  )
+  );
 }

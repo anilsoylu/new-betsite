@@ -24,7 +24,11 @@ export interface SportmonksTeamRaw {
   venue?: SportmonksVenueRaw;
   coaches?: Array<SportmonksTeamCoachRaw>;
   players?: Array<SportmonksSquadPlayerRaw>;
-  activeSeasons?: Array<SportmonksSeasonRaw & { league?: { id: number; name: string; image_path: string } }>;
+  activeSeasons?: Array<
+    SportmonksSeasonRaw & {
+      league?: { id: number; name: string; image_path: string };
+    }
+  >;
   latest?: Array<SportmonksTeamFixtureRaw>;
   upcoming?: Array<SportmonksTeamFixtureRaw>;
 }

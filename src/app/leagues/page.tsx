@@ -1,36 +1,49 @@
-import type { Metadata } from "next"
-import Link from "next/link"
-import Image from "next/image"
-import { Search, Trophy, Globe, ChevronRight } from "lucide-react"
-import { SITE } from "@/lib/constants"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { TOP_LEAGUES } from "@/components/sidebar/top-leagues"
+import type { Metadata } from "next";
+import Link from "next/link";
+import Image from "next/image";
+import { Search, Trophy, Globe, ChevronRight } from "lucide-react";
+import { SITE } from "@/lib/constants";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { TOP_LEAGUES } from "@/components/sidebar/top-leagues";
 
 export const metadata: Metadata = {
   title: `Leagues | ${SITE.name}`,
-  description: "Browse football leagues and competitions from around the world. View standings, fixtures, and statistics.",
-}
+  description:
+    "Browse football leagues and competitions from around the world. View standings, fixtures, and statistics.",
+};
 
 // Helper to create URL-friendly slug
 function createSlug(name: string): string {
-  return name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "")
+  return name
+    .toLowerCase()
+    .replace(/\s+/g, "-")
+    .replace(/[^a-z0-9-]/g, "");
 }
 
 // Group leagues by region
 const LEAGUE_GROUPS = [
   {
     title: "Top European Leagues",
-    leagues: TOP_LEAGUES.filter(l =>
-      ["England", "Spain", "Germany", "Italy", "France", "Turkey", "Netherlands", "Portugal"].includes(l.country)
+    leagues: TOP_LEAGUES.filter((l) =>
+      [
+        "England",
+        "Spain",
+        "Germany",
+        "Italy",
+        "France",
+        "Turkey",
+        "Netherlands",
+        "Portugal",
+      ].includes(l.country),
     ),
   },
   {
     title: "International Competitions",
-    leagues: TOP_LEAGUES.filter(l =>
-      ["International", "Europe"].includes(l.country)
+    leagues: TOP_LEAGUES.filter((l) =>
+      ["International", "Europe"].includes(l.country),
     ),
   },
-]
+];
 
 export default function LeaguesPage() {
   return (
@@ -87,7 +100,9 @@ export default function LeaguesPage() {
                     />
                     <div className="flex-1 min-w-0">
                       <p className="font-medium truncate">{league.name}</p>
-                      <p className="text-xs text-muted-foreground">{league.country}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {league.country}
+                      </p>
                     </div>
                     <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:translate-x-0.5 transition-transform" />
                   </Link>
@@ -108,8 +123,8 @@ export default function LeaguesPage() {
                 <div>
                   <h3 className="font-medium mb-1">Live Standings</h3>
                   <p className="text-sm text-muted-foreground">
-                    Real-time league tables updated after every match.
-                    Track positions, points, and goal differences.
+                    Real-time league tables updated after every match. Track
+                    positions, points, and goal differences.
                   </p>
                 </div>
               </div>
@@ -125,8 +140,8 @@ export default function LeaguesPage() {
                 <div>
                   <h3 className="font-medium mb-1">Global Coverage</h3>
                   <p className="text-sm text-muted-foreground">
-                    Access data from 1,000+ leagues worldwide including
-                    domestic leagues, cups, and international competitions.
+                    Access data from 1,000+ leagues worldwide including domestic
+                    leagues, cups, and international competitions.
                   </p>
                 </div>
               </div>
@@ -135,5 +150,5 @@ export default function LeaguesPage() {
         </div>
       </div>
     </main>
-  )
+  );
 }

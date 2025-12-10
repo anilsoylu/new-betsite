@@ -1,8 +1,8 @@
-import type { MetadataRoute } from "next"
-import { SITE } from "@/lib/constants"
+import type { MetadataRoute } from "next";
+import { SITE } from "@/lib/constants";
 
 export default function robots(): MetadataRoute.Robots {
-  const baseUrl = SITE.url
+  const baseUrl = SITE.url;
 
   return {
     rules: [
@@ -13,5 +13,5 @@ export default function robots(): MetadataRoute.Robots {
       },
     ],
     sitemap: `${baseUrl}/sitemap.xml`,
-  }
+  };
 }

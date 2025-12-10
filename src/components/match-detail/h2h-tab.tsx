@@ -19,20 +19,28 @@ export function H2HTab({ h2h, homeTeamId, awayTeamId }: H2HTabProps) {
       {/* Summary stats */}
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-medium">Head to Head Summary</CardTitle>
+          <CardTitle className="text-sm font-medium">
+            Head to Head Summary
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-3 gap-4 text-center">
             <div>
-              <p className="text-2xl font-bold text-primary">{stats.team1Wins}</p>
+              <p className="text-2xl font-bold text-primary">
+                {stats.team1Wins}
+              </p>
               <p className="text-xs text-muted-foreground">Wins</p>
             </div>
             <div>
-              <p className="text-2xl font-bold text-muted-foreground">{stats.draws}</p>
+              <p className="text-2xl font-bold text-muted-foreground">
+                {stats.draws}
+              </p>
               <p className="text-xs text-muted-foreground">Draws</p>
             </div>
             <div>
-              <p className="text-2xl font-bold text-primary">{stats.team2Wins}</p>
+              <p className="text-2xl font-bold text-primary">
+                {stats.team2Wins}
+              </p>
               <p className="text-xs text-muted-foreground">Wins</p>
             </div>
           </div>
@@ -45,7 +53,9 @@ export function H2HTab({ h2h, homeTeamId, awayTeamId }: H2HTabProps) {
       {/* Match list */}
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-medium">Previous Matches</CardTitle>
+          <CardTitle className="text-sm font-medium">
+            Previous Matches
+          </CardTitle>
         </CardHeader>
         <CardContent className="p-0">
           <div className="divide-y">
@@ -73,7 +83,9 @@ function H2HMatchRow({ match, highlightTeamId }: H2HMatchRowProps) {
 
   // Determine if highlighted team won/lost
   const isHighlightedHome = match.homeTeam.id === highlightTeamId;
-  const highlightedScore = isHighlightedHome ? match.homeScore : match.awayScore;
+  const highlightedScore = isHighlightedHome
+    ? match.homeScore
+    : match.awayScore;
   const opponentScore = isHighlightedHome ? match.awayScore : match.homeScore;
 
   let resultClass = "text-muted-foreground";
@@ -117,10 +129,12 @@ function H2HMatchRow({ match, highlightTeamId }: H2HMatchRowProps) {
               className="object-contain flex-shrink-0"
             />
           )}
-          <span className={cn(
-            "truncate",
-            match.winnerId === match.homeTeam.id && "font-semibold"
-          )}>
+          <span
+            className={cn(
+              "truncate",
+              match.winnerId === match.homeTeam.id && "font-semibold",
+            )}
+          >
             {match.homeTeam.name}
           </span>
         </div>
@@ -132,10 +146,12 @@ function H2HMatchRow({ match, highlightTeamId }: H2HMatchRowProps) {
 
         {/* Away team */}
         <div className="flex items-center gap-2 flex-1 min-w-0 justify-end">
-          <span className={cn(
-            "truncate text-right",
-            match.winnerId === match.awayTeam.id && "font-semibold"
-          )}>
+          <span
+            className={cn(
+              "truncate text-right",
+              match.winnerId === match.awayTeam.id && "font-semibold",
+            )}
+          >
             {match.awayTeam.name}
           </span>
           {match.awayTeam.logo && (
@@ -156,7 +172,7 @@ function H2HMatchRow({ match, highlightTeamId }: H2HMatchRowProps) {
 function calculateH2HStats(
   h2h: Array<H2HFixture>,
   team1Id: number,
-  team2Id: number
+  team2Id: number,
 ): { team1Wins: number; team2Wins: number; draws: number } {
   let team1Wins = 0;
   let team2Wins = 0;

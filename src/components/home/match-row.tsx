@@ -1,84 +1,64 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import Image from "next/image"
-import Link from "next/link"
-import { format } from "date-fns"
-import { Star } from "lucide-react"
-import { cn, getFixtureUrl } from "@/lib/utils"
-import { useFavoritesStore } from "@/stores/favorites-store"
-import { useLiveFixture } from "@/hooks"
-import type { Fixture } from "@/types/football"
+import { useState, useEffect } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { format } from "date-fns";
+import { Star } from "lucide-react";
+import { cn, getFixtureUrl } from "@/lib/utils";
+import { useFavoritesStore } from "@/stores/favorites-store";
+import { useLiveFixture } from "@/hooks";
+import { StatusBadge } from "@/components/ui/status-badge";
+import type { Fixture } from "@/types/football";
 
 interface MatchRowProps {
-  fixture: Fixture
-  showFavorites?: boolean
+  fixture: Fixture;
+  showFavorites?: boolean;
 }
 
 export function MatchRow({ fixture, showFavorites = true }: MatchRowProps) {
-  const { homeTeam, awayTeam, startTime, id: fixtureId } = fixture
-  const { isFavorite, toggleFavorite } = useFavoritesStore()
-  const [hasMounted, setHasMounted] = useState(false)
-  const [isAnimating, setIsAnimating] = useState(false)
+  const { homeTeam, awayTeam, startTime, id: fixtureId } = fixture;
+  const { isFavorite, toggleFavorite } = useFavoritesStore();
+  const [hasMounted, setHasMounted] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(false);
 
   // Poll for live fixture updates
-  const liveData = useLiveFixture({ fixture, pollInterval: 30000 })
-  const { status, displayMinute, homeScore, awayScore, isLive } = liveData
+  const liveData = useLiveFixture({ fixture, pollInterval: 30000 });
+  const { status, displayMinute, homeScore, awayScore, isLive } = liveData;
 
   useEffect(() => {
-    setHasMounted(true)
-  }, [])
+    setHasMounted(true);
+  }, []);
 
   // Format time only on client to avoid hydration mismatch (server vs user timezone)
   const formattedTime = hasMounted
     ? format(new Date(startTime), "HH:mm")
-    : "--:--"
+    : "--:--";
 
   // Only check favorites after mount
-  const isHomeFavorite = hasMounted && isFavorite("teams", homeTeam.id)
-  const isAwayFavorite = hasMounted && isFavorite("teams", awayTeam.id)
-  const isMatchFavorite = hasMounted && isFavorite("matches", fixtureId)
-  const hasFavoriteTeam = isHomeFavorite || isAwayFavorite
+  const isHomeFavorite = hasMounted && isFavorite("teams", homeTeam.id);
+  const isAwayFavorite = hasMounted && isFavorite("teams", awayTeam.id);
+  const isMatchFavorite = hasMounted && isFavorite("matches", fixtureId);
+  const hasFavoriteTeam = isHomeFavorite || isAwayFavorite;
 
   const handleFavoriteClick = (e: React.MouseEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    setIsAnimating(true)
-    toggleFavorite("matches", fixtureId)
-    setTimeout(() => setIsAnimating(false), 400)
-  }
+    e.preventDefault();
+    e.stopPropagation();
+    setIsAnimating(true);
+    toggleFavorite("matches", fixtureId);
+    setTimeout(() => setIsAnimating(false), 400);
+  };
 
-  // Status display
-  const StatusBadge = () => {
-    // Halftime / Break
-    if (status === "halftime") {
-      return (
-        <div className="flex items-center gap-1 min-w-[44px] justify-center">
-          <span className="relative flex h-1.5 w-1.5">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-500 opacity-75" />
-            <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-orange-500" />
-          </span>
-          <span className="text-xs font-bold text-orange-500">HT</span>
-        </div>
-      )
-    }
-    // Live with minute
-    if (isLive) {
-      return (
-        <div className="flex items-center gap-1 min-w-[44px] justify-center">
-          <span className="relative flex h-1.5 w-1.5">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75" />
-            <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-red-500" />
-          </span>
-          <span className="text-xs font-bold text-red-500">{displayMinute || "LIVE"}</span>
-        </div>
-      )
-    }
-    if (status === "finished") {
-      return <span className="text-xs font-medium text-muted-foreground min-w-[44px] text-center">FT</span>
-    }
-    return <span className="text-xs font-medium text-muted-foreground min-w-[44px] text-center">{formattedTime}</span>
-  }
+  // Status display - using shared StatusBadge component
+  const renderStatus = () => (
+    <StatusBadge
+      status={status}
+      isLive={isLive}
+      displayMinute={displayMinute}
+      formattedTime={formattedTime}
+      variant="compact"
+    />
+  );
 
   return (
     <Link href={getFixtureUrl(fixture)}>
@@ -88,11 +68,14 @@ export function MatchRow({ fixture, showFavorites = true }: MatchRowProps) {
           "hover:bg-muted/50 active:scale-[0.99]",
           status === "halftime" && "bg-orange-500/5",
           isLive && status !== "halftime" && "bg-red-500/5",
-          !isLive && status !== "halftime" && (hasFavoriteTeam || isMatchFavorite) && "bg-yellow-500/5"
+          !isLive &&
+            status !== "halftime" &&
+            (hasFavoriteTeam || isMatchFavorite) &&
+            "bg-yellow-500/5",
         )}
       >
         {/* Status / Time */}
-        <StatusBadge />
+        {renderStatus()}
 
         {/* Home Team */}
         <div className="flex items-center gap-2 flex-1 min-w-0">
@@ -109,45 +92,61 @@ export function MatchRow({ fixture, showFavorites = true }: MatchRowProps) {
               {homeTeam.name.charAt(0)}
             </div>
           )}
-          <span className={cn(
-            "text-sm truncate",
-            homeTeam.isWinner ? "font-semibold text-foreground" : "text-muted-foreground"
-          )}>
+          <span
+            className={cn(
+              "text-sm truncate",
+              homeTeam.isWinner
+                ? "font-semibold text-foreground"
+                : "text-muted-foreground",
+            )}
+          >
             {homeTeam.name}
           </span>
         </div>
 
         {/* Score */}
-        {(isLive || status === "finished" || status === "halftime") ? (
+        {isLive || status === "finished" || status === "halftime" ? (
           <div className="flex items-center gap-1 shrink-0">
-            <span className={cn(
-              "text-sm font-bold w-5 text-center tabular-nums",
-              homeTeam.isWinner ? "text-foreground" : "text-muted-foreground"
-            )}>
+            <span
+              className={cn(
+                "text-sm font-bold w-5 text-center tabular-nums",
+                homeTeam.isWinner ? "text-foreground" : "text-muted-foreground",
+              )}
+            >
               {homeScore}
             </span>
             <span className="text-muted-foreground/50">-</span>
-            <span className={cn(
-              "text-sm font-bold w-5 text-center tabular-nums",
-              awayTeam.isWinner ? "text-foreground" : "text-muted-foreground"
-            )}>
+            <span
+              className={cn(
+                "text-sm font-bold w-5 text-center tabular-nums",
+                awayTeam.isWinner ? "text-foreground" : "text-muted-foreground",
+              )}
+            >
               {awayScore}
             </span>
           </div>
         ) : (
           <div className="flex items-center gap-1 shrink-0">
-            <span className="text-sm text-muted-foreground/50 w-5 text-center">-</span>
+            <span className="text-sm text-muted-foreground/50 w-5 text-center">
+              -
+            </span>
             <span className="text-muted-foreground/50">-</span>
-            <span className="text-sm text-muted-foreground/50 w-5 text-center">-</span>
+            <span className="text-sm text-muted-foreground/50 w-5 text-center">
+              -
+            </span>
           </div>
         )}
 
         {/* Away Team */}
         <div className="flex items-center gap-2 flex-1 min-w-0 justify-end">
-          <span className={cn(
-            "text-sm truncate text-right",
-            awayTeam.isWinner ? "font-semibold text-foreground" : "text-muted-foreground"
-          )}>
+          <span
+            className={cn(
+              "text-sm truncate text-right",
+              awayTeam.isWinner
+                ? "font-semibold text-foreground"
+                : "text-muted-foreground",
+            )}
+          >
             {awayTeam.name}
           </span>
           {awayTeam.logo ? (
@@ -172,19 +171,19 @@ export function MatchRow({ fixture, showFavorites = true }: MatchRowProps) {
             className={cn(
               "p-1.5 rounded-full transition-all shrink-0",
               "hover:bg-muted active:scale-90",
-              isMatchFavorite ? "text-yellow-500" : "text-muted-foreground/30"
+              isMatchFavorite ? "text-yellow-500" : "text-muted-foreground/30",
             )}
           >
             <Star
               className={cn(
                 "h-4 w-4 transition-transform",
                 isMatchFavorite && "fill-yellow-500",
-                isAnimating && "animate-star-pop"
+                isAnimating && "animate-star-pop",
               )}
             />
           </button>
         )}
       </div>
     </Link>
-  )
+  );
 }

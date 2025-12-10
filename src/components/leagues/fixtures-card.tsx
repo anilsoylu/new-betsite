@@ -1,16 +1,16 @@
-"use client"
+"use client";
 
-import Image from "next/image"
-import Link from "next/link"
-import { Calendar, Clock, ChevronRight } from "lucide-react"
-import { cn, getFixtureUrl } from "@/lib/utils"
-import { useLiveFixture } from "@/hooks"
-import type { Fixture } from "@/types/football"
+import Image from "next/image";
+import Link from "next/link";
+import { Calendar, Clock, ChevronRight } from "lucide-react";
+import { cn, getFixtureUrl } from "@/lib/utils";
+import { useLiveFixture } from "@/hooks";
+import type { Fixture } from "@/types/football";
 
 // Separate component for live fixture display to use the polling hook
 function LiveFixtureRow({ fixture }: { fixture: Fixture }) {
-  const liveData = useLiveFixture({ fixture, pollInterval: 30000 })
-  const { displayMinute, homeScore, awayScore, status } = liveData
+  const liveData = useLiveFixture({ fixture, pollInterval: 30000 });
+  const { displayMinute, homeScore, awayScore, status } = liveData;
 
   return (
     <Link
@@ -46,7 +46,7 @@ function LiveFixtureRow({ fixture }: { fixture: Fixture }) {
           <span
             className={cn(
               "text-sm truncate",
-              fixture.homeTeam.isWinner && "font-semibold"
+              fixture.homeTeam.isWinner && "font-semibold",
             )}
           >
             {fixture.homeTeam.name}
@@ -64,7 +64,7 @@ function LiveFixtureRow({ fixture }: { fixture: Fixture }) {
           <span
             className={cn(
               "text-sm truncate",
-              fixture.awayTeam.isWinner && "font-semibold"
+              fixture.awayTeam.isWinner && "font-semibold",
             )}
           >
             {fixture.awayTeam.name}
@@ -75,52 +75,60 @@ function LiveFixtureRow({ fixture }: { fixture: Fixture }) {
       {/* Score */}
       <div className="shrink-0 ml-3">
         <div className="text-center">
-          <div className="text-sm font-bold text-red-500">
-            {homeScore}
-          </div>
-          <div className="text-sm font-bold text-red-500">
-            {awayScore}
-          </div>
+          <div className="text-sm font-bold text-red-500">{homeScore}</div>
+          <div className="text-sm font-bold text-red-500">{awayScore}</div>
         </div>
       </div>
 
       {/* Chevron */}
       <ChevronRight className="h-4 w-4 text-muted-foreground ml-2 opacity-0 group-hover:opacity-100 transition-opacity" />
     </Link>
-  )
+  );
 }
 
 interface FixturesCardProps {
-  title: string
-  fixtures: Fixture[]
-  type: "upcoming" | "recent" | "live"
-  showDate?: boolean
-  className?: string
-  onViewAll?: () => void
+  title: string;
+  fixtures: Fixture[];
+  type: "upcoming" | "recent" | "live";
+  showDate?: boolean;
+  className?: string;
+  onViewAll?: () => void;
 }
 
-export function FixturesCard({ title, fixtures, type, showDate = true, className, onViewAll }: FixturesCardProps) {
-  if (fixtures.length === 0) return null
+export function FixturesCard({
+  title,
+  fixtures,
+  type,
+  showDate = true,
+  className,
+  onViewAll,
+}: FixturesCardProps) {
+  if (fixtures.length === 0) return null;
 
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
+    const date = new Date(dateString);
     return date.toLocaleDateString("en-GB", {
       weekday: "short",
       day: "numeric",
       month: "short",
-    })
-  }
+    });
+  };
 
   const formatTime = (dateString: string) => {
-    const date = new Date(dateString)
+    const date = new Date(dateString);
     return date.toLocaleTimeString("en-GB", {
       hour: "2-digit",
       minute: "2-digit",
-    })
-  }
+    });
+  };
 
   return (
-    <div className={cn("rounded-xl border border-border bg-card overflow-hidden", className)}>
+    <div
+      className={cn(
+        "rounded-xl border border-border bg-card overflow-hidden",
+        className,
+      )}
+    >
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-muted/30">
         <div className="flex items-center gap-2">
@@ -133,13 +141,15 @@ export function FixturesCard({ title, fixtures, type, showDate = true, className
             <Calendar className="h-4 w-4 text-primary" />
           )}
           <h3 className="font-semibold text-sm">{title}</h3>
-          <span className="text-xs text-muted-foreground">({fixtures.length})</span>
+          <span className="text-xs text-muted-foreground">
+            ({fixtures.length})
+          </span>
         </div>
       </div>
 
       {/* Fixtures List */}
       <div className="divide-y divide-border/50">
-        {fixtures.slice(0, 5).map((fixture) => (
+        {fixtures.slice(0, 5).map((fixture) =>
           type === "live" ? (
             <LiveFixtureRow key={fixture.id} fixture={fixture} />
           ) : (
@@ -156,7 +166,9 @@ export function FixturesCard({ title, fixtures, type, showDate = true, className
                       <p className="text-[10px] text-muted-foreground uppercase">
                         {formatDate(fixture.startTime)}
                       </p>
-                      <p className="text-xs font-medium">{formatTime(fixture.startTime)}</p>
+                      <p className="text-xs font-medium">
+                        {formatTime(fixture.startTime)}
+                      </p>
                     </>
                   ) : (
                     <p className="text-[10px] text-muted-foreground">
@@ -180,7 +192,7 @@ export function FixturesCard({ title, fixtures, type, showDate = true, className
                   <span
                     className={cn(
                       "text-sm truncate",
-                      fixture.homeTeam.isWinner && "font-semibold"
+                      fixture.homeTeam.isWinner && "font-semibold",
                     )}
                   >
                     {fixture.homeTeam.name}
@@ -198,7 +210,7 @@ export function FixturesCard({ title, fixtures, type, showDate = true, className
                   <span
                     className={cn(
                       "text-sm truncate",
-                      fixture.awayTeam.isWinner && "font-semibold"
+                      fixture.awayTeam.isWinner && "font-semibold",
                     )}
                   >
                     {fixture.awayTeam.name}
@@ -227,8 +239,8 @@ export function FixturesCard({ title, fixtures, type, showDate = true, className
               {/* Chevron */}
               <ChevronRight className="h-4 w-4 text-muted-foreground ml-2 opacity-0 group-hover:opacity-100 transition-opacity" />
             </Link>
-          )
-        ))}
+          ),
+        )}
       </div>
 
       {/* View All Link */}
@@ -243,5 +255,5 @@ export function FixturesCard({ title, fixtures, type, showDate = true, className
         </div>
       )}
     </div>
-  )
+  );
 }

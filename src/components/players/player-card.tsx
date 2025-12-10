@@ -1,21 +1,21 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import Link from "next/link"
-import Image from "next/image"
-import { User, Star } from "lucide-react"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { cn } from "@/lib/utils"
-import { generatePlayerSlug } from "@/lib/utils"
-import { useFavoritesStore } from "@/stores/favorites-store"
-import type { PlayerSearchResult } from "@/types/football"
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import { User, Star } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { generatePlayerSlug } from "@/lib/utils";
+import { useFavoritesStore } from "@/stores/favorites-store";
+import type { PlayerSearchResult } from "@/types/football";
 
 interface PlayerCardProps {
-  player: PlayerSearchResult
-  variant?: "default" | "compact"
-  showFavorite?: boolean
+  player: PlayerSearchResult;
+  variant?: "default" | "compact";
+  showFavorite?: boolean;
 }
 
 export function PlayerCard({
@@ -23,21 +23,21 @@ export function PlayerCard({
   variant = "default",
   showFavorite = true,
 }: PlayerCardProps) {
-  const { toggleFavorite, isFavorite } = useFavoritesStore()
-  const [hasMounted, setHasMounted] = useState(false)
+  const { toggleFavorite, isFavorite } = useFavoritesStore();
+  const [hasMounted, setHasMounted] = useState(false);
 
   useEffect(() => {
-    setHasMounted(true)
-  }, [])
+    setHasMounted(true);
+  }, []);
 
-  const slug = generatePlayerSlug(player.displayName || player.name, player.id)
-  const isPlayerFavorite = hasMounted && isFavorite("players", player.id)
+  const slug = generatePlayerSlug(player.displayName || player.name, player.id);
+  const isPlayerFavorite = hasMounted && isFavorite("players", player.id);
 
   const handleFavoriteClick = (e: React.MouseEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    toggleFavorite("players", player.id)
-  }
+    e.preventDefault();
+    e.stopPropagation();
+    toggleFavorite("players", player.id);
+  };
 
   if (variant === "compact") {
     return (
@@ -63,7 +63,10 @@ export function PlayerCard({
                 {player.displayName || player.name}
               </p>
               {player.position && (
-                <Badge variant="secondary" className="text-[10px] h-4 px-1 mt-0.5">
+                <Badge
+                  variant="secondary"
+                  className="text-[10px] h-4 px-1 mt-0.5"
+                >
                   {player.position}
                 </Badge>
               )}
@@ -80,7 +83,7 @@ export function PlayerCard({
                     "h-4 w-4",
                     isPlayerFavorite
                       ? "fill-yellow-500 text-yellow-500"
-                      : "text-muted-foreground"
+                      : "text-muted-foreground",
                   )}
                 />
               </Button>
@@ -88,7 +91,7 @@ export function PlayerCard({
           </CardContent>
         </Card>
       </Link>
-    )
+    );
   }
 
   return (
@@ -117,7 +120,7 @@ export function PlayerCard({
                 className={cn(
                   "absolute top-2 right-2 h-8 w-8 bg-background/80 backdrop-blur-sm",
                   "opacity-0 group-hover:opacity-100 transition-opacity",
-                  isPlayerFavorite && "opacity-100"
+                  isPlayerFavorite && "opacity-100",
                 )}
                 onClick={handleFavoriteClick}
               >
@@ -126,7 +129,7 @@ export function PlayerCard({
                     "h-4 w-4",
                     isPlayerFavorite
                       ? "fill-yellow-500 text-yellow-500"
-                      : "text-foreground"
+                      : "text-foreground",
                   )}
                 />
               </Button>
@@ -163,5 +166,5 @@ export function PlayerCard({
         </CardContent>
       </Card>
     </Link>
-  )
+  );
 }

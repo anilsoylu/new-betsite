@@ -1,19 +1,22 @@
-import { NextResponse } from "next/server"
-import { searchPlayers } from "@/lib/api/football-api"
+import { NextResponse } from "next/server";
+import { searchPlayers } from "@/lib/api/football-api";
+import {
+  playerSearchSchema,
+  validateSearchParams,
+} from "@/lib/validation/schemas";
+import { createErrorResponse, logError } from "@/lib/errors";
 
 export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url)
-  const query = searchParams.get("q")
-
-  if (!query || query.length < 2) {
-    return NextResponse.json({ players: [] })
-  }
+  const url = new URL(request.url);
 
   try {
-    const players = await searchPlayers(query)
-    return NextResponse.json({ players })
+    const { q } = validateSearchParams(playerSearchSchema, url.searchParams);
+    const players = await searchPlayers(q);
+
+    return NextResponse.json({ players });
   } catch (error) {
-    console.error("Player search error:", error)
-    return NextResponse.json({ players: [], error: "Search failed" }, { status: 500 })
+    logError("api/players/search", error, { url: request.url });
+    const { body, status } = createErrorResponse(error);
+    return NextResponse.json(body, { status });
   }
 }

@@ -1,152 +1,173 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import Image from "next/image"
-import Link from "next/link"
-import { Star, Users, Trophy, UserCircle, Trash2, Shield, User, Calendar } from "lucide-react"
-import { Card, CardContent } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { useFavoritesStore } from "@/stores/favorites-store"
-import { generateTeamSlug, generatePlayerSlug, getFixtureUrl } from "@/lib/utils"
-import { format } from "date-fns"
+import { useState, useEffect } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import {
+  Star,
+  Users,
+  Trophy,
+  UserCircle,
+  Trash2,
+  Shield,
+  User,
+  Calendar,
+} from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { useFavoritesStore } from "@/stores/favorites-store";
+import {
+  generateTeamSlug,
+  generatePlayerSlug,
+  getFixtureUrl,
+} from "@/lib/utils";
+import { format } from "date-fns";
 
 interface TeamData {
-  id: number
-  name: string
-  logo?: string
-  country?: { name: string; flag?: string }
+  id: number;
+  name: string;
+  logo?: string;
+  country?: { name: string; flag?: string };
 }
 
 interface PlayerData {
-  id: number
-  name: string
-  displayName?: string
-  image?: string
-  position?: string
-  country?: { name: string; flag?: string }
+  id: number;
+  name: string;
+  displayName?: string;
+  image?: string;
+  position?: string;
+  country?: { name: string; flag?: string };
 }
 
 interface LeagueData {
-  id: number
-  name: string
-  logo?: string
-  country?: { name: string; flag?: string }
+  id: number;
+  name: string;
+  logo?: string;
+  country?: { name: string; flag?: string };
 }
 
 interface MatchData {
-  id: number
-  homeTeam: { id: number; name: string; logo?: string }
-  awayTeam: { id: number; name: string; logo?: string }
-  startTime: string
-  status: string
-  score?: { home: number; away: number }
-  league?: { name: string }
+  id: number;
+  homeTeam: { id: number; name: string; logo?: string };
+  awayTeam: { id: number; name: string; logo?: string };
+  startTime: string;
+  status: string;
+  score?: { home: number; away: number };
+  league?: { name: string };
 }
 
 export default function FavoritesPage() {
-  const { teams, leagues, players, matches, removeFavorite, clearFavorites, getTotalCount } = useFavoritesStore()
-  const [teamData, setTeamData] = useState<TeamData[]>([])
-  const [playerData, setPlayerData] = useState<PlayerData[]>([])
-  const [leagueData, setLeagueData] = useState<LeagueData[]>([])
-  const [matchData, setMatchData] = useState<MatchData[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+  const {
+    teams,
+    leagues,
+    players,
+    matches,
+    removeFavorite,
+    clearFavorites,
+    getTotalCount,
+  } = useFavoritesStore();
+  const [teamData, setTeamData] = useState<TeamData[]>([]);
+  const [playerData, setPlayerData] = useState<PlayerData[]>([]);
+  const [leagueData, setLeagueData] = useState<LeagueData[]>([]);
+  const [matchData, setMatchData] = useState<MatchData[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const totalFavorites = getTotalCount()
+  const totalFavorites = getTotalCount();
 
   // Fetch detailed data for favorites
   useEffect(() => {
     async function fetchFavoriteData() {
-      setIsLoading(true)
+      setIsLoading(true);
 
       try {
         // Fetch team data
         if (teams.length > 0) {
           const teamPromises = teams.map(async (id) => {
             try {
-              const res = await fetch(`/api/teams/${id}`)
+              const res = await fetch(`/api/teams/${id}`);
               if (res.ok) {
-                const data = await res.json()
-                return data.team as TeamData
+                const data = await res.json();
+                return data.team as TeamData;
               }
             } catch {
               // Return minimal data on error
             }
-            return { id, name: `Team ${id}` } as TeamData
-          })
-          const teamsResult = await Promise.all(teamPromises)
-          setTeamData(teamsResult.filter(Boolean))
+            return { id, name: `Team ${id}` } as TeamData;
+          });
+          const teamsResult = await Promise.all(teamPromises);
+          setTeamData(teamsResult.filter(Boolean));
         } else {
-          setTeamData([])
+          setTeamData([]);
         }
 
         // Fetch player data
         if (players.length > 0) {
           const playerPromises = players.map(async (id) => {
             try {
-              const res = await fetch(`/api/players/${id}`)
+              const res = await fetch(`/api/players/${id}`);
               if (res.ok) {
-                const data = await res.json()
-                return data.player as PlayerData
+                const data = await res.json();
+                return data.player as PlayerData;
               }
             } catch {
               // Return minimal data on error
             }
-            return { id, name: `Player ${id}` } as PlayerData
-          })
-          const playersResult = await Promise.all(playerPromises)
-          setPlayerData(playersResult.filter(Boolean))
+            return { id, name: `Player ${id}` } as PlayerData;
+          });
+          const playersResult = await Promise.all(playerPromises);
+          setPlayerData(playersResult.filter(Boolean));
         } else {
-          setPlayerData([])
+          setPlayerData([]);
         }
 
         // Fetch league data
         if (leagues.length > 0) {
           const leaguePromises = leagues.map(async (id) => {
             try {
-              const res = await fetch(`/api/leagues/${id}`)
+              const res = await fetch(`/api/leagues/${id}`);
               if (res.ok) {
-                const data = await res.json()
-                return data.league as LeagueData
+                const data = await res.json();
+                return data.league as LeagueData;
               }
             } catch {
               // Return minimal data on error
             }
-            return { id, name: `League ${id}` } as LeagueData
-          })
-          const leaguesResult = await Promise.all(leaguePromises)
-          setLeagueData(leaguesResult.filter(Boolean))
+            return { id, name: `League ${id}` } as LeagueData;
+          });
+          const leaguesResult = await Promise.all(leaguePromises);
+          setLeagueData(leaguesResult.filter(Boolean));
         } else {
-          setLeagueData([])
+          setLeagueData([]);
         }
 
         // Fetch match data
         if (matches.length > 0) {
           const matchPromises = matches.map(async (id) => {
             try {
-              const res = await fetch(`/api/matches/${id}`)
+              const res = await fetch(`/api/matches/${id}`);
               if (res.ok) {
-                const data = await res.json()
-                return data.fixture as MatchData
+                const data = await res.json();
+                return data.fixture as MatchData;
               }
             } catch {
               // Return minimal data on error
             }
-            return null
-          })
-          const matchesResult = await Promise.all(matchPromises)
-          setMatchData(matchesResult.filter(Boolean) as MatchData[])
+            return null;
+          });
+          const matchesResult = await Promise.all(matchPromises);
+          setMatchData(matchesResult.filter(Boolean) as MatchData[]);
         } else {
-          setMatchData([])
+          setMatchData([]);
         }
       } finally {
-        setIsLoading(false)
+        setIsLoading(false);
       }
     }
 
-    fetchFavoriteData()
-  }, [teams, players, leagues, matches])
+    fetchFavoriteData();
+  }, [teams, players, leagues, matches]);
 
   return (
     <main className="flex-1 overflow-auto">
@@ -188,7 +209,8 @@ export default function FavoritesPage() {
                 <div>
                   <h3 className="font-semibold text-lg">No favorites yet</h3>
                   <p className="text-muted-foreground mt-1 max-w-md">
-                    Start adding teams, players, and leagues to your favorites to quickly access them here.
+                    Start adding teams, players, and leagues to your favorites
+                    to quickly access them here.
                   </p>
                 </div>
                 <div className="flex gap-3 mt-2">
@@ -270,7 +292,11 @@ export default function FavoritesPage() {
                     <Card key={match.id} className="group">
                       <CardContent className="flex items-center gap-3 p-3">
                         <Link
-                          href={getFixtureUrl({ id: match.id, homeTeam: match.homeTeam, awayTeam: match.awayTeam } as any)}
+                          href={getFixtureUrl({
+                            id: match.id,
+                            homeTeam: match.homeTeam,
+                            awayTeam: match.awayTeam,
+                          } as any)}
                           className="flex items-center gap-3 flex-1 min-w-0"
                         >
                           <div className="flex items-center gap-2 flex-1 min-w-0">
@@ -287,9 +313,15 @@ export default function FavoritesPage() {
                                 {match.homeTeam.name.charAt(0)}
                               </div>
                             )}
-                            <span className="text-sm font-medium truncate">{match.homeTeam.name}</span>
-                            <span className="text-xs text-muted-foreground">vs</span>
-                            <span className="text-sm font-medium truncate">{match.awayTeam.name}</span>
+                            <span className="text-sm font-medium truncate">
+                              {match.homeTeam.name}
+                            </span>
+                            <span className="text-xs text-muted-foreground">
+                              vs
+                            </span>
+                            <span className="text-sm font-medium truncate">
+                              {match.awayTeam.name}
+                            </span>
                             {match.awayTeam.logo ? (
                               <Image
                                 src={match.awayTeam.logo}
@@ -306,10 +338,15 @@ export default function FavoritesPage() {
                           </div>
                           <div className="text-right shrink-0">
                             {match.score ? (
-                              <span className="text-sm font-bold">{match.score.home} - {match.score.away}</span>
+                              <span className="text-sm font-bold">
+                                {match.score.home} - {match.score.away}
+                              </span>
                             ) : (
                               <span className="text-xs text-muted-foreground">
-                                {format(new Date(match.startTime), "dd MMM HH:mm")}
+                                {format(
+                                  new Date(match.startTime),
+                                  "dd MMM HH:mm",
+                                )}
                               </span>
                             )}
                           </div>
@@ -327,7 +364,6 @@ export default function FavoritesPage() {
                   ))}
                 </div>
               )}
-
             </TabsContent>
 
             {/* Teams Tab */}
@@ -430,7 +466,10 @@ export default function FavoritesPage() {
                             </p>
                             <div className="flex items-center gap-2">
                               {player.position && (
-                                <Badge variant="secondary" className="text-[10px] h-4 px-1">
+                                <Badge
+                                  variant="secondary"
+                                  className="text-[10px] h-4 px-1"
+                                >
                                   {player.position}
                                 </Badge>
                               )}
@@ -493,7 +532,9 @@ export default function FavoritesPage() {
                             )}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="font-medium truncate">{league.name}</p>
+                            <p className="font-medium truncate">
+                              {league.name}
+                            </p>
                             {league.country && (
                               <p className="text-xs text-muted-foreground truncate">
                                 {league.country.name}
@@ -519,5 +560,5 @@ export default function FavoritesPage() {
         )}
       </div>
     </main>
-  )
+  );
 }

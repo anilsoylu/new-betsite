@@ -43,20 +43,29 @@ export async function getHomePageData(): Promise<HomePageData> {
  * Get match detail page data
  * Fetches fixture, h2h, standings, odds, and team form in parallel
  */
-export async function getMatchDetailData(fixtureId: number): Promise<MatchDetailData> {
+export async function getMatchDetailData(
+  fixtureId: number,
+): Promise<MatchDetailData> {
   // First get fixture to know season and teams
   const fixture = await getFixtureById(fixtureId);
 
   // Then fetch additional data in parallel
-  const [h2h, standings, odds, homeTeamFixtures, awayTeamFixtures] = await Promise.all([
-    getHeadToHead(fixture.homeTeam.id, fixture.awayTeam.id).catch(() => []),
-    fixture.seasonId
-      ? getStandingsBySeason(fixture.seasonId).catch(() => [])
-      : Promise.resolve([]),
-    getOddsByFixture(fixtureId).catch(() => null),
-    getFixturesByTeam(fixture.homeTeam.id, { past: 5 }).catch(() => ({ recent: [], upcoming: [] })),
-    getFixturesByTeam(fixture.awayTeam.id, { past: 5 }).catch(() => ({ recent: [], upcoming: [] })),
-  ]);
+  const [h2h, standings, odds, homeTeamFixtures, awayTeamFixtures] =
+    await Promise.all([
+      getHeadToHead(fixture.homeTeam.id, fixture.awayTeam.id).catch(() => []),
+      fixture.seasonId
+        ? getStandingsBySeason(fixture.seasonId).catch(() => [])
+        : Promise.resolve([]),
+      getOddsByFixture(fixtureId).catch(() => null),
+      getFixturesByTeam(fixture.homeTeam.id, { past: 5 }).catch(() => ({
+        recent: [],
+        upcoming: [],
+      })),
+      getFixturesByTeam(fixture.awayTeam.id, { past: 5 }).catch(() => ({
+        recent: [],
+        upcoming: [],
+      })),
+    ]);
 
   // Convert recent fixtures to form data for each team
   const homeForm = homeTeamFixtures.recent.map((f) => ({
@@ -94,38 +103,51 @@ export interface LeagueStandingsData {
 
 /**
  * Get standings for top leagues (for sidebar widget)
- * Fetches current season standings for all domestic leagues in parallel
+ * Optimized: Fetches all league metadata in parallel first, then standings in parallel
+ * This leverages cache effectively - league metadata has 6hr cache
  */
 export async function getTopLeaguesStandings(): Promise<LeagueStandingsData[]> {
-  // Fetch all leagues in parallel
-  const leaguePromises = STANDINGS_LEAGUES.map(async (league) => {
-    try {
-      const leagueData = await getLeagueById(league.id);
+  // Step 1: Fetch all league metadata in parallel (leverages 6hr cache)
+  const leagueDataResults = await Promise.all(
+    STANDINGS_LEAGUES.map((league) =>
+      getLeagueById(league.id)
+        .then((data) => ({ league, data, error: null }))
+        .catch(() => ({ league, data: null, error: true })),
+    ),
+  );
 
-      if (!leagueData.currentSeasonId) {
-        return null;
-      }
+  // Step 2: Filter leagues with valid current seasons
+  const leaguesWithSeasons = leagueDataResults.filter(
+    (
+      r,
+    ): r is {
+      league: (typeof STANDINGS_LEAGUES)[number];
+      data: NonNullable<typeof r.data>;
+      error: null;
+    } => r.data !== null && r.data.currentSeasonId !== undefined,
+  );
 
-      const standings = await getStandingsBySeason(leagueData.currentSeasonId);
+  // Step 3: Fetch all standings in parallel (leverages 1hr cache)
+  const standingsResults = await Promise.all(
+    leaguesWithSeasons.map(({ league, data }) =>
+      getStandingsBySeason(data.currentSeasonId!)
+        .then((standings) => ({ league, standings }))
+        .catch(() => ({ league, standings: [] })),
+    ),
+  );
 
-      if (standings.length > 0 && standings[0].standings.length > 0) {
-        return {
-          leagueId: league.id,
-          leagueName: league.name,
-          leagueLogo: league.logo,
-          standings: standings[0].standings,
-        };
-      }
-
-      return null;
-    } catch {
-      // Silently skip leagues without active seasons or API access (e.g., World Cup between tournaments)
-      return null;
-    }
-  });
-
-  const results = await Promise.all(leaguePromises);
-  return results.filter((r): r is LeagueStandingsData => r !== null);
+  // Step 4: Build final result
+  return standingsResults
+    .filter(
+      ({ standings }) =>
+        standings.length > 0 && standings[0].standings.length > 0,
+    )
+    .map(({ league, standings }) => ({
+      leagueId: league.id,
+      leagueName: league.name,
+      leagueLogo: league.logo,
+      standings: standings[0].standings,
+    }));
 }
 
 // League teams data type
@@ -144,51 +166,86 @@ export interface LeagueTeamsData {
 
 // Leagues to show on teams page
 const TEAMS_PAGE_LEAGUES = [
-  { id: 8, name: "Premier League", logo: "https://cdn.sportmonks.com/images/soccer/leagues/8/8.png" },
-  { id: 564, name: "La Liga", logo: "https://cdn.sportmonks.com/images/soccer/leagues/20/564.png" },
-  { id: 82, name: "Bundesliga", logo: "https://cdn.sportmonks.com/images/soccer/leagues/18/82.png" },
-  { id: 384, name: "Serie A", logo: "https://cdn.sportmonks.com/images/soccer/leagues/0/384.png" },
-  { id: 301, name: "Ligue 1", logo: "https://cdn.sportmonks.com/images/soccer/leagues/13/301.png" },
-  { id: 600, name: "Süper Lig", logo: "https://cdn.sportmonks.com/images/soccer/leagues/24/600.png" },
+  {
+    id: 8,
+    name: "Premier League",
+    logo: "https://cdn.sportmonks.com/images/soccer/leagues/8/8.png",
+  },
+  {
+    id: 564,
+    name: "La Liga",
+    logo: "https://cdn.sportmonks.com/images/soccer/leagues/20/564.png",
+  },
+  {
+    id: 82,
+    name: "Bundesliga",
+    logo: "https://cdn.sportmonks.com/images/soccer/leagues/18/82.png",
+  },
+  {
+    id: 384,
+    name: "Serie A",
+    logo: "https://cdn.sportmonks.com/images/soccer/leagues/0/384.png",
+  },
+  {
+    id: 301,
+    name: "Ligue 1",
+    logo: "https://cdn.sportmonks.com/images/soccer/leagues/13/301.png",
+  },
+  {
+    id: 600,
+    name: "Süper Lig",
+    logo: "https://cdn.sportmonks.com/images/soccer/leagues/24/600.png",
+  },
 ];
 
 /**
  * Get teams for popular leagues
+ * Optimized: Fetches all league metadata in parallel first, then teams in parallel
  */
 export async function getTeamsForPopularLeagues(): Promise<LeagueTeamsData[]> {
-  const leaguePromises = TEAMS_PAGE_LEAGUES.map(async (league) => {
-    try {
-      const leagueData = await getLeagueById(league.id);
+  // Step 1: Fetch all league metadata in parallel (leverages 6hr cache)
+  const leagueDataResults = await Promise.all(
+    TEAMS_PAGE_LEAGUES.map((league) =>
+      getLeagueById(league.id)
+        .then((data) => ({ league, data }))
+        .catch(() => ({ league, data: null })),
+    ),
+  );
 
-      if (!leagueData.currentSeasonId) {
-        return null;
-      }
+  // Step 2: Filter leagues with valid current seasons
+  const leaguesWithSeasons = leagueDataResults.filter(
+    (
+      r,
+    ): r is {
+      league: (typeof TEAMS_PAGE_LEAGUES)[number];
+      data: NonNullable<typeof r.data>;
+    } => r.data !== null && r.data.currentSeasonId !== undefined,
+  );
 
-      const teams = await getTeamsBySeason(leagueData.currentSeasonId);
+  // Step 3: Fetch all teams in parallel (leverages 6hr cache)
+  const teamsResults = await Promise.all(
+    leaguesWithSeasons.map(({ league, data }) =>
+      getTeamsBySeason(data.currentSeasonId!)
+        .then((teams) => ({ league, teams }))
+        .catch(() => ({ league, teams: [] })),
+    ),
+  );
 
-      if (teams.length === 0) {
-        return null;
-      }
-
-      return {
-        leagueId: league.id,
-        leagueName: league.name,
-        leagueLogo: league.logo,
-        teams: teams.map(t => ({
-          id: t.id,
-          name: t.name,
-          shortCode: t.shortCode,
-          logo: t.logo,
-          country: t.country,
-        })),
-      };
-    } catch {
-      return null;
-    }
-  });
-
-  const results = await Promise.all(leaguePromises);
-  return results.filter((r): r is LeagueTeamsData => r !== null);
+  // Step 4: Build final result
+  return teamsResults
+    .filter(({ teams }) => teams.length > 0)
+    .map(({ league, teams }) => ({
+      leagueId: league.id,
+      leagueName: league.name,
+      leagueLogo: league.logo,
+      teams: teams.map((t) => ({
+        id: t.id,
+        name: t.name,
+        shortCode: t.shortCode,
+        logo: t.logo,
+        country: t.country,
+      })),
+    }));
 }
 
 // League topscorers data type
@@ -201,43 +258,80 @@ export interface LeagueTopScorersData {
 
 // Leagues to show topscorers from (same as teams page)
 const TOPSCORERS_LEAGUES = [
-  { id: 8, name: "Premier League", logo: "https://cdn.sportmonks.com/images/soccer/leagues/8/8.png" },
-  { id: 564, name: "La Liga", logo: "https://cdn.sportmonks.com/images/soccer/leagues/20/564.png" },
-  { id: 82, name: "Bundesliga", logo: "https://cdn.sportmonks.com/images/soccer/leagues/18/82.png" },
-  { id: 384, name: "Serie A", logo: "https://cdn.sportmonks.com/images/soccer/leagues/0/384.png" },
-  { id: 301, name: "Ligue 1", logo: "https://cdn.sportmonks.com/images/soccer/leagues/13/301.png" },
-  { id: 600, name: "Süper Lig", logo: "https://cdn.sportmonks.com/images/soccer/leagues/24/600.png" },
+  {
+    id: 8,
+    name: "Premier League",
+    logo: "https://cdn.sportmonks.com/images/soccer/leagues/8/8.png",
+  },
+  {
+    id: 564,
+    name: "La Liga",
+    logo: "https://cdn.sportmonks.com/images/soccer/leagues/20/564.png",
+  },
+  {
+    id: 82,
+    name: "Bundesliga",
+    logo: "https://cdn.sportmonks.com/images/soccer/leagues/18/82.png",
+  },
+  {
+    id: 384,
+    name: "Serie A",
+    logo: "https://cdn.sportmonks.com/images/soccer/leagues/0/384.png",
+  },
+  {
+    id: 301,
+    name: "Ligue 1",
+    logo: "https://cdn.sportmonks.com/images/soccer/leagues/13/301.png",
+  },
+  {
+    id: 600,
+    name: "Süper Lig",
+    logo: "https://cdn.sportmonks.com/images/soccer/leagues/24/600.png",
+  },
 ];
 
 /**
  * Get top scorers for popular leagues
+ * Optimized: Fetches all league metadata in parallel first, then top scorers in parallel
  */
-export async function getTopScorersForPopularLeagues(): Promise<LeagueTopScorersData[]> {
-  const leaguePromises = TOPSCORERS_LEAGUES.map(async (league) => {
-    try {
-      const leagueData = await getLeagueById(league.id);
+export async function getTopScorersForPopularLeagues(): Promise<
+  LeagueTopScorersData[]
+> {
+  // Step 1: Fetch all league metadata in parallel (leverages 6hr cache)
+  const leagueDataResults = await Promise.all(
+    TOPSCORERS_LEAGUES.map((league) =>
+      getLeagueById(league.id)
+        .then((data) => ({ league, data }))
+        .catch(() => ({ league, data: null })),
+    ),
+  );
 
-      if (!leagueData.currentSeasonId) {
-        return null;
-      }
+  // Step 2: Filter leagues with valid current seasons
+  const leaguesWithSeasons = leagueDataResults.filter(
+    (
+      r,
+    ): r is {
+      league: (typeof TOPSCORERS_LEAGUES)[number];
+      data: NonNullable<typeof r.data>;
+    } => r.data !== null && r.data.currentSeasonId !== undefined,
+  );
 
-      const topScorers = await getTopScorersBySeason(leagueData.currentSeasonId, "goals", 10);
+  // Step 3: Fetch all top scorers in parallel (leverages 5min cache)
+  const scorersResults = await Promise.all(
+    leaguesWithSeasons.map(({ league, data }) =>
+      getTopScorersBySeason(data.currentSeasonId!, "goals", 10)
+        .then((topScorers) => ({ league, topScorers }))
+        .catch(() => ({ league, topScorers: [] })),
+    ),
+  );
 
-      if (topScorers.length === 0) {
-        return null;
-      }
-
-      return {
-        leagueId: league.id,
-        leagueName: league.name,
-        leagueLogo: league.logo,
-        topScorers,
-      };
-    } catch {
-      return null;
-    }
-  });
-
-  const results = await Promise.all(leaguePromises);
-  return results.filter((r): r is LeagueTopScorersData => r !== null);
+  // Step 4: Build final result
+  return scorersResults
+    .filter(({ topScorers }) => topScorers.length > 0)
+    .map(({ league, topScorers }) => ({
+      leagueId: league.id,
+      leagueName: league.name,
+      leagueLogo: league.logo,
+      topScorers,
+    }));
 }

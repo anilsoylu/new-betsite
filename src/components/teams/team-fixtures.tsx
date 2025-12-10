@@ -1,17 +1,17 @@
-import Image from "next/image"
-import Link from "next/link"
-import { format } from "date-fns"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { getFixtureUrl } from "@/lib/utils"
-import { cn } from "@/lib/utils"
-import type { Fixture } from "@/types/football"
+import Image from "next/image";
+import Link from "next/link";
+import { format } from "date-fns";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { getFixtureUrl } from "@/lib/utils";
+import { cn } from "@/lib/utils";
+import type { Fixture } from "@/types/football";
 
 interface TeamFixturesProps {
-  title: string
-  fixtures: Array<Fixture>
-  teamId: number
-  emptyMessage?: string
+  title: string;
+  fixtures: Array<Fixture>;
+  teamId: number;
+  emptyMessage?: string;
 }
 
 export function TeamFixtures({
@@ -37,36 +37,36 @@ export function TeamFixtures({
         )}
       </CardContent>
     </Card>
-  )
+  );
 }
 
 interface FixtureRowProps {
-  fixture: Fixture
-  teamId: number
+  fixture: Fixture;
+  teamId: number;
 }
 
 function FixtureRow({ fixture, teamId }: FixtureRowProps) {
-  const isHome = fixture.homeTeam.id === teamId
-  const opponent = isHome ? fixture.awayTeam : fixture.homeTeam
-  const isFinished = fixture.status === "finished"
-  const isLive = fixture.isLive
+  const isHome = fixture.homeTeam.id === teamId;
+  const opponent = isHome ? fixture.awayTeam : fixture.homeTeam;
+  const isFinished = fixture.status === "finished";
+  const isLive = fixture.isLive;
 
   // Determine result for this team
-  let result: "W" | "D" | "L" | null = null
+  let result: "W" | "D" | "L" | null = null;
   if (isFinished && fixture.score) {
-    const teamScore = isHome ? fixture.score.home : fixture.score.away
-    const opponentScore = isHome ? fixture.score.away : fixture.score.home
+    const teamScore = isHome ? fixture.score.home : fixture.score.away;
+    const opponentScore = isHome ? fixture.score.away : fixture.score.home;
 
-    if (teamScore > opponentScore) result = "W"
-    else if (teamScore < opponentScore) result = "L"
-    else result = "D"
+    if (teamScore > opponentScore) result = "W";
+    else if (teamScore < opponentScore) result = "L";
+    else result = "D";
   }
 
   const scoreDisplay = fixture.score
     ? isHome
       ? `${fixture.score.home} - ${fixture.score.away}`
       : `${fixture.score.away} - ${fixture.score.home}`
-    : null
+    : null;
 
   return (
     <Link
@@ -79,9 +79,11 @@ function FixtureRow({ fixture, teamId }: FixtureRowProps) {
           variant="outline"
           className={cn(
             "w-6 h-6 p-0 flex items-center justify-center text-xs font-bold shrink-0",
-            result === "W" && "bg-green-500/10 text-green-600 border-green-500/30",
-            result === "D" && "bg-yellow-500/10 text-yellow-600 border-yellow-500/30",
-            result === "L" && "bg-red-500/10 text-red-600 border-red-500/30"
+            result === "W" &&
+              "bg-green-500/10 text-green-600 border-green-500/30",
+            result === "D" &&
+              "bg-yellow-500/10 text-yellow-600 border-yellow-500/30",
+            result === "L" && "bg-red-500/10 text-red-600 border-red-500/30",
           )}
         >
           {result}
@@ -90,7 +92,10 @@ function FixtureRow({ fixture, teamId }: FixtureRowProps) {
 
       {/* Live Badge */}
       {isLive && (
-        <Badge variant="destructive" className="w-6 h-6 p-0 flex items-center justify-center text-[10px] shrink-0">
+        <Badge
+          variant="destructive"
+          className="w-6 h-6 p-0 flex items-center justify-center text-[10px] shrink-0"
+        >
           LIVE
         </Badge>
       )}
@@ -127,5 +132,5 @@ function FixtureRow({ fixture, teamId }: FixtureRowProps) {
         {scoreDisplay || format(new Date(fixture.startTime), "HH:mm")}
       </div>
     </Link>
-  )
+  );
 }

@@ -1,21 +1,21 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import Image from "next/image"
-import { AlertCircle, Users } from "lucide-react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Button } from "@/components/ui/button"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { cn } from "@/lib/utils"
-import type { TeamLineup, Team, LineupPlayer } from "@/types/football"
+import { useState } from "react";
+import Image from "next/image";
+import { AlertCircle, Users } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { cn } from "@/lib/utils";
+import type { TeamLineup, Team, LineupPlayer } from "@/types/football";
 
 interface LineupsTabProps {
-  homeLineup: TeamLineup | null
-  awayLineup: TeamLineup | null
-  homeTeam: Team
-  awayTeam: Team
+  homeLineup: TeamLineup | null;
+  awayLineup: TeamLineup | null;
+  homeTeam: Team;
+  awayTeam: Team;
 }
 
 export function LineupsTab({
@@ -24,12 +24,12 @@ export function LineupsTab({
   homeTeam,
   awayTeam,
 }: LineupsTabProps) {
-  const [viewMode, setViewMode] = useState<"pitch" | "list">("pitch")
+  const [viewMode, setViewMode] = useState<"pitch" | "list">("pitch");
 
-  const hasHomeSubstitutes = homeLineup && homeLineup.substitutes.length > 0
-  const hasAwaySubstitutes = awayLineup && awayLineup.substitutes.length > 0
-  const hasAnySubstitutes = hasHomeSubstitutes || hasAwaySubstitutes
-  const showPredictedWarning = !hasAnySubstitutes
+  const hasHomeSubstitutes = homeLineup && homeLineup.substitutes.length > 0;
+  const hasAwaySubstitutes = awayLineup && awayLineup.substitutes.length > 0;
+  const hasAnySubstitutes = hasHomeSubstitutes || hasAwaySubstitutes;
+  const showPredictedWarning = !hasAnySubstitutes;
 
   return (
     <div className="space-y-4">
@@ -80,15 +80,15 @@ export function LineupsTab({
         />
       )}
     </div>
-  )
+  );
 }
 
 // Pitch View Component - Horizontal layout like Fotmob
 interface PitchViewProps {
-  homeLineup: TeamLineup | null
-  awayLineup: TeamLineup | null
-  homeTeam: Team
-  awayTeam: Team
+  homeLineup: TeamLineup | null;
+  awayLineup: TeamLineup | null;
+  homeTeam: Team;
+  awayTeam: Team;
 }
 
 function PitchView({
@@ -185,23 +185,23 @@ function PitchView({
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }
 
 // Horizontal Formation Layout Component
 interface HorizontalFormationProps {
-  lineup: TeamLineup
-  isHome: boolean
+  lineup: TeamLineup;
+  isHome: boolean;
 }
 
 function HorizontalFormation({ lineup, isHome }: HorizontalFormationProps) {
-  const columns = groupPlayersByPosition(lineup.starters)
+  const columns = groupPlayersByPosition(lineup.starters);
 
   return (
     <div
       className={cn(
         "flex h-full items-stretch",
-        isHome ? "flex-row" : "flex-row-reverse"
+        isHome ? "flex-row" : "flex-row-reverse",
       )}
     >
       {columns.map((column, colIndex) => (
@@ -215,64 +215,64 @@ function HorizontalFormation({ lineup, isHome }: HorizontalFormationProps) {
         </div>
       ))}
     </div>
-  )
+  );
 }
 
 // Group players by their row position (from position field like "1:1", "2:3")
 // Returns columns: GK | DEF | MID | FWD etc.
 function groupPlayersByPosition(players: LineupPlayer[]): LineupPlayer[][] {
   // Group players by their row (first number in position)
-  const rowMap = new Map<number, LineupPlayer[]>()
+  const rowMap = new Map<number, LineupPlayer[]>();
 
   for (const player of players) {
-    const pos = parsePosition(player.position)
-    const row = pos.row || 0
+    const pos = parsePosition(player.position);
+    const row = pos.row || 0;
 
     if (!rowMap.has(row)) {
-      rowMap.set(row, [])
+      rowMap.set(row, []);
     }
-    rowMap.get(row)!.push(player)
+    rowMap.get(row)!.push(player);
   }
 
   // Sort each row's players by column (second number in position)
   for (const [, rowPlayers] of rowMap) {
     rowPlayers.sort((a, b) => {
-      const aCol = parsePosition(a.position).col
-      const bCol = parsePosition(b.position).col
-      return aCol - bCol
-    })
+      const aCol = parsePosition(a.position).col;
+      const bCol = parsePosition(b.position).col;
+      return aCol - bCol;
+    });
   }
 
   // Convert to array sorted by row number
   const sortedRows = Array.from(rowMap.entries())
     .sort(([a], [b]) => a - b)
-    .map(([, players]) => players)
+    .map(([, players]) => players);
 
-  return sortedRows
+  return sortedRows;
 }
 
 function parsePosition(position: string | null): { row: number; col: number } {
-  if (!position) return { row: 0, col: 0 }
-  const parts = position.split(":")
+  if (!position) return { row: 0, col: 0 };
+  const parts = position.split(":");
   if (parts.length === 2) {
     return {
       row: parseInt(parts[0], 10) || 0,
       col: parseInt(parts[1], 10) || 0,
-    }
+    };
   }
-  return { row: 0, col: 0 }
+  return { row: 0, col: 0 };
 }
 
 // Player Marker Component
 interface PlayerMarkerProps {
-  player: LineupPlayer
-  isHome: boolean
-  onClick?: (player: LineupPlayer) => void
+  player: LineupPlayer;
+  isHome: boolean;
+  onClick?: (player: LineupPlayer) => void;
 }
 
 function PlayerMarker({ player, isHome, onClick }: PlayerMarkerProps) {
-  const shortName = getShortName(player.name)
-  const initials = getInitials(player.name)
+  const shortName = getShortName(player.name);
+  const initials = getInitials(player.name);
 
   return (
     <button
@@ -285,14 +285,14 @@ function PlayerMarker({ player, isHome, onClick }: PlayerMarkerProps) {
         <Avatar
           className={cn(
             "w-9 h-9 sm:w-11 sm:h-11 border-2 shadow-lg",
-            isHome ? "border-blue-400" : "border-red-400"
+            isHome ? "border-blue-400" : "border-red-400",
           )}
         >
           <AvatarImage src={player.image || undefined} alt={player.name} />
           <AvatarFallback
             className={cn(
               "text-xs font-bold",
-              isHome ? "bg-blue-600 text-white" : "bg-red-600 text-white"
+              isHome ? "bg-blue-600 text-white" : "bg-red-600 text-white",
             )}
           >
             {initials}
@@ -304,7 +304,7 @@ function PlayerMarker({ player, isHome, onClick }: PlayerMarkerProps) {
             "absolute -bottom-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold shadow border",
             isHome
               ? "bg-blue-700 text-white border-blue-500"
-              : "bg-red-700 text-white border-red-500"
+              : "bg-red-700 text-white border-red-500",
           )}
         >
           {player.jerseyNumber}
@@ -315,30 +315,30 @@ function PlayerMarker({ player, isHome, onClick }: PlayerMarkerProps) {
         {shortName}
       </span>
     </button>
-  )
+  );
 }
 
 function getShortName(fullName: string): string {
-  const parts = fullName.split(" ")
-  if (parts.length === 1) return fullName
-  const lastName = parts[parts.length - 1]
-  return lastName.length > 10 ? lastName.substring(0, 9) + "." : lastName
+  const parts = fullName.split(" ");
+  if (parts.length === 1) return fullName;
+  const lastName = parts[parts.length - 1];
+  return lastName.length > 10 ? lastName.substring(0, 9) + "." : lastName;
 }
 
 function getInitials(fullName: string): string {
-  const parts = fullName.split(" ").filter(Boolean)
-  if (parts.length === 0) return "?"
-  if (parts.length === 1) return parts[0].charAt(0).toUpperCase()
-  return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase()
+  const parts = fullName.split(" ").filter(Boolean);
+  if (parts.length === 0) return "?";
+  if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
+  return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
 }
 
 // List View Component
 interface ListViewProps {
-  homeLineup: TeamLineup | null
-  awayLineup: TeamLineup | null
-  homeTeam: Team
-  awayTeam: Team
-  hasAnySubstitutes: boolean
+  homeLineup: TeamLineup | null;
+  awayLineup: TeamLineup | null;
+  homeTeam: Team;
+  awayTeam: Team;
+  hasAnySubstitutes: boolean;
 }
 
 function ListView({
@@ -435,18 +435,18 @@ function ListView({
         </div>
       )}
     </div>
-  )
+  );
 }
 
 interface PlayerListProps {
-  players: LineupPlayer[]
-  compact?: boolean
+  players: LineupPlayer[];
+  compact?: boolean;
 }
 
 function PlayerList({ players, compact = false }: PlayerListProps) {
   const sortedPlayers = [...players].sort(
-    (a, b) => a.jerseyNumber - b.jerseyNumber
-  )
+    (a, b) => a.jerseyNumber - b.jerseyNumber,
+  );
 
   return (
     <div className={compact ? "space-y-1" : "space-y-2"}>
@@ -464,5 +464,5 @@ function PlayerList({ players, compact = false }: PlayerListProps) {
         </div>
       ))}
     </div>
-  )
+  );
 }

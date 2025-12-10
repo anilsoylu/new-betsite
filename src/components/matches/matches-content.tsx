@@ -1,47 +1,54 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { Star } from "lucide-react"
-import { LeagueSection } from "@/components/home/league-section"
-import { MatchRow } from "@/components/home/match-row"
-import { useFavoritesStore } from "@/stores/favorites-store"
-import type { Fixture, LeagueCategory } from "@/types/football"
+import { useState, useEffect } from "react";
+import { Star } from "lucide-react";
+import { LeagueSection } from "@/components/home/league-section";
+import { MatchRow } from "@/components/home/match-row";
+import { useFavoritesStore } from "@/stores/favorites-store";
+import type { Fixture, LeagueCategory } from "@/types/football";
 
 interface MatchesContentProps {
-  fixtures: Fixture[]
-  liveFixtures: Fixture[]
-  formattedDate: string
+  fixtures: Fixture[];
+  liveFixtures: Fixture[];
+  formattedDate: string;
 }
 
 interface GroupedFixtures {
   [leagueId: string]: {
-    leagueId: number
-    leagueName: string
-    leagueLogo?: string
-    countryName?: string
-    countryFlag?: string
-    fixtures: Fixture[]
-    hasLive: boolean
-    category: LeagueCategory
-  }
+    leagueId: number;
+    leagueName: string;
+    leagueLogo?: string;
+    countryName?: string;
+    countryFlag?: string;
+    fixtures: Fixture[];
+    hasLive: boolean;
+    category: LeagueCategory;
+  };
 }
 
-export function MatchesContent({ fixtures, liveFixtures, formattedDate }: MatchesContentProps) {
-  const [hasMounted, setHasMounted] = useState(false)
-  const { isFavorite } = useFavoritesStore()
+export function MatchesContent({
+  fixtures,
+  liveFixtures,
+  formattedDate,
+}: MatchesContentProps) {
+  const [hasMounted, setHasMounted] = useState(false);
+  const { isFavorite } = useFavoritesStore();
 
   useEffect(() => {
-    setHasMounted(true)
-  }, [])
+    setHasMounted(true);
+  }, []);
 
   // Group fixtures by league
-  const groupFixturesByLeague = (fixtures: Fixture[], live: Fixture[]): GroupedFixtures => {
-    const allFixtures = [...live, ...fixtures]
-    const liveIds = new Set(live.map(f => f.id))
+  const groupFixturesByLeague = (
+    fixtures: Fixture[],
+    live: Fixture[],
+  ): GroupedFixtures => {
+    const allFixtures = [...live, ...fixtures];
+    const liveIds = new Set(live.map((f) => f.id));
 
     return allFixtures.reduce((acc, fixture) => {
-      const leagueId = fixture.league?.id ?? 0
-      const leagueName = fixture.league?.name ?? "Other"
+      const leagueId = fixture.league?.id ?? 0;
+      const leagueName = fixture.league?.name ?? "Other";
 
       if (!acc[leagueId]) {
         acc[leagueId] = {
@@ -52,44 +59,48 @@ export function MatchesContent({ fixtures, liveFixtures, formattedDate }: Matche
           countryFlag: fixture.league?.country?.flag,
           fixtures: [],
           hasLive: false,
-          category: fixture.league?.category ?? 5
-        }
+          category: fixture.league?.category ?? 5,
+        };
       }
 
       // Avoid duplicates
-      if (!acc[leagueId].fixtures.find(f => f.id === fixture.id)) {
-        acc[leagueId].fixtures.push(fixture)
+      if (!acc[leagueId].fixtures.find((f) => f.id === fixture.id)) {
+        acc[leagueId].fixtures.push(fixture);
         if (liveIds.has(fixture.id)) {
-          acc[leagueId].hasLive = true
+          acc[leagueId].hasLive = true;
         }
       }
 
-      return acc
-    }, {} as GroupedFixtures)
-  }
+      return acc;
+    }, {} as GroupedFixtures);
+  };
 
-  const grouped = groupFixturesByLeague(fixtures, liveFixtures)
+  const grouped = groupFixturesByLeague(fixtures, liveFixtures);
 
   // Sort leagues: live first, then by API category, then by fixture count
   const sortedLeagues = Object.values(grouped).sort((a, b) => {
-    if (a.hasLive && !b.hasLive) return -1
-    if (!a.hasLive && b.hasLive) return 1
-    if (a.category !== b.category) return a.category - b.category
-    return b.fixtures.length - a.fixtures.length
-  })
+    if (a.hasLive && !b.hasLive) return -1;
+    if (!a.hasLive && b.hasLive) return 1;
+    if (a.category !== b.category) return a.category - b.category;
+    return b.fixtures.length - a.fixtures.length;
+  });
 
-  const totalMatches = sortedLeagues.reduce((sum, l) => sum + l.fixtures.length, 0)
-  const totalLive = liveFixtures.length
+  const totalMatches = sortedLeagues.reduce(
+    (sum, l) => sum + l.fixtures.length,
+    0,
+  );
+  const totalLive = liveFixtures.length;
 
   // Get favorite matches
-  const allCurrentFixtures = [...liveFixtures, ...fixtures]
+  const allCurrentFixtures = [...liveFixtures, ...fixtures];
   const favoriteMatches = hasMounted
-    ? allCurrentFixtures.filter(f =>
-        isFavorite("matches", f.id) ||
-        isFavorite("teams", f.homeTeam.id) ||
-        isFavorite("teams", f.awayTeam.id)
+    ? allCurrentFixtures.filter(
+        (f) =>
+          isFavorite("matches", f.id) ||
+          isFavorite("teams", f.homeTeam.id) ||
+          isFavorite("teams", f.awayTeam.id),
       )
-    : []
+    : [];
 
   return (
     <div className="flex flex-col gap-4">
@@ -117,14 +128,21 @@ export function MatchesContent({ fixtures, liveFixtures, formattedDate }: Matche
         <div className="border border-yellow-500/30 rounded-xl overflow-hidden bg-yellow-500/5">
           <div className="flex items-center gap-2 px-3 py-2.5 border-b border-yellow-500/20">
             <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
-            <span className="text-sm font-semibold text-foreground">My Favorites</span>
+            <span className="text-sm font-semibold text-foreground">
+              My Favorites
+            </span>
             <span className="text-xs text-muted-foreground ml-auto">
-              {favoriteMatches.length} {favoriteMatches.length === 1 ? "match" : "matches"}
+              {favoriteMatches.length}{" "}
+              {favoriteMatches.length === 1 ? "match" : "matches"}
             </span>
           </div>
           <div className="divide-y divide-yellow-500/10">
             {favoriteMatches.map((fixture) => (
-              <MatchRow key={`fav-${fixture.id}`} fixture={fixture} showFavorites={false} />
+              <MatchRow
+                key={`fav-${fixture.id}`}
+                fixture={fixture}
+                showFavorites={false}
+              />
             ))}
           </div>
         </div>
@@ -152,5 +170,5 @@ export function MatchesContent({ fixtures, liveFixtures, formattedDate }: Matche
         )}
       </div>
     </div>
-  )
+  );
 }

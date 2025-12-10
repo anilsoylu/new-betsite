@@ -1,5 +1,8 @@
 import { z } from "zod";
-import { sportmonksRequest, sportmonksPaginatedRequest } from "./sportmonks-client";
+import {
+  sportmonksRequest,
+  sportmonksPaginatedRequest,
+} from "./sportmonks-client";
 import {
   mapFixture,
   mapFixtureDetail,
@@ -24,15 +27,37 @@ import type {
   SportmonksPlayerRaw,
   SportmonksTopScorerRaw,
 } from "@/types/sportmonks/raw";
-import type { Fixture, FixtureDetail, League, Standing, StandingTable, H2HFixture, MatchOdds, TeamDetail, TeamSearchResult, PlayerDetail, PlayerSearchResult, TopScorer, LeaguePageData } from "@/types/football";
+import type {
+  Fixture,
+  FixtureDetail,
+  League,
+  Standing,
+  StandingTable,
+  H2HFixture,
+  MatchOdds,
+  TeamDetail,
+  TeamSearchResult,
+  PlayerDetail,
+  PlayerSearchResult,
+  TopScorer,
+  LeaguePageData,
+} from "@/types/football";
 import { API, UI } from "@/lib/constants";
 
 // Validation schemas
-const dateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be YYYY-MM-DD format");
+const dateSchema = z
+  .string()
+  .regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be YYYY-MM-DD format");
 const idSchema = z.number().int().positive();
 
 // Default includes for fixtures
-const FIXTURE_INCLUDES = ["participants", "scores", "state", "league", "periods"];
+const FIXTURE_INCLUDES = [
+  "participants",
+  "scores",
+  "state",
+  "league",
+  "periods",
+];
 const FIXTURE_DETAIL_INCLUDES = [
   "participants",
   "scores",
@@ -56,11 +81,13 @@ const H2H_INCLUDES = ["participants", "scores", "state", "league"];
  * Get live (in-play) fixtures
  * Endpoint: GET /livescores/inplay
  * Note: This endpoint does not support pagination
+ * Cache: live (30s) - real-time score data
  */
 export async function getLiveFixtures(): Promise<Array<Fixture>> {
   const response = await sportmonksRequest<Array<SportmonksFixtureRaw>>({
     endpoint: "/livescores/inplay",
     include: FIXTURE_INCLUDES,
+    cache: "live",
   });
 
   const fixtures = response.data.map(mapFixture);
@@ -70,8 +97,11 @@ export async function getLiveFixtures(): Promise<Array<Fixture>> {
 /**
  * Get fixtures by date (max fixtures for homepage)
  * Endpoint: GET /fixtures/date/{date}
+ * Cache: short (5min) - today's schedule changes occasionally
  */
-export async function getFixturesByDate(date?: string): Promise<Array<Fixture>> {
+export async function getFixturesByDate(
+  date?: string,
+): Promise<Array<Fixture>> {
   const targetDate = date || new Date().toISOString().split("T")[0];
   dateSchema.parse(targetDate);
 
@@ -86,6 +116,7 @@ export async function getFixturesByDate(date?: string): Promise<Array<Fixture>> 
       include: FIXTURE_INCLUDES,
       page: currentPage,
       perPage: API.sportmonks.defaultPerPage,
+      cache: "short",
     });
 
     allFixtures.push(...response.data.map(mapFixture));
@@ -99,13 +130,17 @@ export async function getFixturesByDate(date?: string): Promise<Array<Fixture>> 
 /**
  * Get single fixture by ID with full details
  * Endpoint: GET /fixtures/{id}
+ * Cache: short (5min) - match details can change during game
  */
-export async function getFixtureById(fixtureId: number): Promise<FixtureDetail> {
+export async function getFixtureById(
+  fixtureId: number,
+): Promise<FixtureDetail> {
   idSchema.parse(fixtureId);
 
   const response = await sportmonksRequest<SportmonksFixtureRaw>({
     endpoint: `/fixtures/${fixtureId}`,
     include: FIXTURE_DETAIL_INCLUDES,
+    cache: "short",
   });
 
   return mapFixtureDetail(response.data);
@@ -114,8 +149,12 @@ export async function getFixtureById(fixtureId: number): Promise<FixtureDetail> 
 /**
  * Get head-to-head fixtures between two teams
  * Endpoint: GET /fixtures/head-to-head/{homeId}/{awayId}
+ * Cache: long (6hr) - historical data rarely changes
  */
-export async function getHeadToHead(homeId: number, awayId: number): Promise<Array<H2HFixture>> {
+export async function getHeadToHead(
+  homeId: number,
+  awayId: number,
+): Promise<Array<H2HFixture>> {
   idSchema.parse(homeId);
   idSchema.parse(awayId);
 
@@ -124,6 +163,7 @@ export async function getHeadToHead(homeId: number, awayId: number): Promise<Arr
       endpoint: `/fixtures/head-to-head/${homeId}/${awayId}`,
       include: H2H_INCLUDES,
       perPage: 10,
+      cache: "long",
     });
 
     return response.data.map(mapH2HFixture);
@@ -133,17 +173,24 @@ export async function getHeadToHead(homeId: number, awayId: number): Promise<Arr
 }
 
 /**
- * Get pre-match odds for a fixture
- * Endpoint: GET /odds/pre-match/fixtures/{fixtureId}
+ * Get pre-match odds for a fixture (1X2 market only)
+ * Endpoint: GET /odds/pre-match/fixtures/{fixtureId}/markets/1
+ * Using market filter reduces response from ~2MB to ~50KB
+ * Cache: short (5min) - odds change frequently
  */
-export async function getOddsByFixture(fixtureId: number): Promise<MatchOdds | null> {
+export async function getOddsByFixture(
+  fixtureId: number,
+): Promise<MatchOdds | null> {
   idSchema.parse(fixtureId);
 
   try {
+    // Market ID 1 = 1X2 (Full Time Result) - only fetch this market
+    // This dramatically reduces response size from ~2.3MB to ~50KB
     const response = await sportmonksPaginatedRequest<SportmonksOddRaw>({
-      endpoint: `/odds/pre-match/fixtures/${fixtureId}`,
+      endpoint: `/odds/pre-match/fixtures/${fixtureId}/markets/1`,
       include: ["bookmaker"],
       perPage: 50,
+      cache: "short",
     });
 
     return mapMatchOdds(response.data);
@@ -156,13 +203,17 @@ export async function getOddsByFixture(fixtureId: number): Promise<MatchOdds | n
  * Get standings by season
  * Endpoint: GET /standings/seasons/{seasonId}
  * Returns flat array of standing entries, not grouped
+ * Cache: medium (1hr) - standings update after matches
  */
-export async function getStandingsBySeason(seasonId: number): Promise<Array<StandingTable>> {
+export async function getStandingsBySeason(
+  seasonId: number,
+): Promise<Array<StandingTable>> {
   idSchema.parse(seasonId);
 
   const response = await sportmonksRequest<Array<SportmonksStandingRaw>>({
     endpoint: `/standings/seasons/${seasonId}`,
     include: ["participant", "details", "rule", "form"],
+    cache: "medium",
   });
 
   // API returns flat array of standings, group them by league for our data model
@@ -172,6 +223,7 @@ export async function getStandingsBySeason(seasonId: number): Promise<Array<Stan
 /**
  * Get all leagues (paginated)
  * Endpoint: GET /leagues
+ * Cache: long (6hr) - league list rarely changes
  */
 export async function getAllLeagues(page = 1): Promise<{
   leagues: Array<League>;
@@ -183,6 +235,7 @@ export async function getAllLeagues(page = 1): Promise<{
     include: ["country"],
     page,
     perPage: API.sportmonks.defaultPerPage,
+    cache: "long",
   });
 
   return {
@@ -195,15 +248,18 @@ export async function getAllLeagues(page = 1): Promise<{
 /**
  * Get single league by ID with current season
  * Endpoint: GET /leagues/{leagueId}
+ * Cache: long (6hr) - league metadata rarely changes
  */
 export async function getLeagueById(leagueId: number): Promise<League> {
   idSchema.parse(leagueId);
 
   // Sportmonks uses "currentseason" (no camelCase) for the include
-  const response = await sportmonksRequest<SportmonksLeagueWithCurrentSeasonRaw>({
-    endpoint: `/leagues/${leagueId}`,
-    include: ["country", "currentseason"],
-  });
+  const response =
+    await sportmonksRequest<SportmonksLeagueWithCurrentSeasonRaw>({
+      endpoint: `/leagues/${leagueId}`,
+      include: ["country", "currentseason"],
+      cache: "long",
+    });
 
   return mapLeagueWithCurrentSeason(response.data);
 }
@@ -230,6 +286,7 @@ const TEAM_SEARCH_INCLUDES = ["country"];
 /**
  * Get team by ID with full details
  * Endpoint: GET /teams/{id}
+ * Cache: medium (1hr) - team info/squad can change
  */
 export async function getTeamById(teamId: number): Promise<TeamDetail> {
   idSchema.parse(teamId);
@@ -237,6 +294,7 @@ export async function getTeamById(teamId: number): Promise<TeamDetail> {
   const response = await sportmonksRequest<SportmonksTeamRaw>({
     endpoint: `/teams/${teamId}`,
     include: TEAM_DETAIL_INCLUDES,
+    cache: "medium",
   });
 
   return mapTeamDetail(response.data);
@@ -245,8 +303,11 @@ export async function getTeamById(teamId: number): Promise<TeamDetail> {
 /**
  * Search teams by name
  * Endpoint: GET /teams/search/{name}
+ * Cache: medium (1hr) - search results relatively stable
  */
-export async function searchTeams(query: string): Promise<Array<TeamSearchResult>> {
+export async function searchTeams(
+  query: string,
+): Promise<Array<TeamSearchResult>> {
   if (!query || query.length < 2) return [];
 
   try {
@@ -254,6 +315,7 @@ export async function searchTeams(query: string): Promise<Array<TeamSearchResult
       endpoint: `/teams/search/${encodeURIComponent(query)}`,
       include: TEAM_SEARCH_INCLUDES,
       perPage: 25,
+      cache: "medium",
     });
 
     return response.data.map(mapTeamSearchResult);
@@ -265,8 +327,11 @@ export async function searchTeams(query: string): Promise<Array<TeamSearchResult
 /**
  * Get teams by season ID
  * Endpoint: GET /teams/seasons/{id}
+ * Cache: long (6hr) - teams in season rarely change
  */
-export async function getTeamsBySeason(seasonId: number): Promise<Array<TeamSearchResult>> {
+export async function getTeamsBySeason(
+  seasonId: number,
+): Promise<Array<TeamSearchResult>> {
   idSchema.parse(seasonId);
 
   try {
@@ -274,6 +339,7 @@ export async function getTeamsBySeason(seasonId: number): Promise<Array<TeamSear
       endpoint: `/teams/seasons/${seasonId}`,
       include: TEAM_SEARCH_INCLUDES,
       perPage: 50,
+      cache: "long",
     });
 
     return response.data.map(mapTeamSearchResult);
@@ -285,10 +351,11 @@ export async function getTeamsBySeason(seasonId: number): Promise<Array<TeamSear
 /**
  * Get fixtures by team ID (recent and upcoming)
  * Endpoint: GET /fixtures/between/{startDate}/{endDate}/{teamId}
+ * Cache: short (5min) - fixtures can update with scores
  */
 export async function getFixturesByTeam(
   teamId: number,
-  options: { past?: number; future?: number } = {}
+  options: { past?: number; future?: number } = {},
 ): Promise<{ recent: Array<Fixture>; upcoming: Array<Fixture> }> {
   idSchema.parse(teamId);
 
@@ -308,6 +375,7 @@ export async function getFixturesByTeam(
       endpoint: `/fixtures/between/${formatDate(startDate)}/${formatDate(endDate)}/${teamId}`,
       include: FIXTURE_INCLUDES,
       perPage: 50,
+      cache: "short",
     });
 
     const fixtures = response.data.map(mapFixture);
@@ -364,6 +432,7 @@ const PLAYER_SEARCH_INCLUDES = ["country", "position"];
 /**
  * Get player by ID with full details
  * Endpoint: GET /players/{id}
+ * Cache: long (6hr) - player profile rarely changes
  */
 export async function getPlayerById(playerId: number): Promise<PlayerDetail> {
   idSchema.parse(playerId);
@@ -371,6 +440,7 @@ export async function getPlayerById(playerId: number): Promise<PlayerDetail> {
   const response = await sportmonksRequest<SportmonksPlayerRaw>({
     endpoint: `/players/${playerId}`,
     include: PLAYER_DETAIL_INCLUDES,
+    cache: "long",
   });
 
   return mapPlayerDetail(response.data);
@@ -379,8 +449,11 @@ export async function getPlayerById(playerId: number): Promise<PlayerDetail> {
 /**
  * Search players by name
  * Endpoint: GET /players/search/{name}
+ * Cache: medium (1hr) - search results relatively stable
  */
-export async function searchPlayers(query: string): Promise<Array<PlayerSearchResult>> {
+export async function searchPlayers(
+  query: string,
+): Promise<Array<PlayerSearchResult>> {
   if (!query || query.length < 2) return [];
 
   try {
@@ -388,6 +461,7 @@ export async function searchPlayers(query: string): Promise<Array<PlayerSearchRe
       endpoint: `/players/search/${encodeURIComponent(query)}`,
       include: PLAYER_SEARCH_INCLUDES,
       perPage: 25,
+      cache: "medium",
     });
 
     return response.data.map(mapPlayerSearchResult);
@@ -406,7 +480,7 @@ export type TopScorerStatType =
   | "yellowCards"
   | "redCards"
   | "cleanSheets"
-  | "rating"
+  | "rating";
 
 const TOP_SCORER_TYPE_IDS: Record<TopScorerStatType, number> = {
   goals: 208,
@@ -415,17 +489,18 @@ const TOP_SCORER_TYPE_IDS: Record<TopScorerStatType, number> = {
   redCards: 211,
   cleanSheets: 212,
   rating: 118,
-}
+};
 
 /**
  * Get top scorers by season
  * Endpoint: GET /topscorers/seasons/{seasonId}
  * Supports: goals, assists, yellowCards, redCards, cleanSheets, rating
+ * Cache: short (5min) - updates after goals scored
  */
 export async function getTopScorersBySeason(
   seasonId: number,
   type: TopScorerStatType = "goals",
-  limit = 10
+  limit = 10,
 ): Promise<Array<TopScorer>> {
   idSchema.parse(seasonId);
 
@@ -437,6 +512,7 @@ export async function getTopScorersBySeason(
       include: ["player", "player.nationality", "participant", "type"],
       perPage: limit,
       filters: { seasontopscorerTypes: filterTypeId },
+      cache: "short",
     });
 
     return response.data.map(mapTopScorer);
@@ -449,10 +525,11 @@ export async function getTopScorersBySeason(
  * Get fixtures by season with date range
  * Endpoint: GET /fixtures/between/{startDate}/{endDate}
  * Filtered by league
+ * Cache: short (5min) - fixtures can update with scores
  */
 export async function getFixturesBySeason(
   leagueId: number,
-  options: { past?: number; future?: number } = {}
+  options: { past?: number; future?: number } = {},
 ): Promise<{ recent: Array<Fixture>; upcoming: Array<Fixture> }> {
   idSchema.parse(leagueId);
 
@@ -473,6 +550,7 @@ export async function getFixturesBySeason(
       include: FIXTURE_INCLUDES,
       perPage: 50,
       filters: { fixtureLeagues: leagueId },
+      cache: "short",
     });
 
     const fixtures = response.data.map(mapFixture);
@@ -500,14 +578,23 @@ export async function getFixturesBySeason(
 
 /**
  * Get live fixtures for a specific league
- * Filters the inplay endpoint by league ID
+ * Uses API filter instead of fetching all live fixtures
+ * Cache: live (30s) - real-time score data
  */
-export async function getLiveFixturesByLeague(leagueId: number): Promise<Array<Fixture>> {
+export async function getLiveFixturesByLeague(
+  leagueId: number,
+): Promise<Array<Fixture>> {
   idSchema.parse(leagueId);
 
   try {
-    const allLive = await getLiveFixtures();
-    return allLive.filter((f) => f.leagueId === leagueId);
+    const response = await sportmonksRequest<Array<SportmonksFixtureRaw>>({
+      endpoint: "/livescores/inplay",
+      include: FIXTURE_INCLUDES,
+      filters: { fixtureLeagues: leagueId },
+      cache: "live",
+    });
+
+    return response.data.map(mapFixture);
   } catch {
     return [];
   }
@@ -517,7 +604,9 @@ export async function getLiveFixturesByLeague(leagueId: number): Promise<Array<F
  * Get comprehensive league page data
  * Fetches all data needed for a rich league page in parallel
  */
-export async function getLeaguePageData(leagueId: number): Promise<LeaguePageData> {
+export async function getLeaguePageData(
+  leagueId: number,
+): Promise<LeaguePageData> {
   idSchema.parse(leagueId);
 
   // First get the league to know the current season
@@ -536,13 +625,21 @@ export async function getLeaguePageData(leagueId: number): Promise<LeaguePageDat
   }
 
   // Fetch all data in parallel
-  const [standings, topScorers, topAssists, fixtures, liveFixtures] = await Promise.all([
-    getStandingsBySeason(league.currentSeasonId).catch(() => []),
-    getTopScorersBySeason(league.currentSeasonId, "goals", 10).catch(() => []),
-    getTopScorersBySeason(league.currentSeasonId, "assists", 10).catch(() => []),
-    getFixturesBySeason(leagueId, { past: 10, future: 20 }).catch(() => ({ recent: [], upcoming: [] })),
-    getLiveFixturesByLeague(leagueId).catch(() => []),
-  ]);
+  const [standings, topScorers, topAssists, fixtures, liveFixtures] =
+    await Promise.all([
+      getStandingsBySeason(league.currentSeasonId).catch(() => []),
+      getTopScorersBySeason(league.currentSeasonId, "goals", 10).catch(
+        () => [],
+      ),
+      getTopScorersBySeason(league.currentSeasonId, "assists", 10).catch(
+        () => [],
+      ),
+      getFixturesBySeason(leagueId, { past: 10, future: 20 }).catch(() => ({
+        recent: [],
+        upcoming: [],
+      })),
+      getLiveFixturesByLeague(leagueId).catch(() => []),
+    ]);
 
   // Enrich standings with next match info from upcoming fixtures
   const enrichedStandings = standings.map((table) => ({
@@ -550,7 +647,9 @@ export async function getLeaguePageData(leagueId: number): Promise<LeaguePageDat
     standings: table.standings.map((standing) => {
       // Find first upcoming fixture for this team
       const nextFixture = fixtures.upcoming.find(
-        (f) => f.homeTeam.id === standing.teamId || f.awayTeam.id === standing.teamId
+        (f) =>
+          f.homeTeam.id === standing.teamId ||
+          f.awayTeam.id === standing.teamId,
       );
 
       if (nextFixture) {
@@ -603,7 +702,9 @@ export interface LeagueStatsData {
  * Get all statistics for league stats page
  * Fetches top scorers for all stat types in parallel
  */
-export async function getLeagueStatsData(leagueId: number): Promise<LeagueStatsData> {
+export async function getLeagueStatsData(
+  leagueId: number,
+): Promise<LeagueStatsData> {
   const league = await getLeagueById(leagueId);
 
   if (!league.currentSeasonId) {
@@ -630,10 +731,13 @@ export async function getLeagueStatsData(leagueId: number): Promise<LeagueStatsD
     yellowCards,
     redCards,
     cleanSheets,
-    ratings
+    ratings,
   ] = await Promise.all([
     getStandingsBySeason(seasonId).catch(() => []),
-    getFixturesBySeason(leagueId, { past: 10 }).catch(() => ({ recent: [], upcoming: [] })),
+    getFixturesBySeason(leagueId, { past: 10 }).catch(() => ({
+      recent: [],
+      upcoming: [],
+    })),
     getTopScorersBySeason(seasonId, "goals", 10),
     getTopScorersBySeason(seasonId, "assists", 10),
     getTopScorersBySeason(seasonId, "yellowCards", 10),
@@ -642,9 +746,10 @@ export async function getLeagueStatsData(leagueId: number): Promise<LeagueStatsD
     getTopScorersBySeason(seasonId, "rating", 10),
   ]);
 
-  const standings = standingsData.length > 0 && standingsData[0].standings.length > 0
-    ? standingsData[0].standings
-    : [];
+  const standings =
+    standingsData.length > 0 && standingsData[0].standings.length > 0
+      ? standingsData[0].standings
+      : [];
 
   return {
     league,

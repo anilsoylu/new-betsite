@@ -1,13 +1,13 @@
-import Image from "next/image"
-import Link from "next/link"
-import { format, parseISO, isValid } from "date-fns"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { getTeamUrl } from "@/lib/utils"
-import type { PlayerDetail } from "@/types/football"
+import Image from "next/image";
+import Link from "next/link";
+import { format, parseISO, isValid } from "date-fns";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { getTeamUrl } from "@/lib/utils";
+import type { PlayerDetail } from "@/types/football";
 
 interface PlayerHeaderProps {
-  player: PlayerDetail
+  player: PlayerDetail;
 }
 
 // Position mapping for the pitch visualization
@@ -40,10 +40,10 @@ const positionCoordinates: Record<string, { top: string; left: string }> = {
   Striker: { top: "15%", left: "50%" },
   Attacker: { top: "20%", left: "50%" },
   Forward: { top: "15%", left: "50%" },
-}
+};
 
 function getPositionAbbreviation(position: string | null): string {
-  if (!position) return "?"
+  if (!position) return "?";
   const abbrevMap: Record<string, string> = {
     Goalkeeper: "GK",
     "Centre-Back": "CB",
@@ -65,26 +65,26 @@ function getPositionAbbreviation(position: string | null): string {
     Striker: "ST",
     Attacker: "ATT",
     Forward: "FW",
-  }
-  return abbrevMap[position] || position.substring(0, 2).toUpperCase()
+  };
+  return abbrevMap[position] || position.substring(0, 2).toUpperCase();
 }
 
 function formatDate(dateStr: string | null): string {
-  if (!dateStr) return ""
-  const date = parseISO(dateStr)
-  return isValid(date) ? format(date, "d MMM yyyy") : ""
+  if (!dateStr) return "";
+  const date = parseISO(dateStr);
+  return isValid(date) ? format(date, "d MMM yyyy") : "";
 }
 
 function formatMarketValue(value: number | null): string {
-  if (!value) return "-"
-  if (value >= 1000000) return `€${(value / 1000000).toFixed(1)}M`
-  if (value >= 1000) return `€${(value / 1000).toFixed(0)}K`
-  return `€${value}`
+  if (!value) return "-";
+  if (value >= 1000000) return `€${(value / 1000000).toFixed(1)}M`;
+  if (value >= 1000) return `€${(value / 1000).toFixed(0)}K`;
+  return `€${value}`;
 }
 
 function formatPreferredFoot(foot: "left" | "right" | "both" | null): string {
-  if (!foot) return "-"
-  return foot.charAt(0).toUpperCase() + foot.slice(1)
+  if (!foot) return "-";
+  return foot.charAt(0).toUpperCase() + foot.slice(1);
 }
 
 export function PlayerHeader({ player }: PlayerHeaderProps) {
@@ -101,11 +101,11 @@ export function PlayerHeader({ player }: PlayerHeaderProps) {
     currentTeam,
     preferredFoot,
     marketValue,
-  } = player
+  } = player;
 
-  const displayPosition = detailedPosition || position || "Player"
+  const displayPosition = detailedPosition || position || "Player";
   const posCoords = positionCoordinates[displayPosition] ||
-    positionCoordinates[position || ""] || { top: "50%", left: "50%" }
+    positionCoordinates[position || ""] || { top: "50%", left: "50%" };
 
   return (
     <Card className="overflow-hidden py-0">
@@ -287,5 +287,5 @@ export function PlayerHeader({ player }: PlayerHeaderProps) {
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }

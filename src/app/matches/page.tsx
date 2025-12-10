@@ -1,28 +1,29 @@
-import type { Metadata } from "next"
-import { format, parseISO, isToday } from "date-fns"
-import { getFixturesByDate, getLiveFixtures } from "@/lib/api/football-api"
-import { getTopLeaguesStandings } from "@/lib/queries"
-import { DateNavigation } from "@/components/matches/date-navigation"
-import { MatchesContent } from "@/components/matches/matches-content"
-import { TopLeagues, AdSpace, StandingsWidget } from "@/components/sidebar"
-import { SITE, DATE_FORMATS } from "@/lib/constants"
+import type { Metadata } from "next";
+import { format, parseISO, isToday } from "date-fns";
+import { getFixturesByDate, getLiveFixtures } from "@/lib/api/football-api";
+import { getTopLeaguesStandings } from "@/lib/queries";
+import { DateNavigation } from "@/components/matches/date-navigation";
+import { MatchesContent } from "@/components/matches/matches-content";
+import { TopLeagues, AdSpace, StandingsWidget } from "@/components/sidebar";
+import { SITE, DATE_FORMATS } from "@/lib/constants";
 
 export const metadata: Metadata = {
   title: `All Matches | ${SITE.name}`,
-  description: "Browse all football matches by date. Find live scores, upcoming fixtures and match results.",
-}
+  description:
+    "Browse all football matches by date. Find live scores, upcoming fixtures and match results.",
+};
 
 interface MatchesPageProps {
-  searchParams: Promise<{ date?: string }>
+  searchParams: Promise<{ date?: string }>;
 }
 
 // Generate date items for navigation
 function generateDateItems(selectedDateString: string) {
-  const today = new Date()
+  const today = new Date();
   return Array.from({ length: 7 }, (_, i) => {
-    const d = new Date(today)
-    d.setDate(today.getDate() - 3 + i)
-    const dateString = format(d, DATE_FORMATS.apiDate)
+    const d = new Date(today);
+    d.setDate(today.getDate() - 3 + i);
+    const dateString = format(d, DATE_FORMATS.apiDate);
     return {
       date: d,
       dateString,
@@ -30,33 +31,33 @@ function generateDateItems(selectedDateString: string) {
       dayNumber: format(d, "d"),
       isToday: isToday(d),
       isSelected: dateString === selectedDateString,
-    }
-  })
+    };
+  });
 }
 
 export default async function MatchesPage({ searchParams }: MatchesPageProps) {
-  const { date } = await searchParams
+  const { date } = await searchParams;
 
   // Parse date from query or use today
-  const selectedDate = date ? parseISO(date) : new Date()
-  const dateString = format(selectedDate, DATE_FORMATS.apiDate)
-  const isSelectedToday = isToday(selectedDate)
+  const selectedDate = date ? parseISO(date) : new Date();
+  const dateString = format(selectedDate, DATE_FORMATS.apiDate);
+  const isSelectedToday = isToday(selectedDate);
 
   // Generate date items for navigation
-  const dates = generateDateItems(dateString)
+  const dates = generateDateItems(dateString);
 
   // Fetch fixtures and standings in parallel
   const [fixtures, liveFixtures, leagueStandings] = await Promise.all([
     getFixturesByDate(dateString).catch(() => []),
     isSelectedToday ? getLiveFixtures().catch(() => []) : Promise.resolve([]),
     getTopLeaguesStandings().catch(() => []),
-  ])
+  ]);
 
   // Filter out live fixtures from regular fixtures to avoid duplicates
-  const liveIds = new Set(liveFixtures.map((f) => f.id))
-  const nonLiveFixtures = fixtures.filter((f) => !liveIds.has(f.id))
+  const liveIds = new Set(liveFixtures.map((f) => f.id));
+  const nonLiveFixtures = fixtures.filter((f) => !liveIds.has(f.id));
 
-  const formattedDate = format(selectedDate, "EEEE, d MMMM yyyy")
+  const formattedDate = format(selectedDate, "EEEE, d MMMM yyyy");
 
   return (
     <main className="flex-1 overflow-auto">
@@ -92,5 +93,5 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
         </div>
       </div>
     </main>
-  )
+  );
 }

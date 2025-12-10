@@ -1,30 +1,35 @@
-"use client"
+"use client";
 
-import { useState, useEffect, useCallback } from "react"
-import type { Fixture, MatchStatus, MatchEvent, MatchStatistic } from "@/types/football"
+import { useState, useEffect, useCallback } from "react";
+import type {
+  Fixture,
+  MatchStatus,
+  MatchEvent,
+  MatchStatistic,
+} from "@/types/football";
 
 interface LiveFixtureData {
-  status: MatchStatus
-  minute: number | null
-  timeAdded: number | null
-  periodLength: number
-  homeScore: number
-  awayScore: number
-  isLive: boolean
+  status: MatchStatus;
+  minute: number | null;
+  timeAdded: number | null;
+  periodLength: number;
+  homeScore: number;
+  awayScore: number;
+  isLive: boolean;
   /** Formatted minute string like "45+2'" or "67'" */
-  displayMinute: string | null
+  displayMinute: string | null;
   /** Live events (goals, cards, substitutions) */
-  events: MatchEvent[]
+  events: MatchEvent[];
   /** Live statistics */
-  statistics: MatchStatistic[]
+  statistics: MatchStatistic[];
 }
 
 interface UseLiveFixtureOptions {
-  fixture: Fixture
+  fixture: Fixture;
   /** Polling interval in milliseconds (default: 30000 = 30 seconds) */
-  pollInterval?: number
+  pollInterval?: number;
   /** Whether to enable polling (default: true for live matches) */
-  enabled?: boolean
+  enabled?: boolean;
 }
 
 /**
@@ -33,19 +38,19 @@ interface UseLiveFixtureOptions {
  */
 function formatMinuteDisplay(
   minute: number | null,
-  timeAdded: number | null
+  timeAdded: number | null,
 ): string | null {
-  if (minute === null) return null
+  if (minute === null) return null;
 
   // ONLY show added time format when API explicitly provides time_added
   if (timeAdded !== null && timeAdded > 0) {
     // Determine base minute: 45 for 1st half injury time, 90 for 2nd half
-    const baseMinute = minute <= 50 ? 45 : 90
-    return `${baseMinute}+${timeAdded}'`
+    const baseMinute = minute <= 50 ? 45 : 90;
+    return `${baseMinute}+${timeAdded}'`;
   }
 
   // Normal minute display
-  return `${minute}'`
+  return `${minute}'`;
 }
 
 /**
@@ -58,7 +63,7 @@ function formatMinuteDisplay(
 export function useLiveFixture({
   fixture,
   pollInterval = 30000,
-  enabled = true
+  enabled = true,
 }: UseLiveFixtureOptions): LiveFixtureData {
   const [data, setData] = useState<LiveFixtureData>(() => ({
     status: fixture.status,
@@ -70,28 +75,28 @@ export function useLiveFixture({
     isLive: fixture.isLive,
     displayMinute: fixture.minute ? `${fixture.minute}'` : null,
     events: [],
-    statistics: []
-  }))
+    statistics: [],
+  }));
 
   // Only poll if match is currently live
-  const shouldPoll = enabled && data.isLive
+  const shouldPoll = enabled && data.isLive;
 
   const fetchUpdate = useCallback(async () => {
     try {
-      const response = await fetch(`/api/fixtures/${fixture.id}/live`)
-      if (!response.ok) return
+      const response = await fetch(`/api/fixtures/${fixture.id}/live`);
+      if (!response.ok) return;
 
-      const update = await response.json()
+      const update = await response.json();
 
       // If fixture not found in live matches, it might have ended
       if (update.status === "unknown") {
-        return
+        return;
       }
 
       const displayMinute = formatMinuteDisplay(
         update.minute,
-        update.timeAdded
-      )
+        update.timeAdded,
+      );
 
       setData({
         status: update.status as MatchStatus,
@@ -103,12 +108,12 @@ export function useLiveFixture({
         isLive: update.isLive,
         displayMinute,
         events: update.events || [],
-        statistics: update.statistics || []
-      })
+        statistics: update.statistics || [],
+      });
     } catch {
       // Silent fail - keep showing last known data
     }
-  }, [fixture.id])
+  }, [fixture.id]);
 
   // Reset state ONLY when navigating to a different fixture
   useEffect(() => {
@@ -122,22 +127,22 @@ export function useLiveFixture({
       isLive: fixture.isLive,
       displayMinute: fixture.minute ? `${fixture.minute}'` : null,
       events: [],
-      statistics: []
-    })
-  }, [fixture.id]) // Intentionally only fixture.id - live data updates via polling
+      statistics: [],
+    });
+  }, [fixture.id]); // Intentionally only fixture.id - live data updates via polling
 
   // Poll for updates
   useEffect(() => {
-    if (!shouldPoll) return
+    if (!shouldPoll) return;
 
     // Fetch immediately on mount
-    fetchUpdate()
+    fetchUpdate();
 
     // Then poll at interval
-    const interval = setInterval(fetchUpdate, pollInterval)
+    const interval = setInterval(fetchUpdate, pollInterval);
 
-    return () => clearInterval(interval)
-  }, [shouldPoll, pollInterval, fetchUpdate])
+    return () => clearInterval(interval);
+  }, [shouldPoll, pollInterval, fetchUpdate]);
 
-  return data
+  return data;
 }

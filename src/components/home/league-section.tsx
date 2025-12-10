@@ -1,13 +1,13 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import Image from "next/image"
-import Link from "next/link"
-import { ChevronDown, ChevronRight } from "lucide-react"
-import { cn, getLeagueUrl } from "@/lib/utils"
-import { MatchRow } from "./match-row"
-import { AdSpace } from "@/components/sidebar"
-import type { Fixture } from "@/types/football"
+import { useState } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { ChevronDown, ChevronRight } from "lucide-react";
+import { cn, getLeagueUrl } from "@/lib/utils";
+import { MatchRow } from "./match-row";
+import { AdSpace } from "@/components/sidebar";
+import type { Fixture } from "@/types/football";
 
 // Configuration for inline ads between matches
 const MATCH_AD_CONFIG = {
@@ -15,16 +15,16 @@ const MATCH_AD_CONFIG = {
   count: 2, // Number of ads to show between matches
   startAfter: 3, // Show first ad after this many matches
   interval: 5, // Show subsequent ads every N matches
-}
+};
 
 interface LeagueSectionProps {
-  leagueId: number
-  leagueName: string
-  leagueLogo?: string
-  countryName?: string
-  countryFlag?: string
-  fixtures: Fixture[]
-  defaultExpanded?: boolean
+  leagueId: number;
+  leagueName: string;
+  leagueLogo?: string;
+  countryName?: string;
+  countryFlag?: string;
+  fixtures: Fixture[];
+  defaultExpanded?: boolean;
 }
 
 export function LeagueSection({
@@ -34,11 +34,11 @@ export function LeagueSection({
   countryName,
   countryFlag,
   fixtures,
-  defaultExpanded = true
+  defaultExpanded = true,
 }: LeagueSectionProps) {
-  const [isExpanded, setIsExpanded] = useState(defaultExpanded)
+  const [isExpanded, setIsExpanded] = useState(defaultExpanded);
 
-  const liveCount = fixtures.filter(f => f.isLive).length
+  const liveCount = fixtures.filter((f) => f.isLive).length;
 
   return (
     <div className="border border-border/50 rounded-xl overflow-hidden bg-card">
@@ -46,7 +46,7 @@ export function LeagueSection({
       <div
         className={cn(
           "flex items-center gap-2 px-3 py-2.5",
-          isExpanded && "border-b border-border/50"
+          isExpanded && "border-b border-border/50",
         )}
       >
         {/* League Link - Click to go to league page */}
@@ -98,7 +98,9 @@ export function LeagueSection({
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75" />
                 <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-red-500" />
               </span>
-              <span className="text-[10px] font-bold text-red-500">{liveCount}</span>
+              <span className="text-[10px] font-bold text-red-500">
+                {liveCount}
+              </span>
             </div>
           )}
           <span className="text-xs text-muted-foreground">
@@ -112,7 +114,7 @@ export function LeagueSection({
             <ChevronDown
               className={cn(
                 "h-4 w-4 text-muted-foreground transition-transform",
-                isExpanded && "rotate-180"
+                isExpanded && "rotate-180",
               )}
             />
           </button>
@@ -124,29 +126,35 @@ export function LeagueSection({
         <div className="divide-y divide-border/30">
           {fixtures.map((fixture, index) => {
             // Calculate ad positions
-            const adPositions: number[] = []
+            const adPositions: number[] = [];
             if (MATCH_AD_CONFIG.enabled) {
               for (let i = 0; i < MATCH_AD_CONFIG.count; i++) {
-                adPositions.push(MATCH_AD_CONFIG.startAfter + i * MATCH_AD_CONFIG.interval)
+                adPositions.push(
+                  MATCH_AD_CONFIG.startAfter + i * MATCH_AD_CONFIG.interval,
+                );
               }
             }
 
             // Check if we should show an ad after this match
-            const showAdAfter = adPositions.includes(index + 1) && index < fixtures.length - 1
+            const showAdAfter =
+              adPositions.includes(index + 1) && index < fixtures.length - 1;
 
             return (
               <div key={fixture.id}>
                 <MatchRow fixture={fixture} />
                 {showAdAfter && (
                   <div className="border-t border-border/30">
-                    <AdSpace size="inline-banner" className="rounded-none border-0 bg-muted/20" />
+                    <AdSpace
+                      size="inline-banner"
+                      className="rounded-none border-0 bg-muted/20"
+                    />
                   </div>
                 )}
               </div>
-            )
+            );
           })}
         </div>
       )}
     </div>
-  )
+  );
 }

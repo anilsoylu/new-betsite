@@ -1,27 +1,34 @@
-import type { Metadata } from "next"
-import Image from "next/image"
-import Link from "next/link"
-import { Search, ChevronRight, Trophy } from "lucide-react"
-import { SITE } from "@/lib/constants"
-import { getTopScorersForPopularLeagues, getTopLeaguesStandings } from "@/lib/queries"
-import { slugify } from "@/lib/utils"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { TopLeagues, AdSpace, StandingsWidget } from "@/components/sidebar"
+import type { Metadata } from "next";
+import Image from "next/image";
+import Link from "next/link";
+import { Search, ChevronRight, Trophy } from "lucide-react";
+import { SITE } from "@/lib/constants";
+import {
+  getTopScorersForPopularLeagues,
+  getTopLeaguesStandings,
+} from "@/lib/queries";
+import { slugify } from "@/lib/utils";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { TopLeagues, AdSpace, StandingsWidget } from "@/components/sidebar";
 
 export const metadata: Metadata = {
   title: `Players | ${SITE.name}`,
-  description: "Discover top goalscorers from the best football leagues. Find player statistics, career history and more.",
-}
+  description:
+    "Discover top goalscorers from the best football leagues. Find player statistics, career history and more.",
+};
 
 export default async function PlayersPage() {
   // Fetch topscorers and standings in parallel
   const [leagueTopScorers, leagueStandings] = await Promise.all([
     getTopScorersForPopularLeagues(),
     getTopLeaguesStandings(),
-  ])
+  ]);
 
-  const totalPlayers = leagueTopScorers.reduce((sum, league) => sum + league.topScorers.length, 0)
+  const totalPlayers = leagueTopScorers.reduce(
+    (sum, league) => sum + league.topScorers.length,
+    0,
+  );
 
   return (
     <main className="flex-1 overflow-auto">
@@ -53,7 +60,11 @@ export default async function PlayersPage() {
                 <div className="flex-1">
                   <p className="text-sm font-medium">Search for any player</p>
                   <p className="text-xs text-muted-foreground">
-                    Press <kbd className="inline-flex h-5 items-center gap-1 rounded border bg-background px-1.5 font-mono text-[10px] font-medium">⌘K</kbd> or use the search in header
+                    Press{" "}
+                    <kbd className="inline-flex h-5 items-center gap-1 rounded border bg-background px-1.5 font-mono text-[10px] font-medium">
+                      ⌘K
+                    </kbd>{" "}
+                    or use the search in header
                   </p>
                 </div>
               </div>
@@ -96,12 +107,17 @@ export default async function PlayersPage() {
                           className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors group"
                         >
                           {/* Position */}
-                          <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
-                            index === 0 ? "bg-yellow-500 text-yellow-950" :
-                            index === 1 ? "bg-gray-300 text-gray-700" :
-                            index === 2 ? "bg-amber-600 text-amber-50" :
-                            "bg-muted text-muted-foreground"
-                          }`}>
+                          <div
+                            className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
+                              index === 0
+                                ? "bg-yellow-500 text-yellow-950"
+                                : index === 1
+                                  ? "bg-gray-300 text-gray-700"
+                                  : index === 2
+                                    ? "bg-amber-600 text-amber-50"
+                                    : "bg-muted text-muted-foreground"
+                            }`}
+                          >
                             {scorer.position}
                           </div>
 
@@ -143,8 +159,12 @@ export default async function PlayersPage() {
 
                           {/* Goals */}
                           <div className="text-right">
-                            <p className="text-lg font-bold tabular-nums">{scorer.goals}</p>
-                            <p className="text-[10px] text-muted-foreground uppercase">Goals</p>
+                            <p className="text-lg font-bold tabular-nums">
+                              {scorer.goals}
+                            </p>
+                            <p className="text-[10px] text-muted-foreground uppercase">
+                              Goals
+                            </p>
                           </div>
                         </Link>
                       ))}
@@ -170,5 +190,5 @@ export default async function PlayersPage() {
         </div>
       </div>
     </main>
-  )
+  );
 }

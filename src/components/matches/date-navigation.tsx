@@ -1,51 +1,51 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { useRouter } from "next/navigation"
-import { format, addDays, subDays } from "date-fns"
-import { ChevronLeft, ChevronRight, Calendar } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { cn } from "@/lib/utils"
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { format, addDays, subDays } from "date-fns";
+import { ChevronLeft, ChevronRight, Calendar } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover"
-import { Calendar as CalendarComponent } from "@/components/ui/calendar"
-import { DATE_FORMATS } from "@/lib/constants"
+} from "@/components/ui/popover";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import { DATE_FORMATS } from "@/lib/constants";
 
 interface DateItem {
-  date: Date
-  dateString: string
-  label: string
-  dayNumber: string
-  isToday: boolean
-  isSelected: boolean
+  date: Date;
+  dateString: string;
+  label: string;
+  dayNumber: string;
+  isToday: boolean;
+  isSelected: boolean;
 }
 
 interface DateNavigationProps {
-  dates: DateItem[]
+  dates: DateItem[];
 }
 
 export function DateNavigation({ dates }: DateNavigationProps) {
-  const router = useRouter()
-  const selectedDate = dates.find((d) => d.isSelected)?.date || new Date()
+  const router = useRouter();
+  const selectedDate = dates.find((d) => d.isSelected)?.date || new Date();
 
   const handlePrevWeek = () => {
-    const newDate = subDays(selectedDate, 7)
-    router.push(`/matches?date=${format(newDate, DATE_FORMATS.apiDate)}`)
-  }
+    const newDate = subDays(selectedDate, 7);
+    router.push(`/matches?date=${format(newDate, DATE_FORMATS.apiDate)}`);
+  };
 
   const handleNextWeek = () => {
-    const newDate = addDays(selectedDate, 7)
-    router.push(`/matches?date=${format(newDate, DATE_FORMATS.apiDate)}`)
-  }
+    const newDate = addDays(selectedDate, 7);
+    router.push(`/matches?date=${format(newDate, DATE_FORMATS.apiDate)}`);
+  };
 
   const handleDateSelect = (date: Date | undefined) => {
     if (date) {
-      router.push(`/matches?date=${format(date, DATE_FORMATS.apiDate)}`)
+      router.push(`/matches?date=${format(date, DATE_FORMATS.apiDate)}`);
     }
-  }
+  };
 
   return (
     <div className="flex items-center gap-2">
@@ -70,7 +70,7 @@ export function DateNavigation({ dates }: DateNavigationProps) {
               item.isSelected
                 ? "bg-primary text-primary-foreground"
                 : "hover:bg-muted",
-              item.isToday && !item.isSelected && "border border-primary"
+              item.isToday && !item.isSelected && "border border-primary",
             )}
           >
             <span className="text-xs font-medium uppercase">{item.label}</span>
@@ -106,5 +106,5 @@ export function DateNavigation({ dates }: DateNavigationProps) {
         </PopoverContent>
       </Popover>
     </div>
-  )
+  );
 }

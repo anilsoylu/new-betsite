@@ -1,8 +1,8 @@
-import type { Metadata } from "next"
-import { notFound } from "next/navigation"
-import { format } from "date-fns"
-import { getMatchDetailData } from "@/lib/queries"
-import { extractFixtureId, slugify } from "@/lib/utils"
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { format } from "date-fns";
+import { getMatchDetailData } from "@/lib/queries";
+import { extractFixtureId, slugify } from "@/lib/utils";
 import {
   MatchHeader,
   MatchTabs,
@@ -12,28 +12,28 @@ import {
   TeamFormWidget,
   LeagueMiniTable,
   MatchInfoWidget,
-} from "@/components/match-detail"
-import { SEO, DATE_FORMATS } from "@/lib/constants"
-import { AdSpace } from "@/components/sidebar"
+} from "@/components/match-detail";
+import { SEO, DATE_FORMATS } from "@/lib/constants";
+import { AdSpace } from "@/components/sidebar";
 
 interface MatchDetailPageProps {
-  params: Promise<{ slug: string }>
+  params: Promise<{ slug: string }>;
 }
 
 export async function generateMetadata({
   params,
 }: MatchDetailPageProps): Promise<Metadata> {
-  const { slug } = await params
-  const fixtureId = extractFixtureId(slug)
+  const { slug } = await params;
+  const fixtureId = extractFixtureId(slug);
 
   if (!fixtureId) {
-    return { title: "Match Not Found" }
+    return { title: "Match Not Found" };
   }
 
   try {
-    const { fixture } = await getMatchDetailData(fixtureId)
-    const { homeTeam, awayTeam, league, startTime } = fixture
-    const formattedDate = format(new Date(startTime), DATE_FORMATS.date)
+    const { fixture } = await getMatchDetailData(fixtureId);
+    const { homeTeam, awayTeam, league, startTime } = fixture;
+    const formattedDate = format(new Date(startTime), DATE_FORMATS.date);
 
     return {
       title: SEO.matchDetail.titleTemplate(homeTeam.name, awayTeam.name),
@@ -41,7 +41,7 @@ export async function generateMetadata({
         homeTeam.name,
         awayTeam.name,
         league?.name || "Football",
-        formattedDate
+        formattedDate,
       ),
       openGraph: {
         title: SEO.matchDetail.titleTemplate(homeTeam.name, awayTeam.name),
@@ -49,33 +49,33 @@ export async function generateMetadata({
           homeTeam.name,
           awayTeam.name,
           league?.name || "Football",
-          formattedDate
+          formattedDate,
         ),
       },
-    }
+    };
   } catch {
-    return { title: "Match Not Found" }
+    return { title: "Match Not Found" };
   }
 }
 
 export default async function MatchDetailPage({
   params,
 }: MatchDetailPageProps) {
-  const { slug } = await params
-  const fixtureId = extractFixtureId(slug)
+  const { slug } = await params;
+  const fixtureId = extractFixtureId(slug);
 
   if (!fixtureId) {
-    notFound()
+    notFound();
   }
 
-  let data
+  let data;
   try {
-    data = await getMatchDetailData(fixtureId)
+    data = await getMatchDetailData(fixtureId);
   } catch {
-    notFound()
+    notFound();
   }
 
-  const { fixture, standings, h2h, odds, homeForm, awayForm } = data
+  const { fixture, standings, h2h, odds, homeForm, awayForm } = data;
 
   return (
     <main className="container mx-auto px-4 py-8">
@@ -149,5 +149,5 @@ export default async function MatchDetailPage({
         </div>
       </div>
     </main>
-  )
+  );
 }

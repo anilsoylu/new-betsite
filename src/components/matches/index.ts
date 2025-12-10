@@ -1,1 +1,1 @@
-export { DateNavigation } from "./date-navigation"
+export { DateNavigation } from "./date-navigation";

@@ -1,30 +1,30 @@
-import { notFound } from "next/navigation"
-import { getLeaguePageData } from "@/lib/api/football-api"
-import { extractLeagueId } from "@/lib/utils"
-import { StandingsTable, LeagueAboutSection } from "@/components/leagues"
+import { notFound } from "next/navigation";
+import { getLeaguePageData } from "@/lib/api/football-api";
+import { extractLeagueId } from "@/lib/utils";
+import { StandingsTable, LeagueAboutSection } from "@/components/leagues";
 
 interface StandingsPageProps {
-  params: Promise<{ slug: string }>
+  params: Promise<{ slug: string }>;
 }
 
 export default async function StandingsPage({ params }: StandingsPageProps) {
-  const { slug } = await params
-  const leagueId = extractLeagueId(slug)
+  const { slug } = await params;
+  const leagueId = extractLeagueId(slug);
 
   if (!leagueId) {
-    notFound()
+    notFound();
   }
 
-  let data
+  let data;
   try {
-    data = await getLeaguePageData(leagueId)
+    data = await getLeaguePageData(leagueId);
   } catch {
-    notFound()
+    notFound();
   }
 
   const hasStandings =
-    data.standings.length > 0 && data.standings[0].standings.length > 0
-  const standings = hasStandings ? data.standings[0].standings : []
+    data.standings.length > 0 && data.standings[0].standings.length > 0;
+  const standings = hasStandings ? data.standings[0].standings : [];
 
   return (
     <div className="space-y-8">
@@ -43,5 +43,5 @@ export default async function StandingsPage({ params }: StandingsPageProps) {
         recentFixtures={data.recentFixtures}
       />
     </div>
-  )
+  );
 }

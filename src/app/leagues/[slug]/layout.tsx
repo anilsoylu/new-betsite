@@ -1,37 +1,38 @@
-import Link from "next/link"
-import { ArrowLeft } from "lucide-react"
-import { notFound } from "next/navigation"
-import { getLeaguePageData } from "@/lib/api/football-api"
-import { extractLeagueId } from "@/lib/utils"
-import { LeagueHeader, LeagueNavTabs } from "@/components/leagues"
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
+import { notFound } from "next/navigation";
+import { getLeaguePageData } from "@/lib/api/football-api";
+import { extractLeagueId } from "@/lib/utils";
+import { LeagueHeader, LeagueNavTabs } from "@/components/leagues";
 
 interface LeagueLayoutProps {
-  children: React.ReactNode
-  params: Promise<{ slug: string }>
+  children: React.ReactNode;
+  params: Promise<{ slug: string }>;
 }
 
-export default async function LeagueLayout({ children, params }: LeagueLayoutProps) {
-  const { slug } = await params
-  const leagueId = extractLeagueId(slug)
+export default async function LeagueLayout({
+  children,
+  params,
+}: LeagueLayoutProps) {
+  const { slug } = await params;
+  const leagueId = extractLeagueId(slug);
 
   if (!leagueId) {
-    notFound()
+    notFound();
   }
 
-  let data
+  let data;
   try {
-    data = await getLeaguePageData(leagueId)
+    data = await getLeaguePageData(leagueId);
   } catch {
-    notFound()
+    notFound();
   }
 
   const hasStandings =
-    data.standings.length > 0 && data.standings[0].standings.length > 0
+    data.standings.length > 0 && data.standings[0].standings.length > 0;
 
   // Get season name if available
-  const seasonName = data.league.currentSeasonId
-    ? `2024/2025`
-    : undefined
+  const seasonName = data.league.currentSeasonId ? `2024/2025` : undefined;
 
   return (
     <main className="flex-1 overflow-auto">
@@ -54,10 +55,8 @@ export default async function LeagueLayout({ children, params }: LeagueLayoutPro
         <LeagueNavTabs slug={slug} hasStandings={hasStandings} />
 
         {/* Tab Content */}
-        <div className="mt-6">
-          {children}
-        </div>
+        <div className="mt-6">{children}</div>
       </div>
     </main>
-  )
+  );
 }

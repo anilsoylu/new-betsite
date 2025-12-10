@@ -147,7 +147,14 @@ export interface StandingTable {
 export interface MatchEvent {
   id: number;
   type: "goal" | "card" | "substitution" | "var" | "other";
-  subType?: "yellow" | "red" | "yellowred" | "penalty" | "ownGoal" | "missedPenalty" | null;
+  subType?:
+    | "yellow"
+    | "red"
+    | "yellowred"
+    | "penalty"
+    | "ownGoal"
+    | "missedPenalty"
+    | null;
   minute: number;
   extraMinute: number | null;
   teamId: number;

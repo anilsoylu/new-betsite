@@ -1,11 +1,11 @@
-import Image from "next/image"
-import { MapPin, Calendar, Trophy } from "lucide-react"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import type { TeamDetail } from "@/types/football"
+import Image from "next/image";
+import { MapPin, Calendar, Trophy } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import type { TeamDetail } from "@/types/football";
 
 interface TeamHeaderProps {
-  team: TeamDetail
+  team: TeamDetail;
 }
 
 export function TeamHeader({ team }: TeamHeaderProps) {
@@ -63,7 +63,9 @@ export function TeamHeader({ team }: TeamHeaderProps) {
                   <MapPin className="h-4 w-4" />
                   <span>{team.venue.name}</span>
                   {team.venue.capacity && (
-                    <span className="text-xs">({team.venue.capacity.toLocaleString()})</span>
+                    <span className="text-xs">
+                      ({team.venue.capacity.toLocaleString()})
+                    </span>
                   )}
                 </div>
               )}
@@ -89,11 +91,17 @@ export function TeamHeader({ team }: TeamHeaderProps) {
               <div className="mt-4">
                 <div className="flex items-center gap-2 justify-center sm:justify-start mb-2">
                   <Trophy className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm text-muted-foreground">Competitions</span>
+                  <span className="text-sm text-muted-foreground">
+                    Competitions
+                  </span>
                 </div>
                 <div className="flex flex-wrap justify-center sm:justify-start gap-2">
                   {team.activeSeasons.slice(0, 5).map((season) => (
-                    <Badge key={season.id} variant="secondary" className="text-xs">
+                    <Badge
+                      key={season.id}
+                      variant="secondary"
+                      className="text-xs"
+                    >
                       {season.league?.name || season.name}
                     </Badge>
                   ))}
@@ -109,5 +117,5 @@ export function TeamHeader({ team }: TeamHeaderProps) {
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }

@@ -1,59 +1,39 @@
-"use client"
+"use client";
 
-import { useState, useEffect, useCallback } from "react"
-import { useRouter } from "next/navigation"
-import Image from "next/image"
-import { Search, Loader2, User } from "lucide-react"
-import { Input } from "@/components/ui/input"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { generatePlayerSlug } from "@/lib/utils"
-import type { PlayerSearchResult } from "@/types/football"
+import { useRouter } from "next/navigation";
+import Image from "next/image";
+import { Search, Loader2, User } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { generatePlayerSlug } from "@/lib/utils";
+import { useSearch } from "@/hooks";
+import type { PlayerSearchResult } from "@/types/football";
 
 export function PlayerSearch() {
-  const router = useRouter()
-  const [query, setQuery] = useState("")
-  const [results, setResults] = useState<PlayerSearchResult[]>([])
-  const [isLoading, setIsLoading] = useState(false)
-  const [hasSearched, setHasSearched] = useState(false)
+  const router = useRouter();
 
-  const searchPlayers = useCallback(async (searchQuery: string) => {
-    if (searchQuery.length < 2) {
-      setResults([])
-      setHasSearched(false)
-      return
-    }
-
-    setIsLoading(true)
-    setHasSearched(true)
-
-    try {
-      const response = await fetch(`/api/players/search?q=${encodeURIComponent(searchQuery)}`)
-      if (response.ok) {
-        const data = await response.json()
-        setResults(data.players || [])
-      }
-    } catch (error) {
-      console.error("Search error:", error)
-      setResults([])
-    } finally {
-      setIsLoading(false)
-    }
-  }, [])
-
-  // Debounced search
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      searchPlayers(query)
-    }, 300)
-
-    return () => clearTimeout(timer)
-  }, [query, searchPlayers])
+  const { query, setQuery, results, isLoading, hasSearched } = useSearch<
+    PlayerSearchResult[]
+  >({
+    fetcher: async (q) => {
+      const response = await fetch(
+        `/api/players/search?q=${encodeURIComponent(q)}`,
+      );
+      if (!response.ok) return [];
+      const data = await response.json();
+      return data.players || [];
+    },
+    initialResults: [],
+  });
 
   const handlePlayerClick = (player: PlayerSearchResult) => {
-    const slug = generatePlayerSlug(player.displayName || player.name, player.id)
-    router.push(`/players/${slug}`)
-  }
+    const slug = generatePlayerSlug(
+      player.displayName || player.name,
+      player.id,
+    );
+    router.push(`/players/${slug}`);
+  };
 
   return (
     <div className="space-y-6">
@@ -102,7 +82,9 @@ export function PlayerSearch() {
                   )}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="font-medium truncate">{player.displayName || player.name}</p>
+                  <p className="font-medium truncate">
+                    {player.displayName || player.name}
+                  </p>
                   <div className="flex items-center gap-2 mt-1">
                     {player.position && (
                       <Badge variant="secondary" className="text-xs">
@@ -123,9 +105,14 @@ export function PlayerSearch() {
       )}
 
       {/* No Results */}
-      {!isLoading && hasSearched && results.length === 0 && query.length >= 2 && (
-        <p className="text-muted-foreground">No players found for "{query}"</p>
-      )}
+      {!isLoading &&
+        hasSearched &&
+        results.length === 0 &&
+        query.length >= 2 && (
+          <p className="text-muted-foreground">
+            No players found for "{query}"
+          </p>
+        )}
 
       {/* Initial State */}
       {!hasSearched && !isLoading && (
@@ -135,5 +122,5 @@ export function PlayerSearch() {
         </div>
       )}
     </div>
-  )
+  );
 }

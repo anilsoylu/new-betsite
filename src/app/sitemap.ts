@@ -1,8 +1,8 @@
-import type { MetadataRoute } from "next"
-import { SITE } from "@/lib/constants"
+import type { MetadataRoute } from "next";
+import { SITE } from "@/lib/constants";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = SITE.url
+  const baseUrl = SITE.url;
 
   // Static pages
   const staticPages: MetadataRoute.Sitemap = [
@@ -30,7 +30,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "daily",
       priority: 0.8,
     },
-  ]
+  ];
 
-  return staticPages
+  return staticPages;
 }

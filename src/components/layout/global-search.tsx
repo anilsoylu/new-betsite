@@ -1,137 +1,152 @@
-"use client"
+"use client";
 
-import { useState, useEffect, useCallback, useRef } from "react"
-import { useRouter } from "next/navigation"
-import Image from "next/image"
-import { Search, Loader2, User, Users, Star, X } from "lucide-react"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { cn } from "@/lib/utils"
-import { generatePlayerSlug, generateTeamSlug } from "@/lib/utils"
-import { useFavoritesStore } from "@/stores/favorites-store"
-import type { PlayerSearchResult, TeamSearchResult } from "@/types/football"
+import { useState, useEffect, useCallback, useRef } from "react";
+import { useRouter } from "next/navigation";
+import Image from "next/image";
+import { Search, Loader2, User, Users, Star, X } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
+import { generatePlayerSlug, generateTeamSlug } from "@/lib/utils";
+import { useFavoritesStore } from "@/stores/favorites-store";
+import type { PlayerSearchResult, TeamSearchResult } from "@/types/football";
 
 interface SearchResults {
-  players: PlayerSearchResult[]
-  teams: TeamSearchResult[]
+  players: PlayerSearchResult[];
+  teams: TeamSearchResult[];
 }
 
 export function GlobalSearch() {
-  const router = useRouter()
-  const { toggleFavorite, isFavorite } = useFavoritesStore()
-  const [query, setQuery] = useState("")
-  const [results, setResults] = useState<SearchResults>({ players: [], teams: [] })
-  const [isLoading, setIsLoading] = useState(false)
-  const [isOpen, setIsOpen] = useState(false)
-  const [isFocused, setIsFocused] = useState(false)
-  const [hasMounted, setHasMounted] = useState(false)
-  const inputRef = useRef<HTMLInputElement>(null)
-  const containerRef = useRef<HTMLDivElement>(null)
+  const router = useRouter();
+  const { toggleFavorite, isFavorite } = useFavoritesStore();
+  const [query, setQuery] = useState("");
+  const [results, setResults] = useState<SearchResults>({
+    players: [],
+    teams: [],
+  });
+  const [isLoading, setIsLoading] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
+  const [hasMounted, setHasMounted] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    setHasMounted(true)
-  }, [])
+    setHasMounted(true);
+  }, []);
 
-  const hasResults = results.players.length > 0 || results.teams.length > 0
+  const hasResults = results.players.length > 0 || results.teams.length > 0;
 
   // Helper to check favorites only after mount
   const checkIsFavorite = (type: "players" | "teams", id: number) => {
-    return hasMounted && isFavorite(type, id)
-  }
+    return hasMounted && isFavorite(type, id);
+  };
 
   const searchAll = useCallback(async (searchQuery: string) => {
     if (searchQuery.length < 2) {
-      setResults({ players: [], teams: [] })
-      return
+      setResults({ players: [], teams: [] });
+      return;
     }
 
-    setIsLoading(true)
+    setIsLoading(true);
 
     try {
       const [playersRes, teamsRes] = await Promise.all([
         fetch(`/api/players/search?q=${encodeURIComponent(searchQuery)}`),
         fetch(`/api/teams/search?q=${encodeURIComponent(searchQuery)}`),
-      ])
+      ]);
 
-      const playersData = playersRes.ok ? await playersRes.json() : { players: [] }
-      const teamsData = teamsRes.ok ? await teamsRes.json() : { teams: [] }
+      const playersData = playersRes.ok
+        ? await playersRes.json()
+        : { players: [] };
+      const teamsData = teamsRes.ok ? await teamsRes.json() : { teams: [] };
 
       setResults({
         players: (playersData.players || []).slice(0, 5),
         teams: (teamsData.teams || []).slice(0, 5),
-      })
+      });
     } catch (error) {
-      console.error("Search error:", error)
-      setResults({ players: [], teams: [] })
+      console.error("Search error:", error);
+      setResults({ players: [], teams: [] });
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }, [])
+  }, []);
 
   // Debounced search
   useEffect(() => {
     const timer = setTimeout(() => {
-      searchAll(query)
-    }, 300)
+      searchAll(query);
+    }, 300);
 
-    return () => clearTimeout(timer)
-  }, [query, searchAll])
+    return () => clearTimeout(timer);
+  }, [query, searchAll]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
-        setIsOpen(false)
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(event.target as Node)
+      ) {
+        setIsOpen(false);
       }
     }
 
-    document.addEventListener("mousedown", handleClickOutside)
-    return () => document.removeEventListener("mousedown", handleClickOutside)
-  }, [])
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   // Keyboard shortcut (Cmd/Ctrl + K)
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
       if ((event.metaKey || event.ctrlKey) && event.key === "k") {
-        event.preventDefault()
-        inputRef.current?.focus()
-        setIsOpen(true)
+        event.preventDefault();
+        inputRef.current?.focus();
+        setIsOpen(true);
       }
       if (event.key === "Escape") {
-        setIsOpen(false)
-        inputRef.current?.blur()
+        setIsOpen(false);
+        inputRef.current?.blur();
       }
     }
 
-    window.addEventListener("keydown", handleKeyDown)
-    return () => window.removeEventListener("keydown", handleKeyDown)
-  }, [])
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   const handlePlayerClick = (player: PlayerSearchResult) => {
-    const slug = generatePlayerSlug(player.displayName || player.name, player.id)
-    router.push(`/players/${slug}`)
-    setIsOpen(false)
-    setQuery("")
-  }
+    const slug = generatePlayerSlug(
+      player.displayName || player.name,
+      player.id,
+    );
+    router.push(`/players/${slug}`);
+    setIsOpen(false);
+    setQuery("");
+  };
 
   const handleTeamClick = (team: TeamSearchResult) => {
-    const slug = generateTeamSlug(team.name, team.id)
-    router.push(`/teams/${slug}`)
-    setIsOpen(false)
-    setQuery("")
-  }
+    const slug = generateTeamSlug(team.name, team.id);
+    router.push(`/teams/${slug}`);
+    setIsOpen(false);
+    setQuery("");
+  };
 
-  const handleFavoriteClick = (e: React.MouseEvent, type: "players" | "teams", id: number) => {
-    e.stopPropagation()
-    toggleFavorite(type, id)
-  }
+  const handleFavoriteClick = (
+    e: React.MouseEvent,
+    type: "players" | "teams",
+    id: number,
+  ) => {
+    e.stopPropagation();
+    toggleFavorite(type, id);
+  };
 
   const clearSearch = () => {
-    setQuery("")
-    setResults({ players: [], teams: [] })
-    inputRef.current?.focus()
-  }
+    setQuery("");
+    setResults({ players: [], teams: [] });
+    inputRef.current?.focus();
+  };
 
   return (
     <div ref={containerRef} className="relative">
@@ -145,13 +160,13 @@ export function GlobalSearch() {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => {
-            setIsFocused(true)
-            setIsOpen(true)
+            setIsFocused(true);
+            setIsOpen(true);
           }}
           onBlur={() => setIsFocused(false)}
           className={cn(
             "pl-9 pr-16 h-9 transition-all duration-200",
-            "w-40 focus:w-64 md:w-48 md:focus:w-80"
+            "w-40 focus:w-64 md:w-48 md:focus:w-80",
           )}
         />
         <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
@@ -219,7 +234,10 @@ export function GlobalSearch() {
                           </p>
                           <div className="flex items-center gap-1.5">
                             {player.position && (
-                              <Badge variant="secondary" className="text-[10px] h-4 px-1">
+                              <Badge
+                                variant="secondary"
+                                className="text-[10px] h-4 px-1"
+                              >
                                 {player.position}
                               </Badge>
                             )}
@@ -234,14 +252,16 @@ export function GlobalSearch() {
                           variant="ghost"
                           size="icon"
                           className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
-                          onClick={(e) => handleFavoriteClick(e, "players", player.id)}
+                          onClick={(e) =>
+                            handleFavoriteClick(e, "players", player.id)
+                          }
                         >
                           <Star
                             className={cn(
                               "h-4 w-4",
                               checkIsFavorite("players", player.id)
                                 ? "fill-yellow-500 text-yellow-500"
-                                : "text-muted-foreground"
+                                : "text-muted-foreground",
                             )}
                           />
                         </Button>
@@ -282,7 +302,9 @@ export function GlobalSearch() {
                           )}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium truncate">{team.name}</p>
+                          <p className="text-sm font-medium truncate">
+                            {team.name}
+                          </p>
                           {team.country && (
                             <span className="text-xs text-muted-foreground truncate">
                               {team.country.name}
@@ -293,14 +315,16 @@ export function GlobalSearch() {
                           variant="ghost"
                           size="icon"
                           className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
-                          onClick={(e) => handleFavoriteClick(e, "teams", team.id)}
+                          onClick={(e) =>
+                            handleFavoriteClick(e, "teams", team.id)
+                          }
                         >
                           <Star
                             className={cn(
                               "h-4 w-4",
                               checkIsFavorite("teams", team.id)
                                 ? "fill-yellow-500 text-yellow-500"
-                                : "text-muted-foreground"
+                                : "text-muted-foreground",
                             )}
                           />
                         </Button>
@@ -319,5 +343,5 @@ export function GlobalSearch() {
         </div>
       )}
     </div>
-  )
+  );
 }

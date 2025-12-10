@@ -8,7 +8,11 @@ import { LineupsTab } from "./lineups-tab";
 import { StandingsTab } from "./standings-tab";
 import { H2HTab } from "./h2h-tab";
 import { useLiveFixture } from "@/hooks";
-import type { FixtureDetail, StandingTable, H2HFixture } from "@/types/football";
+import type {
+  FixtureDetail,
+  StandingTable,
+  H2HFixture,
+} from "@/types/football";
 
 interface MatchTabsProps {
   fixture: FixtureDetail;
@@ -37,23 +41,18 @@ export function MatchTabs({ fixture, standings, h2h }: MatchTabsProps) {
   const [activeTab, setActiveTab] = useState(getDefaultTab);
 
   return (
-    <Tabs defaultValue={getDefaultTab()} value={activeTab} onValueChange={setActiveTab} className="w-full">
+    <Tabs
+      defaultValue={getDefaultTab()}
+      value={activeTab}
+      onValueChange={setActiveTab}
+      className="w-full"
+    >
       <TabsList className="w-full grid grid-cols-5 mb-4">
-        <TabsTrigger value="events">
-          Events
-        </TabsTrigger>
-        <TabsTrigger value="lineups">
-          Lineups
-        </TabsTrigger>
-        <TabsTrigger value="statistics">
-          Statistics
-        </TabsTrigger>
-        <TabsTrigger value="standings">
-          Standings
-        </TabsTrigger>
-        <TabsTrigger value="h2h">
-          H2H
-        </TabsTrigger>
+        <TabsTrigger value="events">Events</TabsTrigger>
+        <TabsTrigger value="lineups">Lineups</TabsTrigger>
+        <TabsTrigger value="statistics">Statistics</TabsTrigger>
+        <TabsTrigger value="standings">Standings</TabsTrigger>
+        <TabsTrigger value="h2h">H2H</TabsTrigger>
       </TabsList>
 
       <TabsContent value="events">
@@ -103,7 +102,11 @@ export function MatchTabs({ fixture, standings, h2h }: MatchTabsProps) {
 
       <TabsContent value="h2h">
         {hasH2H ? (
-          <H2HTab h2h={h2h} homeTeamId={fixture.homeTeam.id} awayTeamId={fixture.awayTeam.id} />
+          <H2HTab
+            h2h={h2h}
+            homeTeamId={fixture.homeTeam.id}
+            awayTeamId={fixture.awayTeam.id}
+          />
         ) : (
           <EmptyState message="No head-to-head history" />
         )}

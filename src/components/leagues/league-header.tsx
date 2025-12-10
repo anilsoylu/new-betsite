@@ -1,25 +1,25 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import Image from "next/image"
-import { Star, Bell, Share2 } from "lucide-react"
-import { cn } from "@/lib/utils"
-import { useFavoritesStore } from "@/stores/favorites-store"
-import type { League } from "@/types/football"
+import { useState, useEffect } from "react";
+import Image from "next/image";
+import { Star, Bell, Share2 } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { useFavoritesStore } from "@/stores/favorites-store";
+import type { League } from "@/types/football";
 
 interface LeagueHeaderProps {
-  league: League
-  seasonName?: string
+  league: League;
+  seasonName?: string;
 }
 
 export function LeagueHeader({ league, seasonName }: LeagueHeaderProps) {
-  const { isFavorite, toggleFavorite } = useFavoritesStore()
+  const { isFavorite, toggleFavorite } = useFavoritesStore();
   // Hydration-safe: start with false, update after mount
-  const [isFollowing, setIsFollowing] = useState(false)
+  const [isFollowing, setIsFollowing] = useState(false);
 
   useEffect(() => {
-    setIsFollowing(isFavorite("leagues", league.id))
-  }, [isFavorite, league.id])
+    setIsFollowing(isFavorite("leagues", league.id));
+  }, [isFavorite, league.id]);
 
   return (
     <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary/10 via-background to-background border border-border">
@@ -82,18 +82,20 @@ export function LeagueHeader({ league, seasonName }: LeagueHeaderProps) {
           <div className="flex items-center gap-2 shrink-0">
             <button
               onClick={() => {
-                toggleFavorite("leagues", league.id)
-                setIsFollowing(!isFollowing)
+                toggleFavorite("leagues", league.id);
+                setIsFollowing(!isFollowing);
               }}
               className={cn(
                 "flex items-center gap-2 px-4 py-2 rounded-full font-medium text-sm transition-all",
                 isFollowing
                   ? "bg-yellow-500 text-white hover:bg-yellow-600"
-                  : "bg-muted hover:bg-muted/80 text-foreground"
+                  : "bg-muted hover:bg-muted/80 text-foreground",
               )}
             >
               <Star className={cn("h-4 w-4", isFollowing && "fill-current")} />
-              <span className="hidden sm:inline">{isFollowing ? "Following" : "Follow"}</span>
+              <span className="hidden sm:inline">
+                {isFollowing ? "Following" : "Follow"}
+              </span>
             </button>
             <button
               className="p-2 rounded-full bg-muted hover:bg-muted/80 transition-colors"
@@ -111,5 +113,5 @@ export function LeagueHeader({ league, seasonName }: LeagueHeaderProps) {
         </div>
       </div>
     </div>
-  )
+  );
 }

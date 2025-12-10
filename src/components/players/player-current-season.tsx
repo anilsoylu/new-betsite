@@ -1,15 +1,15 @@
-"use client"
+"use client";
 
-import Image from "next/image"
-import { Card, CardContent } from "@/components/ui/card"
-import type { PlayerSeasonStats } from "@/types/football"
+import Image from "next/image";
+import { Card, CardContent } from "@/components/ui/card";
+import type { PlayerSeasonStats } from "@/types/football";
 
 interface PlayerCurrentSeasonProps {
-  stats: PlayerSeasonStats | null
+  stats: PlayerSeasonStats | null;
 }
 
 export function PlayerCurrentSeason({ stats }: PlayerCurrentSeasonProps) {
-  if (!stats) return null
+  if (!stats) return null;
 
   const statItems = [
     { value: stats.goals, label: "Goals" },
@@ -23,7 +23,7 @@ export function PlayerCurrentSeason({ stats }: PlayerCurrentSeasonProps) {
     },
     { value: stats.yellowCards, label: "Yellow", icon: "yellow" },
     { value: stats.redCards, label: "Red", icon: "red" },
-  ]
+  ];
 
   return (
     <Card className="overflow-hidden py-0">
@@ -75,5 +75,5 @@ export function PlayerCurrentSeason({ stats }: PlayerCurrentSeasonProps) {
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }

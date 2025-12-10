@@ -1,20 +1,23 @@
-import Image from "next/image"
-import Link from "next/link"
-import { format, isValid, parseISO } from "date-fns"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { slugify } from "@/lib/utils"
-import type { PlayerMatch } from "@/types/football"
+import Image from "next/image";
+import Link from "next/link";
+import { format, isValid, parseISO } from "date-fns";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { slugify } from "@/lib/utils";
+import type { PlayerMatch } from "@/types/football";
 
-function formatMatchDate(dateStr: string | null | undefined, formatStr: string): string {
-  if (!dateStr) return "-"
-  const date = parseISO(dateStr)
-  return isValid(date) ? format(date, formatStr) : "-"
+function formatMatchDate(
+  dateStr: string | null | undefined,
+  formatStr: string,
+): string {
+  if (!dateStr) return "-";
+  const date = parseISO(dateStr);
+  return isValid(date) ? format(date, formatStr) : "-";
 }
 
 interface PlayerMatchesProps {
-  matches: Array<PlayerMatch>
-  playerId: number
+  matches: Array<PlayerMatch>;
+  playerId: number;
 }
 
 function getStatusBadge(status: PlayerMatch["status"]) {
@@ -24,21 +27,21 @@ function getStatusBadge(status: PlayerMatch["status"]) {
         <Badge variant="destructive" className="text-[10px] h-4 animate-pulse">
           LIVE
         </Badge>
-      )
+      );
     case "halftime":
       return (
         <Badge variant="secondary" className="text-[10px] h-4">
           HT
         </Badge>
-      )
+      );
     case "finished":
       return (
         <Badge variant="outline" className="text-[10px] h-4">
           FT
         </Badge>
-      )
+      );
     default:
-      return null
+      return null;
   }
 }
 
@@ -53,7 +56,7 @@ export function PlayerMatches({ matches, playerId }: PlayerMatchesProps) {
           <p className="text-sm text-muted-foreground">No recent matches</p>
         </CardContent>
       </Card>
-    )
+    );
   }
 
   return (
@@ -99,7 +102,9 @@ export function PlayerMatches({ matches, playerId }: PlayerMatchesProps) {
               <div className="flex items-center gap-2">
                 {/* Home Team */}
                 <div className="flex items-center gap-1.5 flex-1 min-w-0 justify-end">
-                  <span className="text-sm truncate text-right">{match.homeTeamName}</span>
+                  <span className="text-sm truncate text-right">
+                    {match.homeTeamName}
+                  </span>
                   {match.homeTeamLogo ? (
                     <Image
                       src={match.homeTeamLogo}
@@ -117,7 +122,9 @@ export function PlayerMatches({ matches, playerId }: PlayerMatchesProps) {
 
                 {/* Score */}
                 <div className="flex items-center gap-1 shrink-0 min-w-[60px] justify-center">
-                  {match.status === "finished" || match.status === "live" || match.status === "halftime" ? (
+                  {match.status === "finished" ||
+                  match.status === "live" ||
+                  match.status === "halftime" ? (
                     <div className="flex items-center gap-1">
                       <span className="text-sm font-bold tabular-nums w-4 text-right">
                         {match.homeScore ?? "-"}
@@ -164,5 +171,5 @@ export function PlayerMatches({ matches, playerId }: PlayerMatchesProps) {
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }

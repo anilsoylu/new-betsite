@@ -21,7 +21,8 @@ export interface SportmonksResponse<T> {
 }
 
 // Pagination wrapper
-export interface SportmonksPaginatedResponse<T> extends SportmonksResponse<Array<T>> {
+export interface SportmonksPaginatedResponse<T>
+  extends SportmonksResponse<Array<T>> {
   pagination: {
     count: number;
     per_page: number;
