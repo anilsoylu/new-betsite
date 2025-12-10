@@ -4,7 +4,7 @@ import {
   getTeamById,
   getFixturesByTeam,
   getStandingsBySeason,
-} from "@/lib/api/football-api";
+} from "@/lib/api/cached-football-api";
 import { extractTeamId } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FormStrip } from "@/components/teams/form-strip";

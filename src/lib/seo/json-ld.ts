@@ -37,7 +37,7 @@ export function generateWebsiteSchema() {
 
 // BreadcrumbList schema
 export function generateBreadcrumbSchema(
-  items: Array<{ name: string; url: string }>
+  items: Array<{ name: string; url: string }>,
 ) {
   return {
     "@context": "https://schema.org",
@@ -184,7 +184,7 @@ export function generatePersonSchema(player: PlayerDetail) {
 // SportsOrganization schema for leagues
 export function generateSportsLeagueSchema(
   league: League,
-  _standings?: Standing[]
+  _standings?: Standing[],
 ) {
   return {
     "@context": "https://schema.org",

@@ -14,9 +14,7 @@ export default function TermsPage() {
     <main className="container mx-auto px-4 py-8 max-w-3xl">
       <h1 className="text-3xl font-bold mb-6">Terms of Service</h1>
       <div className="prose dark:prose-invert max-w-none space-y-6">
-        <p className="text-muted-foreground">
-          Last updated: December 10, 2025
-        </p>
+        <p className="text-muted-foreground">Last updated: December 10, 2025</p>
 
         <section>
           <h2 className="text-xl font-semibold mt-8 mb-4">
@@ -47,9 +45,7 @@ export default function TermsPage() {
             <li>Use the service for any unlawful purpose</li>
             <li>Attempt to gain unauthorized access to our systems</li>
             <li>Interfere with or disrupt the service</li>
-            <li>
-              Scrape or collect data from the service without permission
-            </li>
+            <li>Scrape or collect data from the service without permission</li>
             <li>Use automated systems to access the service excessively</li>
           </ul>
         </section>

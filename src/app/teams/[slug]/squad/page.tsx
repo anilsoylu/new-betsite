@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getTeamById } from "@/lib/api/football-api";
+import { getTeamById } from "@/lib/api/cached-football-api";
 import { extractTeamId, getPlayerUrl } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";

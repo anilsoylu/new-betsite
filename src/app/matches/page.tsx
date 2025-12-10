@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { format, parseISO, isToday } from "date-fns";
-import { getFixturesByDate, getLiveFixtures } from "@/lib/api/football-api";
+import {
+  getFixturesByDate,
+  getLiveFixtures,
+} from "@/lib/api/cached-football-api";
 import { getTopLeaguesStandings } from "@/lib/queries";
 import { DateNavigation } from "@/components/matches/date-navigation";
 import { MatchesContent } from "@/components/matches/matches-content";

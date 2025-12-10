@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { getTeamById, getFixturesByTeam } from "@/lib/api/football-api";
+import { getTeamById, getFixturesByTeam } from "@/lib/api/cached-football-api";
 import { extractTeamId } from "@/lib/utils";
 import { TeamHeader, TeamNavTabs } from "@/components/teams";
 import { TeamAbout } from "@/components/teams/team-about";

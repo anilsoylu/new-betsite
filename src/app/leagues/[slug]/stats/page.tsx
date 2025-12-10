@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getLeagueStatsData } from "@/lib/api/football-api";
+import { getLeagueStatsData } from "@/lib/api/cached-football-api";
 import { extractLeagueId } from "@/lib/utils";
 import {
   StatLeaderCard,

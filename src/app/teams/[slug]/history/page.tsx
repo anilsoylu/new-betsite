@@ -1,57 +1,57 @@
-import type { Metadata } from "next"
-import { notFound } from "next/navigation"
-import { getTeamById } from "@/lib/api/football-api"
-import { extractTeamId } from "@/lib/utils"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
-import { Trophy } from "lucide-react"
-import type { TeamTrophy } from "@/types/football"
-import { SITE, SEO } from "@/lib/constants"
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { getTeamById } from "@/lib/api/cached-football-api";
+import { extractTeamId } from "@/lib/utils";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Trophy } from "lucide-react";
+import type { TeamTrophy } from "@/types/football";
+import { SITE, SEO } from "@/lib/constants";
 
 interface TeamHistoryPageProps {
-  params: Promise<{ slug: string }>
+  params: Promise<{ slug: string }>;
 }
 
 export async function generateMetadata({
   params,
 }: TeamHistoryPageProps): Promise<Metadata> {
-  const { slug } = await params
-  const teamId = extractTeamId(slug)
+  const { slug } = await params;
+  const teamId = extractTeamId(slug);
 
   if (!teamId) {
-    return { title: "Team Not Found" }
+    return { title: "Team Not Found" };
   }
 
   try {
-    const team = await getTeamById(teamId)
+    const team = await getTeamById(teamId);
     return {
       title: SEO.teamHistory.titleTemplate(team.name),
       description: SEO.teamHistory.descriptionTemplate(team.name),
       alternates: {
         canonical: `${SITE.url}/teams/${slug}/history`,
       },
-    }
+    };
   } catch {
-    return { title: "Team Not Found" }
+    return { title: "Team Not Found" };
   }
 }
 
 export default async function TeamHistoryPage({
   params,
 }: TeamHistoryPageProps) {
-  const { slug } = await params
-  const teamId = extractTeamId(slug)
+  const { slug } = await params;
+  const teamId = extractTeamId(slug);
 
   if (!teamId) {
-    notFound()
+    notFound();
   }
 
-  let team
+  let team;
   try {
-    team = await getTeamById(teamId)
+    team = await getTeamById(teamId);
   } catch {
-    notFound()
+    notFound();
   }
 
   // Filter only winning trophies (position === 1) with valid league names
@@ -60,13 +60,13 @@ export default async function TeamHistoryPage({
       t.position === 1 &&
       t.leagueName &&
       t.leagueName !== "Competition" &&
-      t.leagueName.trim() !== ""
-  )
+      t.leagueName.trim() !== "",
+  );
 
   // Group trophies by league
-  const trophiesByLeague = groupTrophiesByLeague(winningTrophies)
+  const trophiesByLeague = groupTrophiesByLeague(winningTrophies);
 
-  const hasTrophies = winningTrophies.length > 0
+  const hasTrophies = winningTrophies.length > 0;
 
   return (
     <div className="space-y-6">
@@ -230,7 +230,7 @@ export default async function TeamHistoryPage({
         </Card>
       )}
     </div>
-  )
+  );
 }
 
 function TrophyCard({ trophy }: { trophy: TeamTrophy }) {
@@ -241,21 +241,21 @@ function TrophyCard({ trophy }: { trophy: TeamTrophy }) {
         {trophy.seasonName}
       </span>
     </div>
-  )
+  );
 }
 
 function groupTrophiesByLeague(
-  trophies: TeamTrophy[]
+  trophies: TeamTrophy[],
 ): Record<string, TeamTrophy[]> {
   return trophies.reduce(
     (acc, trophy) => {
-      const league = trophy.leagueName
+      const league = trophy.leagueName;
       if (!acc[league]) {
-        acc[league] = []
+        acc[league] = [];
       }
-      acc[league].push(trophy)
-      return acc
+      acc[league].push(trophy);
+      return acc;
     },
-    {} as Record<string, TeamTrophy[]>
-  )
+    {} as Record<string, TeamTrophy[]>,
+  );
 }

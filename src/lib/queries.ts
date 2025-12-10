@@ -1,3 +1,4 @@
+// Using cached-football-api for automatic sitemap cache population
 import {
   getLiveFixtures,
   getFixturesByDate,
@@ -10,7 +11,7 @@ import {
   getFixturesByTeam,
   getTeamsBySeason,
   getTopScorersBySeason,
-} from "@/lib/api/football-api";
+} from "@/lib/api/cached-football-api";
 import type { TopScorer, Country } from "@/types/football";
 import { TOP_LEAGUES } from "@/components/sidebar/top-leagues";
 import type { HomePageData, MatchDetailData, Standing } from "@/types/football";

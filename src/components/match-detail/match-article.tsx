@@ -1,23 +1,23 @@
-"use client"
+"use client";
 
-import { format } from "date-fns"
-import Link from "next/link"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { format } from "date-fns";
+import Link from "next/link";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type {
   FixtureDetail,
   StandingTable,
   H2HFixture,
   FormFixtureData,
-} from "@/types/football"
-import { getFormFromFixtures } from "@/components/teams/form-strip"
-import { getTeamUrl, getLeagueUrl } from "@/lib/utils"
+} from "@/types/football";
+import { getFormFromFixtures } from "@/components/teams/form-strip";
+import { getTeamUrl, getLeagueUrl } from "@/lib/utils";
 
 interface MatchArticleProps {
-  fixture: FixtureDetail
-  standings: Array<StandingTable>
-  h2h: Array<H2HFixture>
-  homeForm: Array<FormFixtureData>
-  awayForm: Array<FormFixtureData>
+  fixture: FixtureDetail;
+  standings: Array<StandingTable>;
+  h2h: Array<H2HFixture>;
+  homeForm: Array<FormFixtureData>;
+  awayForm: Array<FormFixtureData>;
 }
 
 export function MatchArticle({
@@ -36,31 +36,35 @@ export function MatchArticle({
     homeLineup,
     awayLineup,
     referee,
-  } = fixture
+  } = fixture;
 
-  const formattedDate = format(new Date(startTime), "EEEE, MMMM d, yyyy")
-  const formattedTime = format(new Date(startTime), "HH:mm")
+  const formattedDate = format(new Date(startTime), "EEEE, MMMM d, yyyy");
+  const formattedTime = format(new Date(startTime), "HH:mm");
 
   // Get form results
-  const homeFormResults = getFormFromFixtures(homeForm)
-  const awayFormResults = getFormFromFixtures(awayForm)
+  const homeFormResults = getFormFromFixtures(homeForm);
+  const awayFormResults = getFormFromFixtures(awayForm);
 
   // Calculate form stats
-  const homeFormStats = calculateFormStats(homeFormResults)
-  const awayFormStats = calculateFormStats(awayFormResults)
+  const homeFormStats = calculateFormStats(homeFormResults);
+  const awayFormStats = calculateFormStats(awayFormResults);
 
   // Calculate H2H stats
-  const h2hStats = calculateH2HStats(h2h, homeTeam.id, awayTeam.id)
+  const h2hStats = calculateH2HStats(h2h, homeTeam.id, awayTeam.id);
 
   // Get standings positions
-  const homeStanding = findTeamStanding(standings, homeTeam.id)
-  const awayStanding = findTeamStanding(standings, awayTeam.id)
+  const homeStanding = findTeamStanding(standings, homeTeam.id);
+  const awayStanding = findTeamStanding(standings, awayTeam.id);
 
   // Determine team strengths for prediction
-  const homeStrength = calculateTeamStrength(homeFormStats, homeStanding, true)
-  const awayStrength = calculateTeamStrength(awayFormStats, awayStanding, false)
+  const homeStrength = calculateTeamStrength(homeFormStats, homeStanding, true);
+  const awayStrength = calculateTeamStrength(
+    awayFormStats,
+    awayStanding,
+    false,
+  );
 
-  const venueText = venue ? `at ${venue.name}` : ""
+  const venueText = venue ? `at ${venue.name}` : "";
 
   // League link component for reuse
   const LeagueLink = league ? (
@@ -70,7 +74,7 @@ export function MatchArticle({
     >
       {league.name}
     </Link>
-  ) : null
+  ) : null;
 
   return (
     <Card className="mt-6">
@@ -148,7 +152,7 @@ export function MatchArticle({
                 homeTeam,
                 awayTeam,
                 homeStanding,
-                awayStanding
+                awayStanding,
               )
             ) : homeStanding ? (
               <p>
@@ -289,17 +293,17 @@ export function MatchArticle({
         </ul>
       </CardContent>
     </Card>
-  )
+  );
 }
 
 function renderStandingsComparison(
   homeTeam: { name: string; id: number },
   awayTeam: { name: string; id: number },
   homeStanding: NonNullable<ReturnType<typeof findTeamStanding>>,
-  awayStanding: NonNullable<ReturnType<typeof findTeamStanding>>
+  awayStanding: NonNullable<ReturnType<typeof findTeamStanding>>,
 ) {
-  const posDiff = Math.abs(homeStanding.position - awayStanding.position)
-  const pointsDiff = Math.abs(homeStanding.points - awayStanding.points)
+  const posDiff = Math.abs(homeStanding.position - awayStanding.position);
+  const pointsDiff = Math.abs(homeStanding.points - awayStanding.points);
 
   const HomeTeamLink = () => (
     <Link
@@ -308,7 +312,7 @@ function renderStandingsComparison(
     >
       {homeTeam.name}
     </Link>
-  )
+  );
 
   const AwayTeamLink = () => (
     <Link
@@ -317,7 +321,7 @@ function renderStandingsComparison(
     >
       {awayTeam.name}
     </Link>
-  )
+  );
 
   if (posDiff <= 3) {
     return (
@@ -333,7 +337,7 @@ function renderStandingsComparison(
         <strong>{awayStanding.points} points</strong>. A win here could prove
         crucial in the standings.
       </p>
-    )
+    );
   } else if (homeStanding.position < awayStanding.position) {
     return (
       <p>
@@ -345,7 +349,7 @@ function renderStandingsComparison(
         <strong>{awayStanding.points} points</strong>, will be looking to cause
         an upset and climb the standings.
       </p>
-    )
+    );
   } else {
     return (
       <p>
@@ -357,7 +361,7 @@ function renderStandingsComparison(
         The visitors will be confident of extending their{" "}
         <strong>{pointsDiff}-point</strong> lead over their opponents.
       </p>
-    )
+    );
   }
 }
 
@@ -365,9 +369,9 @@ function renderH2HAnalysis(
   homeTeam: { name: string; id: number },
   awayTeam: { name: string; id: number },
   h2hStats: { homeWins: number; awayWins: number; draws: number },
-  h2hCount: number
+  h2hCount: number,
 ) {
-  const total = h2hStats.homeWins + h2hStats.awayWins + h2hStats.draws
+  const total = h2hStats.homeWins + h2hStats.awayWins + h2hStats.draws;
 
   const HomeTeamLink = () => (
     <Link
@@ -376,7 +380,7 @@ function renderH2HAnalysis(
     >
       {homeTeam.name}
     </Link>
-  )
+  );
 
   const AwayTeamLink = () => (
     <Link
@@ -385,11 +389,11 @@ function renderH2HAnalysis(
     >
       {awayTeam.name}
     </Link>
-  )
+  );
 
   if (h2hStats.homeWins > h2hStats.awayWins) {
     const dominance =
-      h2hStats.homeWins >= total * 0.6 ? "dominant" : "slight edge in the"
+      h2hStats.homeWins >= total * 0.6 ? "dominant" : "slight edge in the";
     return (
       <p>
         History favors <HomeTeamLink /> in this fixture. In their last{" "}
@@ -403,7 +407,7 @@ function renderH2HAnalysis(
         record could give them the psychological advantage heading into this
         clash.
       </p>
-    )
+    );
   } else if (h2hStats.awayWins > h2hStats.homeWins) {
     return (
       <p>
@@ -417,7 +421,7 @@ function renderH2HAnalysis(
         . With <strong>{h2hStats.draws} draws</strong> between them, the
         visitors will be confident of continuing their positive record.
       </p>
-    )
+    );
   } else if (
     h2hStats.draws > h2hStats.homeWins &&
     h2hStats.draws > h2hStats.awayWins
@@ -430,7 +434,7 @@ function renderH2HAnalysis(
         have managed <strong>{h2hStats.homeWins} wins</strong> apiece,
         suggesting another tight contest could be on the cards.
       </p>
-    )
+    );
   } else {
     return (
       <p>
@@ -440,7 +444,7 @@ function renderH2HAnalysis(
         <strong>{h2hStats.draws}</strong> matches ending in draws from their
         last <strong>{h2hCount}</strong> encounters.
       </p>
-    )
+    );
   }
 }
 
@@ -448,7 +452,7 @@ function renderPrediction(
   homeTeam: { name: string; id: number },
   awayTeam: { name: string; id: number },
   homeStrength: number,
-  awayStrength: number
+  awayStrength: number,
 ) {
   const HomeTeamLink = () => (
     <Link
@@ -457,7 +461,7 @@ function renderPrediction(
     >
       {homeTeam.name}
     </Link>
-  )
+  );
 
   const AwayTeamLink = () => (
     <Link
@@ -466,7 +470,7 @@ function renderPrediction(
     >
       {awayTeam.name}
     </Link>
-  )
+  );
 
   if (homeStrength > awayStrength + 1) {
     return (
@@ -477,7 +481,7 @@ function renderPrediction(
         problems on the counter-attack. Expect the hosts to dominate possession
         and create the better chances.
       </p>
-    )
+    );
   } else if (awayStrength > homeStrength + 1) {
     return (
       <p>
@@ -487,7 +491,7 @@ function renderPrediction(
         will need to raise their game significantly to secure all three points.
         The visitors&apos; confidence should see them through.
       </p>
-    )
+    );
   } else {
     return (
       <p>
@@ -497,24 +501,24 @@ function renderPrediction(
         entertaining encounter with plenty of action and possibly goals at both
         ends.
       </p>
-    )
+    );
   }
 }
 
 function describeForm(stats: FormStats): string {
-  if (stats.total === 0) return ""
+  if (stats.total === 0) return "";
 
-  const winRate = stats.wins / stats.total
-  const unbeatenRate = (stats.wins + stats.draws) / stats.total
+  const winRate = stats.wins / stats.total;
+  const unbeatenRate = (stats.wins + stats.draws) / stats.total;
 
   if (winRate >= 0.8) {
-    return `are in exceptional form, having won ${stats.wins} of their last ${stats.total} matches. This impressive run has boosted their confidence ahead of this crucial fixture.`
+    return `are in exceptional form, having won ${stats.wins} of their last ${stats.total} matches. This impressive run has boosted their confidence ahead of this crucial fixture.`;
   } else if (winRate >= 0.6) {
-    return `head into this game in strong form, collecting ${stats.wins} wins from their last ${stats.total} outings.`
+    return `head into this game in strong form, collecting ${stats.wins} wins from their last ${stats.total} outings.`;
   } else if (unbeatenRate >= 0.8) {
     return `have been difficult to beat recently, remaining undefeated in ${
       stats.wins + stats.draws
-    } of their last ${stats.total} matches despite only winning ${stats.wins}.`
+    } of their last ${stats.total} matches despite only winning ${stats.wins}.`;
   } else if (stats.losses > stats.wins) {
     return `have struggled for consistency lately, managing just ${
       stats.wins
@@ -522,9 +526,9 @@ function describeForm(stats: FormStats): string {
       stats.total
     } games while suffering ${
       stats.losses
-    } defeats. They'll be eager to turn their fortunes around.`
+    } defeats. They'll be eager to turn their fortunes around.`;
   } else if (stats.draws >= 3) {
-    return `have drawn ${stats.draws} of their last ${stats.total} matches, showing they are competitive but perhaps lacking the clinical edge to convert draws into wins.`
+    return `have drawn ${stats.draws} of their last ${stats.total} matches, showing they are competitive but perhaps lacking the clinical edge to convert draws into wins.`;
   } else {
     return `recent form shows ${stats.wins} ${
       stats.wins === 1 ? "win" : "wins"
@@ -532,64 +536,64 @@ function describeForm(stats: FormStats): string {
       stats.losses
     } ${stats.losses === 1 ? "loss" : "losses"} from their last ${
       stats.total
-    } games.`
+    } games.`;
   }
 }
 
 interface FormStats {
-  wins: number
-  draws: number
-  losses: number
-  total: number
+  wins: number;
+  draws: number;
+  losses: number;
+  total: number;
 }
 
 function calculateTeamStrength(
   formStats: FormStats,
   standing: ReturnType<typeof findTeamStanding>,
-  isHome: boolean
+  isHome: boolean,
 ): number {
-  let strength = 0
+  let strength = 0;
 
   // Form contribution (0-3 points)
   if (formStats.total > 0) {
-    const winRate = formStats.wins / formStats.total
-    strength += winRate * 3
+    const winRate = formStats.wins / formStats.total;
+    strength += winRate * 3;
   }
 
   // Standing contribution (0-2 points)
   if (standing) {
-    if (standing.position <= 4) strength += 2
-    else if (standing.position <= 8) strength += 1.5
-    else if (standing.position <= 12) strength += 1
-    else strength += 0.5
+    if (standing.position <= 4) strength += 2;
+    else if (standing.position <= 8) strength += 1.5;
+    else if (standing.position <= 12) strength += 1;
+    else strength += 0.5;
   }
 
   // Home advantage (0.5 points)
-  if (isHome) strength += 0.5
+  if (isHome) strength += 0.5;
 
-  return strength
+  return strength;
 }
 
 function calculateH2HStats(
   h2h: Array<H2HFixture>,
   homeTeamId: number,
-  awayTeamId: number
+  awayTeamId: number,
 ): { homeWins: number; awayWins: number; draws: number } {
-  let homeWins = 0
-  let awayWins = 0
-  let draws = 0
+  let homeWins = 0;
+  let awayWins = 0;
+  let draws = 0;
 
   for (const match of h2h) {
     if (match.winnerId === homeTeamId) {
-      homeWins++
+      homeWins++;
     } else if (match.winnerId === awayTeamId) {
-      awayWins++
+      awayWins++;
     } else {
-      draws++
+      draws++;
     }
   }
 
-  return { homeWins, awayWins, draws }
+  return { homeWins, awayWins, draws };
 }
 
 function calculateFormStats(results: string[]): FormStats {
@@ -598,19 +602,19 @@ function calculateFormStats(results: string[]): FormStats {
     draws: results.filter((r) => r === "D").length,
     losses: results.filter((r) => r === "L").length,
     total: results.length,
-  }
+  };
 }
 
 function findTeamStanding(standings: Array<StandingTable>, teamId: number) {
   for (const table of standings) {
-    const found = table.standings.find((s) => s.teamId === teamId)
-    if (found) return found
+    const found = table.standings.find((s) => s.teamId === teamId);
+    if (found) return found;
   }
-  return null
+  return null;
 }
 
 function getOrdinal(n: number): string {
-  const s = ["th", "st", "nd", "rd"]
-  const v = n % 100
-  return n + (s[(v - 20) % 10] || s[v] || s[0])
+  const s = ["th", "st", "nd", "rd"];
+  const v = n % 100;
+  return n + (s[(v - 20) % 10] || s[v] || s[0]);
 }

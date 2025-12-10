@@ -173,7 +173,7 @@ export function PlayerDataTabs({ stats, transfers }: PlayerDataTabsProps) {
                                 <Link
                                   href={getTeamUrl(
                                     season.teamName,
-                                    season.teamId
+                                    season.teamId,
                                   )}
                                 >
                                   <Image
@@ -193,7 +193,7 @@ export function PlayerDataTabs({ stats, transfers }: PlayerDataTabsProps) {
                                   <Link
                                     href={getLeagueUrl(
                                       season.leagueName,
-                                      season.leagueId
+                                      season.leagueId,
                                     )}
                                     className="text-[10px] text-muted-foreground truncate block hover:underline"
                                   >
@@ -272,7 +272,7 @@ export function PlayerDataTabs({ stats, transfers }: PlayerDataTabsProps) {
                       <Link
                         href={getTeamUrl(
                           transfer.fromTeamName,
-                          transfer.fromTeamId
+                          transfer.fromTeamId,
                         )}
                         className="flex items-center gap-1.5 flex-1 min-w-0 hover:opacity-80 transition-opacity"
                       >
@@ -301,7 +301,7 @@ export function PlayerDataTabs({ stats, transfers }: PlayerDataTabsProps) {
                       <Link
                         href={getTeamUrl(
                           transfer.toTeamName,
-                          transfer.toTeamId
+                          transfer.toTeamId,
                         )}
                         className="flex items-center gap-1.5 flex-1 min-w-0 hover:opacity-80 transition-opacity"
                       >

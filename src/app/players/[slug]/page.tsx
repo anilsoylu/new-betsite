@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getPlayerById } from "@/lib/api/football-api";
+import { getPlayerById } from "@/lib/api/cached-football-api";
 import { getTopLeaguesStandings } from "@/lib/queries";
 import { extractPlayerId } from "@/lib/utils";
 import {
@@ -43,7 +43,7 @@ export async function generateMetadata({
       description: SEO.playerDetail.descriptionTemplate(
         player.displayName,
         player.position || "Football Player",
-        player.currentTeam?.teamName || "Free Agent"
+        player.currentTeam?.teamName || "Free Agent",
       ),
       alternates: {
         canonical: `${SITE.url}/players/${slug}`,
@@ -53,7 +53,7 @@ export async function generateMetadata({
         description: SEO.playerDetail.descriptionTemplate(
           player.displayName,
           player.position || "Football Player",
-          player.currentTeam?.teamName || "Free Agent"
+          player.currentTeam?.teamName || "Free Agent",
         ),
         images: player.image ? [{ url: player.image }] : undefined,
       },

@@ -1165,8 +1165,7 @@ export function mapTeamTransfer(
   teamId: number,
 ): TeamTransfer {
   // Determine transfer direction based on teamId
-  const direction: "in" | "out" =
-    raw.to_team_id === teamId ? "in" : "out";
+  const direction: "in" | "out" = raw.to_team_id === teamId ? "in" : "out";
 
   // Map transfer type from API
   const typeCode = raw.type?.code?.toLowerCase() || "";

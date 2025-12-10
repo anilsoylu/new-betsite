@@ -1,20 +1,20 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { SITE } from "@/lib/constants"
-import type { TeamDetail, Fixture } from "@/types/football"
-import { format } from "date-fns"
+import Link from "next/link";
+import { SITE } from "@/lib/constants";
+import type { TeamDetail, Fixture } from "@/types/football";
+import { format } from "date-fns";
 import {
   getTeamUrl,
   getLeagueUrl,
   getFixtureUrl,
   getPlayerUrl,
-} from "@/lib/utils"
+} from "@/lib/utils";
 
 interface TeamAboutProps {
-  team: TeamDetail
-  nextMatch: Fixture | null
-  lastMatch: Fixture | null
+  team: TeamDetail;
+  nextMatch: Fixture | null;
+  lastMatch: Fixture | null;
 }
 
 export function TeamAbout({ team, nextMatch, lastMatch }: TeamAboutProps) {
@@ -24,10 +24,10 @@ export function TeamAbout({ team, nextMatch, lastMatch }: TeamAboutProps) {
     defenders: team.squad.filter((p) => p.positionGroup === "Defender"),
     midfielders: team.squad.filter((p) => p.positionGroup === "Midfielder"),
     forwards: team.squad.filter((p) => p.positionGroup === "Attacker"),
-  }
+  };
 
-  const squadCount = team.squad.length
-  const countryName = team.country?.name || null
+  const squadCount = team.squad.length;
+  const countryName = team.country?.name || null;
 
   // Format next match info with full team/league data for linking
   const nextMatchInfo = nextMatch
@@ -42,7 +42,7 @@ export function TeamAbout({ team, nextMatch, lastMatch }: TeamAboutProps) {
         isHome: nextMatch.homeTeam.id === team.id,
         fixture: nextMatch,
       }
-    : null
+    : null;
 
   // Format last match info with full team/league data for linking
   const lastMatchInfo = lastMatch
@@ -59,7 +59,7 @@ export function TeamAbout({ team, nextMatch, lastMatch }: TeamAboutProps) {
         isHome: lastMatch.homeTeam.id === team.id,
         fixture: lastMatch,
       }
-    : null
+    : null;
 
   return (
     <article className="rounded-xl border border-border bg-card p-5 space-y-5">
@@ -120,7 +120,7 @@ export function TeamAbout({ team, nextMatch, lastMatch }: TeamAboutProps) {
             <Link
               href={getTeamUrl(
                 nextMatchInfo.opponent.name,
-                nextMatchInfo.opponent.id
+                nextMatchInfo.opponent.id,
               )}
               className="font-bold hover:underline text-foreground"
             >
@@ -134,7 +134,7 @@ export function TeamAbout({ team, nextMatch, lastMatch }: TeamAboutProps) {
                 <Link
                   href={getLeagueUrl(
                     nextMatchInfo.league.name,
-                    nextMatchInfo.league.id
+                    nextMatchInfo.league.id,
                   )}
                   className="font-bold hover:underline text-foreground"
                 >
@@ -168,7 +168,7 @@ export function TeamAbout({ team, nextMatch, lastMatch }: TeamAboutProps) {
             <Link
               href={getTeamUrl(
                 lastMatchInfo.opponent.name,
-                lastMatchInfo.opponent.id
+                lastMatchInfo.opponent.id,
               )}
               className="font-bold hover:underline text-foreground"
             >
@@ -181,7 +181,7 @@ export function TeamAbout({ team, nextMatch, lastMatch }: TeamAboutProps) {
                 <Link
                   href={getLeagueUrl(
                     lastMatchInfo.league.name,
-                    lastMatchInfo.league.id
+                    lastMatchInfo.league.id,
                   )}
                   className="font-bold hover:underline text-foreground"
                 >
@@ -445,7 +445,8 @@ export function TeamAbout({ team, nextMatch, lastMatch }: TeamAboutProps) {
                   <strong>{team.name}</strong>&apos;s next match is against{" "}
                   <strong>{nextMatchInfo.opponent.name}</strong> on{" "}
                   <strong>{nextMatchInfo.date}</strong>
-                  {nextMatchInfo.league && <> in {nextMatchInfo.league.name}</>}.
+                  {nextMatchInfo.league && <> in {nextMatchInfo.league.name}</>}
+                  .
                 </p>
               </div>
             </div>
@@ -478,25 +479,25 @@ export function TeamAbout({ team, nextMatch, lastMatch }: TeamAboutProps) {
         </div>
       </section>
     </article>
-  )
+  );
 }
 
 function getMatchResult(match: Fixture, teamId: number): string {
-  if (!match.score) return "result unknown"
+  if (!match.score) return "result unknown";
 
-  const isHome = match.homeTeam.id === teamId
-  const teamScore = isHome ? match.score.home : match.score.away
-  const opponentScore = isHome ? match.score.away : match.score.home
+  const isHome = match.homeTeam.id === teamId;
+  const teamScore = isHome ? match.score.home : match.score.away;
+  const opponentScore = isHome ? match.score.away : match.score.home;
 
   if (teamScore > opponentScore) {
     return `${
       match.homeTeam.id === teamId ? match.homeTeam.name : match.awayTeam.name
-    } won the match`
+    } won the match`;
   } else if (teamScore < opponentScore) {
     return `${
       match.homeTeam.id === teamId ? match.awayTeam.name : match.homeTeam.name
-    } won the match`
+    } won the match`;
   } else {
-    return "the match ended in a draw"
+    return "the match ended in a draw";
   }
 }

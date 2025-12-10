@@ -91,5 +91,33 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ];
   });
 
-  return [...staticPages, ...leaguePages];
+  // Section sitemap indexes (XML sitemaps fed from SQLite cache)
+  const sectionSitemaps: MetadataRoute.Sitemap = [
+    {
+      url: `${baseUrl}/sitemaps/leagues.xml`,
+      lastModified: now,
+      changeFrequency: "daily",
+      priority: 0.9,
+    },
+    {
+      url: `${baseUrl}/sitemaps/teams.xml`,
+      lastModified: now,
+      changeFrequency: "daily",
+      priority: 0.9,
+    },
+    {
+      url: `${baseUrl}/sitemaps/players.xml`,
+      lastModified: now,
+      changeFrequency: "daily",
+      priority: 0.9,
+    },
+    {
+      url: `${baseUrl}/sitemaps/matches.xml`,
+      lastModified: now,
+      changeFrequency: "daily",
+      priority: 0.9,
+    },
+  ];
+
+  return [...staticPages, ...leaguePages, ...sectionSitemaps];
 }

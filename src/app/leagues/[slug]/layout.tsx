@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { notFound } from "next/navigation";
-import { getLeaguePageData } from "@/lib/api/football-api";
+import { getLeaguePageData } from "@/lib/api/cached-football-api";
 import { extractLeagueId } from "@/lib/utils";
 import { LeagueHeader, LeagueNavTabs } from "@/components/leagues";
 

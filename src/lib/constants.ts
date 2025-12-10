@@ -94,8 +94,7 @@ export const SEO = {
       `${teamName} statistics including win rate, goals scored, clean sheets, home and away records.`,
   },
   teamTransfers: {
-    titleTemplate: (teamName: string) =>
-      `${teamName} Transfers | ${SITE.name}`,
+    titleTemplate: (teamName: string) => `${teamName} Transfers | ${SITE.name}`,
     descriptionTemplate: (teamName: string) =>
       `${teamName} transfer news and history. View incoming and outgoing transfers, loan deals and free agents.`,
   },

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getLeaguePageData } from "@/lib/api/football-api";
+import { getLeaguePageData } from "@/lib/api/cached-football-api";
 import { extractLeagueId } from "@/lib/utils";
 import { FixturesCard, LeagueAboutSection } from "@/components/leagues";
 import { TOP_LEAGUES } from "@/components/sidebar/top-leagues";

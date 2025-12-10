@@ -9,11 +9,7 @@ import type {
   PlayerTrophy,
   PlayerMatch,
 } from "@/types/football";
-import {
-  getTeamUrl,
-  getLeagueUrl,
-  getPlayerMatchUrl,
-} from "@/lib/utils";
+import { getTeamUrl, getLeagueUrl, getPlayerMatchUrl } from "@/lib/utils";
 
 interface PlayerAboutSectionProps {
   player: PlayerDetail;
@@ -187,7 +183,7 @@ export function PlayerAboutSection({ player }: PlayerAboutSectionProps) {
                 <Link
                   href={getLeagueUrl(
                     currentSeasonStats.leagueName,
-                    currentSeasonStats.leagueId
+                    currentSeasonStats.leagueId,
                   )}
                   className="hover:underline text-foreground"
                 >
@@ -278,7 +274,10 @@ export function PlayerAboutSection({ player }: PlayerAboutSectionProps) {
           <p className="text-sm text-muted-foreground leading-relaxed">
             {displayName}&apos;s most recent transfer was from{" "}
             <Link
-              href={getTeamUrl(lastTransfer.fromTeamName, lastTransfer.fromTeamId)}
+              href={getTeamUrl(
+                lastTransfer.fromTeamName,
+                lastTransfer.fromTeamId,
+              )}
               className="font-bold hover:underline text-foreground"
             >
               {lastTransfer.fromTeamName}
