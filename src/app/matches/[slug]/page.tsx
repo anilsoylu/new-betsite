@@ -13,8 +13,13 @@ import {
   LeagueMiniTable,
   MatchInfoWidget,
 } from "@/components/match-detail";
-import { SEO, DATE_FORMATS } from "@/lib/constants";
+import { SITE, SEO, DATE_FORMATS } from "@/lib/constants";
 import { AdSpace } from "@/components/sidebar";
+import { JsonLdScript } from "@/components/seo";
+import {
+  generateSportsEventSchema,
+  generateBreadcrumbSchema,
+} from "@/lib/seo/json-ld";
 
 interface MatchDetailPageProps {
   params: Promise<{ slug: string }>;
@@ -43,6 +48,9 @@ export async function generateMetadata({
         league?.name || "Football",
         formattedDate,
       ),
+      alternates: {
+        canonical: `${SITE.url}/matches/${slug}`,
+      },
       openGraph: {
         title: SEO.matchDetail.titleTemplate(homeTeam.name, awayTeam.name),
         description: SEO.matchDetail.descriptionTemplate(
@@ -77,8 +85,22 @@ export default async function MatchDetailPage({
 
   const { fixture, standings, h2h, odds, homeForm, awayForm } = data;
 
+  // Generate structured data
+  const sportsEventSchema = generateSportsEventSchema(fixture);
+  const breadcrumbSchema = generateBreadcrumbSchema([
+    { name: "Home", url: SITE.url },
+    { name: "Matches", url: `${SITE.url}/matches` },
+    {
+      name: `${fixture.homeTeam.name} vs ${fixture.awayTeam.name}`,
+      url: `${SITE.url}/matches/${slug}`,
+    },
+  ]);
+
   return (
     <main className="container mx-auto px-4 py-8">
+      <JsonLdScript id="sports-event-schema" schema={sportsEventSchema} />
+      <JsonLdScript id="breadcrumb-schema" schema={breadcrumbSchema} />
+
       {/* Match Header */}
       <MatchHeader fixture={fixture} homeForm={homeForm} awayForm={awayForm} />
 

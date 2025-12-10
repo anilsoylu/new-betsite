@@ -1,6 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import type { League, Standing, TopScorer, Fixture } from "@/types/football";
+import { getPlayerUrl } from "@/lib/utils";
 
 interface LeagueAboutSectionProps {
   league: League;
@@ -170,8 +172,8 @@ export function LeagueAboutSection({
         ).toFixed(2)
       : null;
 
-  // Get top scorer names
-  const topScorerNames = topScorers.slice(0, 2).map((s) => s.playerName);
+  // Get top scorers (with full data for linking)
+  const topTwoScorers = topScorers.slice(0, 2);
   const topScorerGoals = topScorers[0]?.goals || 0;
 
   // Get league leader
@@ -256,12 +258,23 @@ export function LeagueAboutSection({
       )}
 
       {/* Top Scorers Section */}
-      {topScorerNames.length > 0 && (
+      {topTwoScorers.length > 0 && (
         <section className="space-y-2">
           <h3 className="text-base font-semibold">Top Scorers</h3>
           <p className="text-sm text-muted-foreground leading-relaxed">
             The leading scorers in {leagueName} this season are{" "}
-            <strong>{topScorerNames.join(" and ")}</strong>.
+            {topTwoScorers.map((scorer, index) => (
+              <span key={scorer.playerId}>
+                {index > 0 && " and "}
+                <Link
+                  href={getPlayerUrl(scorer.playerName, scorer.playerId)}
+                  className="font-semibold text-foreground hover:underline"
+                >
+                  {scorer.playerName}
+                </Link>
+              </span>
+            ))}
+            .
             {topScorerGoals > 0 && (
               <>
                 {" "}

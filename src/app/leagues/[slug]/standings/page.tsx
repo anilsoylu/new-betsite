@@ -1,10 +1,31 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getLeaguePageData } from "@/lib/api/football-api";
 import { extractLeagueId } from "@/lib/utils";
 import { StandingsTable, LeagueAboutSection } from "@/components/leagues";
+import { TOP_LEAGUES } from "@/components/sidebar/top-leagues";
+import { SITE, SEO } from "@/lib/constants";
 
 interface StandingsPageProps {
   params: Promise<{ slug: string }>;
+}
+
+export async function generateMetadata({
+  params,
+}: StandingsPageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const leagueId = extractLeagueId(slug);
+
+  const knownLeague = TOP_LEAGUES.find((l) => l.id === leagueId);
+  const leagueName = knownLeague?.name || "League";
+
+  return {
+    title: SEO.leagueStandings.titleTemplate(leagueName),
+    description: SEO.leagueStandings.descriptionTemplate(leagueName),
+    alternates: {
+      canonical: `${SITE.url}/leagues/${slug}/standings`,
+    },
+  };
 }
 
 export default async function StandingsPage({ params }: StandingsPageProps) {

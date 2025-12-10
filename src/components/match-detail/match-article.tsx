@@ -1,6 +1,7 @@
 "use client";
 
 import { format } from "date-fns";
+import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type {
   FixtureDetail,
@@ -9,6 +10,7 @@ import type {
   FormFixtureData,
 } from "@/types/football";
 import { getFormFromFixtures } from "@/components/teams/form-strip";
+import { getTeamUrl } from "@/lib/utils";
 
 interface MatchArticleProps {
   fixture: FixtureDetail;
@@ -78,9 +80,20 @@ export function MatchArticle({
 
         {/* Opening paragraph */}
         <p>
-          <strong>{homeTeam.name}</strong> will host{" "}
-          <strong>{awayTeam.name}</strong> {venueText} on{" "}
-          <strong>{formattedDate}</strong> at{" "}
+          <Link
+            href={getTeamUrl(homeTeam.name, homeTeam.id)}
+            className="font-bold hover:underline"
+          >
+            {homeTeam.name}
+          </Link>{" "}
+          will host{" "}
+          <Link
+            href={getTeamUrl(awayTeam.name, awayTeam.id)}
+            className="font-bold hover:underline"
+          >
+            {awayTeam.name}
+          </Link>{" "}
+          {venueText} on <strong>{formattedDate}</strong> at{" "}
           <strong>{formattedTime} UTC</strong> in what promises to be an
           exciting {leagueText} encounter. Both sides will be looking to secure
           all three points as they continue their campaign this season.
@@ -94,12 +107,24 @@ export function MatchArticle({
             </h3>
             {homeFormStats.total > 0 && (
               <p>
-                <strong>{homeTeam.name}</strong> {describeForm(homeFormStats)}
+                <Link
+                  href={getTeamUrl(homeTeam.name, homeTeam.id)}
+                  className="font-bold hover:underline"
+                >
+                  {homeTeam.name}
+                </Link>{" "}
+                {describeForm(homeFormStats)}
               </p>
             )}
             {awayFormStats.total > 0 && (
               <p>
-                <strong>{awayTeam.name}</strong> {describeForm(awayFormStats)}
+                <Link
+                  href={getTeamUrl(awayTeam.name, awayTeam.id)}
+                  className="font-bold hover:underline"
+                >
+                  {awayTeam.name}
+                </Link>{" "}
+                {describeForm(awayFormStats)}
               </p>
             )}
           </>
@@ -113,21 +138,33 @@ export function MatchArticle({
             </h3>
             {homeStanding && awayStanding ? (
               renderStandingsComparison(
-                homeTeam.name,
-                awayTeam.name,
+                homeTeam,
+                awayTeam,
                 homeStanding,
                 awayStanding,
               )
             ) : homeStanding ? (
               <p>
-                <strong>{homeTeam.name}</strong> currently occupy{" "}
+                <Link
+                  href={getTeamUrl(homeTeam.name, homeTeam.id)}
+                  className="font-bold hover:underline"
+                >
+                  {homeTeam.name}
+                </Link>{" "}
+                currently occupy{" "}
                 <strong>{getOrdinal(homeStanding.position)} place</strong> in
                 the league with <strong>{homeStanding.points} points</strong>{" "}
                 from {homeStanding.played} matches.
               </p>
             ) : awayStanding ? (
               <p>
-                <strong>{awayTeam.name}</strong> currently sit in{" "}
+                <Link
+                  href={getTeamUrl(awayTeam.name, awayTeam.id)}
+                  className="font-bold hover:underline"
+                >
+                  {awayTeam.name}
+                </Link>{" "}
+                currently sit in{" "}
                 <strong>{getOrdinal(awayStanding.position)} position</strong>{" "}
                 with <strong>{awayStanding.points} points</strong> from{" "}
                 {awayStanding.played} games.
@@ -142,12 +179,7 @@ export function MatchArticle({
             <h3 className="text-lg font-semibold mt-6 mb-3">
               Head-to-Head Record
             </h3>
-            {renderH2HAnalysis(
-              homeTeam.name,
-              awayTeam.name,
-              h2hStats,
-              h2h.length,
-            )}
+            {renderH2HAnalysis(homeTeam, awayTeam, h2hStats, h2h.length)}
           </>
         )}
 
@@ -199,12 +231,7 @@ export function MatchArticle({
         <h3 className="text-lg font-semibold mt-6 mb-3">
           Match Prediction & Analysis
         </h3>
-        {renderPrediction(
-          homeTeam.name,
-          awayTeam.name,
-          homeStrength,
-          awayStrength,
-        )}
+        {renderPrediction(homeTeam, awayTeam, homeStrength, awayStrength)}
 
         {/* Key Facts */}
         <h3 className="text-lg font-semibold mt-6 mb-3">Key Facts</h3>
@@ -253,13 +280,31 @@ export function MatchArticle({
 }
 
 function renderStandingsComparison(
-  homeTeam: string,
-  awayTeam: string,
+  homeTeam: { name: string; id: number },
+  awayTeam: { name: string; id: number },
   homeStanding: NonNullable<ReturnType<typeof findTeamStanding>>,
   awayStanding: NonNullable<ReturnType<typeof findTeamStanding>>,
 ) {
   const posDiff = Math.abs(homeStanding.position - awayStanding.position);
   const pointsDiff = Math.abs(homeStanding.points - awayStanding.points);
+
+  const HomeTeamLink = () => (
+    <Link
+      href={getTeamUrl(homeTeam.name, homeTeam.id)}
+      className="font-bold hover:underline"
+    >
+      {homeTeam.name}
+    </Link>
+  );
+
+  const AwayTeamLink = () => (
+    <Link
+      href={getTeamUrl(awayTeam.name, awayTeam.id)}
+      className="font-bold hover:underline"
+    >
+      {awayTeam.name}
+    </Link>
+  );
 
   if (posDiff <= 3) {
     return (
@@ -268,11 +313,10 @@ function renderStandingsComparison(
         <strong>
           {posDiff} {posDiff === 1 ? "place" : "places"}
         </strong>{" "}
-        in the table. <strong>{homeTeam}</strong> currently sit{" "}
+        in the table. <HomeTeamLink /> currently sit{" "}
         <strong>{getOrdinal(homeStanding.position)}</strong> with{" "}
-        <strong>{homeStanding.points} points</strong>, while{" "}
-        <strong>{awayTeam}</strong> are{" "}
-        <strong>{getOrdinal(awayStanding.position)}</strong> with{" "}
+        <strong>{homeStanding.points} points</strong>, while <AwayTeamLink />{" "}
+        are <strong>{getOrdinal(awayStanding.position)}</strong> with{" "}
         <strong>{awayStanding.points} points</strong>. A win here could prove
         crucial in the standings.
       </p>
@@ -280,10 +324,10 @@ function renderStandingsComparison(
   } else if (homeStanding.position < awayStanding.position) {
     return (
       <p>
-        <strong>{homeTeam}</strong> will enter this fixture as favorites,
-        sitting <strong>{getOrdinal(homeStanding.position)}</strong> in the
-        table with <strong>{homeStanding.points} points</strong>.{" "}
-        <strong>{awayTeam}</strong>, currently in{" "}
+        <HomeTeamLink /> will enter this fixture as favorites, sitting{" "}
+        <strong>{getOrdinal(homeStanding.position)}</strong> in the table with{" "}
+        <strong>{homeStanding.points} points</strong>. <AwayTeamLink />,
+        currently in{" "}
         <strong>{getOrdinal(awayStanding.position)} position</strong> with{" "}
         <strong>{awayStanding.points} points</strong>, will be looking to cause
         an upset and climb the standings.
@@ -292,13 +336,12 @@ function renderStandingsComparison(
   } else {
     return (
       <p>
-        Despite playing away from home, <strong>{awayTeam}</strong> hold the
-        advantage in the league table, sitting{" "}
+        Despite playing away from home, <AwayTeamLink /> hold the advantage in
+        the league table, sitting{" "}
         <strong>{getOrdinal(awayStanding.position)}</strong> compared to{" "}
-        <strong>
-          {homeTeam}&apos;s {getOrdinal(homeStanding.position)}
-        </strong>{" "}
-        position. The visitors will be confident of extending their{" "}
+        <HomeTeamLink />
+        &apos;s <strong>{getOrdinal(homeStanding.position)}</strong> position.
+        The visitors will be confident of extending their{" "}
         <strong>{pointsDiff}-point</strong> lead over their opponents.
       </p>
     );
@@ -306,26 +349,43 @@ function renderStandingsComparison(
 }
 
 function renderH2HAnalysis(
-  homeTeam: string,
-  awayTeam: string,
+  homeTeam: { name: string; id: number },
+  awayTeam: { name: string; id: number },
   h2hStats: { homeWins: number; awayWins: number; draws: number },
   h2hCount: number,
 ) {
   const total = h2hStats.homeWins + h2hStats.awayWins + h2hStats.draws;
+
+  const HomeTeamLink = () => (
+    <Link
+      href={getTeamUrl(homeTeam.name, homeTeam.id)}
+      className="font-bold hover:underline"
+    >
+      {homeTeam.name}
+    </Link>
+  );
+
+  const AwayTeamLink = () => (
+    <Link
+      href={getTeamUrl(awayTeam.name, awayTeam.id)}
+      className="font-bold hover:underline"
+    >
+      {awayTeam.name}
+    </Link>
+  );
 
   if (h2hStats.homeWins > h2hStats.awayWins) {
     const dominance =
       h2hStats.homeWins >= total * 0.6 ? "dominant" : "slight edge in the";
     return (
       <p>
-        History favors <strong>{homeTeam}</strong> in this fixture. In their
-        last <strong>{h2hCount} meetings</strong>, the hosts have claimed{" "}
+        History favors <HomeTeamLink /> in this fixture. In their last{" "}
+        <strong>{h2hCount} meetings</strong>, the hosts have claimed{" "}
         <strong>
           {h2hStats.homeWins}{" "}
           {h2hStats.homeWins === 1 ? "victory" : "victories"}
         </strong>
-        , with <strong>{awayTeam}</strong> winning{" "}
-        <strong>{h2hStats.awayWins}</strong> and{" "}
+        , with <AwayTeamLink /> winning <strong>{h2hStats.awayWins}</strong> and{" "}
         <strong>{h2hStats.draws}</strong> ending in draws. This {dominance}{" "}
         record could give them the psychological advantage heading into this
         clash.
@@ -334,12 +394,12 @@ function renderH2HAnalysis(
   } else if (h2hStats.awayWins > h2hStats.homeWins) {
     return (
       <p>
-        <strong>{awayTeam}</strong> have enjoyed success in this fixture
-        historically, winning <strong>{h2hStats.awayWins}</strong> of the last{" "}
-        <strong>{h2hCount}</strong> encounters compared to{" "}
+        <AwayTeamLink /> have enjoyed success in this fixture historically,
+        winning <strong>{h2hStats.awayWins}</strong> of the last{" "}
+        <strong>{h2hCount}</strong> encounters compared to <HomeTeamLink />
+        &apos;s{" "}
         <strong>
-          {homeTeam}&apos;s {h2hStats.homeWins}{" "}
-          {h2hStats.homeWins === 1 ? "win" : "wins"}
+          {h2hStats.homeWins} {h2hStats.homeWins === 1 ? "win" : "wins"}
         </strong>
         . With <strong>{h2hStats.draws} draws</strong> between them, the
         visitors will be confident of continuing their positive record.
@@ -362,9 +422,8 @@ function renderH2HAnalysis(
     return (
       <p>
         The head-to-head record is evenly balanced between these two sides, with{" "}
-        <strong>{homeTeam}</strong> winning <strong>{h2hStats.homeWins}</strong>
-        , <strong>{awayTeam}</strong> winning{" "}
-        <strong>{h2hStats.awayWins}</strong>, and{" "}
+        <HomeTeamLink /> winning <strong>{h2hStats.homeWins}</strong>,{" "}
+        <AwayTeamLink /> winning <strong>{h2hStats.awayWins}</strong>, and{" "}
         <strong>{h2hStats.draws}</strong> matches ending in draws from their
         last <strong>{h2hCount}</strong> encounters.
       </p>
@@ -373,30 +432,47 @@ function renderH2HAnalysis(
 }
 
 function renderPrediction(
-  homeTeam: string,
-  awayTeam: string,
+  homeTeam: { name: string; id: number },
+  awayTeam: { name: string; id: number },
   homeStrength: number,
   awayStrength: number,
 ) {
+  const HomeTeamLink = () => (
+    <Link
+      href={getTeamUrl(homeTeam.name, homeTeam.id)}
+      className="font-bold hover:underline"
+    >
+      {homeTeam.name}
+    </Link>
+  );
+
+  const AwayTeamLink = () => (
+    <Link
+      href={getTeamUrl(awayTeam.name, awayTeam.id)}
+      className="font-bold hover:underline"
+    >
+      {awayTeam.name}
+    </Link>
+  );
+
   if (homeStrength > awayStrength + 1) {
     return (
       <p>
         With <strong>home advantage</strong> and strong recent form,{" "}
-        <strong>{homeTeam}</strong> will be the clear favorites heading into
-        this match. However, <strong>{awayTeam}</strong> cannot be written off
-        entirely and could pose problems on the counter-attack. Expect the hosts
-        to dominate possession and create the better chances.
+        <HomeTeamLink /> will be the clear favorites heading into this match.
+        However, <AwayTeamLink /> cannot be written off entirely and could pose
+        problems on the counter-attack. Expect the hosts to dominate possession
+        and create the better chances.
       </p>
     );
   } else if (awayStrength > homeStrength + 1) {
     return (
       <p>
-        Despite playing away from home, <strong>{awayTeam}</strong> look
-        well-placed to take something from this game given their{" "}
-        <strong>superior form and league position</strong>.{" "}
-        <strong>{homeTeam}</strong> will need to raise their game significantly
-        to secure all three points. The visitors&apos; confidence should see
-        them through.
+        Despite playing away from home, <AwayTeamLink /> look well-placed to
+        take something from this game given their{" "}
+        <strong>superior form and league position</strong>. <HomeTeamLink />{" "}
+        will need to raise their game significantly to secure all three points.
+        The visitors&apos; confidence should see them through.
       </p>
     );
   } else {

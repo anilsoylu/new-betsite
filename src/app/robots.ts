@@ -7,19 +7,19 @@ export default function robots(): MetadataRoute.Robots {
   return {
     rules: [
       {
-        userAgent: "*", // All search engines
+        userAgent: "*",
         allow: "/",
-        disallow: ["/api/*"], // Block API routes
+        disallow: ["/api/*", "/favorites"],
       },
       {
         userAgent: "Googlebot",
         allow: "/",
-        disallow: ["/api/*"],
+        disallow: ["/api/*", "/favorites"],
       },
       {
         userAgent: "Bingbot",
         allow: "/",
-        disallow: ["/api/*"],
+        disallow: ["/api/*", "/favorites"],
       },
     ],
     sitemap: `${baseUrl}/sitemap.xml`,

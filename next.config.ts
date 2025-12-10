@@ -4,10 +4,12 @@ const nextConfig: NextConfig = {
   reactCompiler: true,
   compress: true, // Gzip compression
   poweredByHeader: false, // Hide Next.js signature (security)
+  // IMPORTANT: Fixes Next.js 15+ bug where metadata renders inside <body> instead of <head>
+  // Without this, Google sees title/description in wrong location which hurts SEO
+  htmlLimitedBots: /.*/,
   experimental: {
     browserDebugInfoInTerminal: true,
   },
-  htmlLimitedBots: /.*/,
   images: {
     remotePatterns: [
       {

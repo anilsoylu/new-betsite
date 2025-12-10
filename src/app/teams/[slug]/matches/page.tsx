@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getTeamById, getFixturesByTeam } from "@/lib/api/football-api";
 import { extractTeamId, getFixtureUrl } from "@/lib/utils";
@@ -8,9 +9,34 @@ import Link from "next/link";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import type { Fixture } from "@/types/football";
+import { SITE, SEO } from "@/lib/constants";
 
 interface TeamMatchesPageProps {
   params: Promise<{ slug: string }>;
+}
+
+export async function generateMetadata({
+  params,
+}: TeamMatchesPageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const teamId = extractTeamId(slug);
+
+  if (!teamId) {
+    return { title: "Team Not Found" };
+  }
+
+  try {
+    const team = await getTeamById(teamId);
+    return {
+      title: SEO.teamMatches.titleTemplate(team.name),
+      description: SEO.teamMatches.descriptionTemplate(team.name),
+      alternates: {
+        canonical: `${SITE.url}/teams/${slug}/matches`,
+      },
+    };
+  } catch {
+    return { title: "Team Not Found" };
+  }
 }
 
 export default async function TeamMatchesPage({

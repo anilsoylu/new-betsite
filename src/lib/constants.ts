@@ -5,11 +5,12 @@
 
 // Site metadata
 export const SITE = {
-  name: "SoccerName",
-  description: "Live football scores, fixtures, standings and statistics",
+  name: "Soccer Offices",
+  description:
+    "Live football scores, fixtures, standings, statistics and odds from leagues worldwide. Follow your favorite teams and players in real-time.",
   url: process.env.NEXT_PUBLIC_SITE_URL || "https://socceroffices.com",
   defaultImage: "/og-image.png",
-  twitter: "@soccername",
+  twitter: "@socceroffices",
 } as const;
 
 // SEO metadata templates
@@ -21,14 +22,14 @@ export const SEO = {
   },
   matchDetail: {
     titleTemplate: (home: string, away: string) =>
-      `${home} vs ${away} | ${SITE.name}`,
+      `${home} vs ${away} | Live Score & Stats`,
     descriptionTemplate: (
       home: string,
       away: string,
       league: string,
       date: string,
     ) =>
-      `${home} vs ${away} - ${league} match on ${date}. Get live scores, lineups, statistics and match details.`,
+      `${home} vs ${away} - ${league} match on ${date}. Get live scores, lineups, statistics and match predictions.`,
   },
   standings: {
     title: `Football Standings & Tables | ${SITE.name}`,
@@ -36,9 +37,96 @@ export const SEO = {
       "View football league standings, tables and rankings. Track your team's position in the league.",
   },
   leagues: {
-    title: `Football Leagues | ${SITE.name}`,
+    title: `Football Leagues & Competitions | ${SITE.name}`,
     description:
       "Browse all football leagues and competitions. Find fixtures, standings and statistics for every league.",
+  },
+  leagueDetail: {
+    titleTemplate: (leagueName: string) => `${leagueName} | ${SITE.name}`,
+    descriptionTemplate: (leagueName: string, country: string) =>
+      `${leagueName} standings, fixtures, top scorers, and statistics. Follow ${country} football on ${SITE.name}.`,
+  },
+  leagueFixtures: {
+    titleTemplate: (leagueName: string) =>
+      `${leagueName} Fixtures & Results | ${SITE.name}`,
+    descriptionTemplate: (leagueName: string) =>
+      `View all ${leagueName} fixtures, upcoming matches and recent results. Complete schedule and match information.`,
+  },
+  leagueStandings: {
+    titleTemplate: (leagueName: string) =>
+      `${leagueName} Table & Standings | ${SITE.name}`,
+    descriptionTemplate: (leagueName: string) =>
+      `${leagueName} league table with complete standings. Points, wins, draws, losses and goal difference for all teams.`,
+  },
+  leagueStats: {
+    titleTemplate: (leagueName: string) =>
+      `${leagueName} Stats & Top Scorers | ${SITE.name}`,
+    descriptionTemplate: (leagueName: string) =>
+      `${leagueName} statistics including top scorers, assists, clean sheets and player ratings this season.`,
+  },
+  teams: {
+    title: `Football Teams | ${SITE.name}`,
+    description:
+      "Browse football teams worldwide. Find squad lists, fixtures, statistics and match results.",
+  },
+  teamDetail: {
+    titleTemplate: (teamName: string) =>
+      `${teamName} | Squad, Fixtures & Stats`,
+    descriptionTemplate: (teamName: string, country: string) =>
+      `${teamName} squad, fixtures and statistics. Follow ${teamName} from ${country} on ${SITE.name}.`,
+  },
+  teamMatches: {
+    titleTemplate: (teamName: string) =>
+      `${teamName} Fixtures & Results | ${SITE.name}`,
+    descriptionTemplate: (teamName: string) =>
+      `${teamName} complete fixtures and results. Upcoming matches, recent results and match schedule.`,
+  },
+  teamSquad: {
+    titleTemplate: (teamName: string) =>
+      `${teamName} Squad & Players | ${SITE.name}`,
+    descriptionTemplate: (teamName: string) =>
+      `${teamName} current squad list. View all players by position including goalkeepers, defenders, midfielders and forwards.`,
+  },
+  teamStats: {
+    titleTemplate: (teamName: string) =>
+      `${teamName} Statistics & Form | ${SITE.name}`,
+    descriptionTemplate: (teamName: string) =>
+      `${teamName} statistics including win rate, goals scored, clean sheets, home and away records.`,
+  },
+  teamTransfers: {
+    titleTemplate: (teamName: string) =>
+      `${teamName} Transfers | ${SITE.name}`,
+    descriptionTemplate: (teamName: string) =>
+      `${teamName} transfer news and history. View incoming and outgoing transfers, loan deals and free agents.`,
+  },
+  teamHistory: {
+    titleTemplate: (teamName: string) =>
+      `${teamName} History & Trophies | ${SITE.name}`,
+    descriptionTemplate: (teamName: string) =>
+      `${teamName} club history, trophies and achievements. Complete historical record and honours.`,
+  },
+  players: {
+    title: `Football Players | ${SITE.name}`,
+    description:
+      "Search football players worldwide. View player profiles, statistics, career history and transfers.",
+  },
+  playerDetail: {
+    titleTemplate: (playerName: string) =>
+      `${playerName} | Stats & Career History`,
+    descriptionTemplate: (playerName: string, position: string, team: string) =>
+      `${playerName} profile, statistics and career history. ${position} playing for ${team}.`,
+  },
+  favorites: {
+    title: `Your Favorites | ${SITE.name}`,
+    description: "Your saved favorite teams, players and matches.",
+  },
+  privacy: {
+    title: `Privacy Policy | ${SITE.name}`,
+    description: `${SITE.name} privacy policy. How we collect, use and protect your data.`,
+  },
+  terms: {
+    title: `Terms of Service | ${SITE.name}`,
+    description: `${SITE.name} terms of service and conditions of use.`,
   },
 } as const;
 

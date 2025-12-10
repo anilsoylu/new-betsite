@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getTeamById } from "@/lib/api/football-api";
 import { extractTeamId, getPlayerUrl } from "@/lib/utils";
@@ -7,9 +8,34 @@ import Image from "next/image";
 import Link from "next/link";
 import { User } from "lucide-react";
 import type { SquadPlayer } from "@/types/football";
+import { SITE, SEO } from "@/lib/constants";
 
 interface TeamSquadPageProps {
   params: Promise<{ slug: string }>;
+}
+
+export async function generateMetadata({
+  params,
+}: TeamSquadPageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const teamId = extractTeamId(slug);
+
+  if (!teamId) {
+    return { title: "Team Not Found" };
+  }
+
+  try {
+    const team = await getTeamById(teamId);
+    return {
+      title: SEO.teamSquad.titleTemplate(team.name),
+      description: SEO.teamSquad.descriptionTemplate(team.name),
+      alternates: {
+        canonical: `${SITE.url}/teams/${slug}/squad`,
+      },
+    };
+  } catch {
+    return { title: "Team Not Found" };
+  }
 }
 
 // Position group order

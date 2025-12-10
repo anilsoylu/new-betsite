@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import {
   getTeamById,
@@ -16,9 +17,34 @@ import {
   BarChart3,
 } from "lucide-react";
 import type { Fixture, Standing } from "@/types/football";
+import { SITE, SEO } from "@/lib/constants";
 
 interface TeamStatsPageProps {
   params: Promise<{ slug: string }>;
+}
+
+export async function generateMetadata({
+  params,
+}: TeamStatsPageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const teamId = extractTeamId(slug);
+
+  if (!teamId) {
+    return { title: "Team Not Found" };
+  }
+
+  try {
+    const team = await getTeamById(teamId);
+    return {
+      title: SEO.teamStats.titleTemplate(team.name),
+      description: SEO.teamStats.descriptionTemplate(team.name),
+      alternates: {
+        canonical: `${SITE.url}/teams/${slug}/stats`,
+      },
+    };
+  } catch {
+    return { title: "Team Not Found" };
+  }
 }
 
 // Calculate team stats from fixtures

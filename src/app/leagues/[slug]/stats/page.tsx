@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getLeagueStatsData } from "@/lib/api/football-api";
 import { extractLeagueId } from "@/lib/utils";
@@ -6,9 +7,29 @@ import {
   StatsDashboard,
   LeagueAboutSection,
 } from "@/components/leagues";
+import { TOP_LEAGUES } from "@/components/sidebar/top-leagues";
+import { SITE, SEO } from "@/lib/constants";
 
 interface StatsPageProps {
   params: Promise<{ slug: string }>;
+}
+
+export async function generateMetadata({
+  params,
+}: StatsPageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const leagueId = extractLeagueId(slug);
+
+  const knownLeague = TOP_LEAGUES.find((l) => l.id === leagueId);
+  const leagueName = knownLeague?.name || "League";
+
+  return {
+    title: SEO.leagueStats.titleTemplate(leagueName),
+    description: SEO.leagueStats.descriptionTemplate(leagueName),
+    alternates: {
+      canonical: `${SITE.url}/leagues/${slug}/stats`,
+    },
+  };
 }
 
 export default async function StatsPage({ params }: StatsPageProps) {

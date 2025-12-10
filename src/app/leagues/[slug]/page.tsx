@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { SITE } from "@/lib/constants";
+import { SITE, SEO } from "@/lib/constants";
 import { getLeaguePageData } from "@/lib/api/football-api";
 import { extractLeagueId } from "@/lib/utils";
 import { TOP_LEAGUES } from "@/components/sidebar/top-leagues";
@@ -11,6 +11,11 @@ import {
   LeagueAboutSection,
 } from "@/components/leagues";
 import { AdSpace } from "@/components/sidebar";
+import { JsonLdScript } from "@/components/seo";
+import {
+  generateSportsLeagueSchema,
+  generateBreadcrumbSchema,
+} from "@/lib/seo/json-ld";
 
 interface LeaguePageProps {
   params: Promise<{ slug: string }>;
@@ -30,14 +35,23 @@ export async function generateMetadata({
 
   if (knownLeague) {
     return {
-      title: `${knownLeague.name} | ${SITE.name}`,
-      description: `${knownLeague.name} standings, fixtures, top scorers, and statistics. Follow ${knownLeague.country} football.`,
+      title: SEO.leagueDetail.titleTemplate(knownLeague.name),
+      description: SEO.leagueDetail.descriptionTemplate(
+        knownLeague.name,
+        knownLeague.country
+      ),
+      alternates: {
+        canonical: `${SITE.url}/leagues/${slug}`,
+      },
     };
   }
 
   return {
     title: `League | ${SITE.name}`,
     description: "League standings, fixtures, and statistics.",
+    alternates: {
+      canonical: `${SITE.url}/leagues/${slug}`,
+    },
   };
 }
 
@@ -60,8 +74,20 @@ export default async function LeagueOverviewPage({ params }: LeaguePageProps) {
     data.standings.length > 0 && data.standings[0].standings.length > 0;
   const standings = hasStandings ? data.standings[0].standings : [];
 
+  // Generate structured data
+  const leagueSchema = generateSportsLeagueSchema(data.league, standings);
+  const breadcrumbSchema = generateBreadcrumbSchema([
+    { name: "Home", url: SITE.url },
+    { name: "Leagues", url: `${SITE.url}/leagues` },
+    { name: data.league.name, url: `${SITE.url}/leagues/${slug}` },
+  ]);
+
   return (
-    <div className="grid lg:grid-cols-[1fr_320px] gap-6">
+    <>
+      <JsonLdScript id="sports-league-schema" schema={leagueSchema} />
+      <JsonLdScript id="breadcrumb-schema" schema={breadcrumbSchema} />
+
+      <div className="grid lg:grid-cols-[1fr_320px] gap-6">
       {/* Main Content */}
       <div className="space-y-6">
         {/* Live Matches */}
@@ -134,6 +160,7 @@ export default async function LeagueOverviewPage({ params }: LeaguePageProps) {
         {/* Ad Space */}
         <AdSpace size="large-rectangle" />
       </div>
-    </div>
+      </div>
+    </>
   );
 }

@@ -1,3 +1,4 @@
+import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 import { getTeamById, getTeamTransfers } from "@/lib/api/football-api"
 import { extractTeamId, getPlayerUrl } from "@/lib/utils"
@@ -8,9 +9,34 @@ import { ArrowRight, ArrowLeft, Calendar } from "lucide-react"
 import { format } from "date-fns"
 import Link from "next/link"
 import type { TeamTransfer } from "@/types/football"
+import { SITE, SEO } from "@/lib/constants"
 
 interface TeamTransfersPageProps {
   params: Promise<{ slug: string }>
+}
+
+export async function generateMetadata({
+  params,
+}: TeamTransfersPageProps): Promise<Metadata> {
+  const { slug } = await params
+  const teamId = extractTeamId(slug)
+
+  if (!teamId) {
+    return { title: "Team Not Found" }
+  }
+
+  try {
+    const team = await getTeamById(teamId)
+    return {
+      title: SEO.teamTransfers.titleTemplate(team.name),
+      description: SEO.teamTransfers.descriptionTemplate(team.name),
+      alternates: {
+        canonical: `${SITE.url}/teams/${slug}/transfers`,
+      },
+    }
+  } catch {
+    return { title: "Team Not Found" }
+  }
 }
 
 export default async function TeamTransfersPage({

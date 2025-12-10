@@ -5,6 +5,8 @@ import { ThemeProvider } from "@/lib/providers/theme-provider";
 import { Header, Footer, BottomNav } from "@/components/layout";
 import { Toaster } from "@/components/ui/sonner";
 import { SITE } from "@/lib/constants";
+import { JsonLdScript } from "@/components/seo";
+import { generateWebsiteSchema } from "@/lib/seo/json-ld";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -47,8 +49,8 @@ export const metadata: Metadata = {
     images: [SITE.defaultImage],
   },
   robots: {
-    index: false,
-    follow: false,
+    index: true,
+    follow: true,
   },
 };
 
@@ -59,6 +61,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <JsonLdScript id="website-schema" schema={generateWebsiteSchema()} />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >

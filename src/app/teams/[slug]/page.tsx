@@ -10,7 +10,7 @@ import { extractTeamId, getFixtureUrl } from "@/lib/utils"
 import { TeamFixtures } from "@/components/teams/team-fixtures"
 import { FormStrip } from "@/components/teams/form-strip"
 import { TeamPitchView } from "@/components/teams/team-pitch-view"
-import { SITE } from "@/lib/constants"
+import { SITE, SEO } from "@/lib/constants"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -23,6 +23,11 @@ import type {
   Fixture,
   TeamLineup,
 } from "@/types/football"
+import { JsonLdScript } from "@/components/seo"
+import {
+  generateSportsTeamSchema,
+  generateBreadcrumbSchema,
+} from "@/lib/seo/json-ld"
 
 interface TeamDetailPageProps {
   params: Promise<{ slug: string }>
@@ -42,13 +47,20 @@ export async function generateMetadata({
     const team = await getTeamById(teamId)
 
     return {
-      title: `${team.name} | ${SITE.name}`,
-      description: `${team.name} squad, fixtures and statistics. ${
-        team.country?.name || ""
-      }`,
+      title: SEO.teamDetail.titleTemplate(team.name),
+      description: SEO.teamDetail.descriptionTemplate(
+        team.name,
+        team.country?.name || "International"
+      ),
+      alternates: {
+        canonical: `${SITE.url}/teams/${slug}`,
+      },
       openGraph: {
-        title: `${team.name} | ${SITE.name}`,
-        description: `${team.name} squad, fixtures and statistics.`,
+        title: SEO.teamDetail.titleTemplate(team.name),
+        description: SEO.teamDetail.descriptionTemplate(
+          team.name,
+          team.country?.name || "International"
+        ),
         images: team.logo ? [{ url: team.logo }] : undefined,
       },
     }
@@ -152,8 +164,19 @@ export default async function TeamOverviewPage({
   const nextMatch = fixtures.upcoming[0]
   const secondUpcomingMatch = fixtures.upcoming[1] // For the "Upcoming Match" card in sidebar
 
+  // Generate structured data
+  const sportsTeamSchema = generateSportsTeamSchema(team)
+  const breadcrumbSchema = generateBreadcrumbSchema([
+    { name: "Home", url: SITE.url },
+    { name: "Teams", url: `${SITE.url}/teams` },
+    { name: team.name, url: `${SITE.url}/teams/${slug}` },
+  ])
+
   return (
-    <div className="grid gap-6 lg:grid-cols-3">
+    <>
+      <JsonLdScript id="sports-team-schema" schema={sportsTeamSchema} />
+      <JsonLdScript id="breadcrumb-schema" schema={breadcrumbSchema} />
+      <div className="grid gap-6 lg:grid-cols-3">
       {/* Main Content (2/3) */}
       <div className="lg:col-span-2 space-y-6">
         {/* Next Match Card */}
@@ -563,6 +586,7 @@ export default async function TeamOverviewPage({
           </Card>
         )}
       </div>
-    </div>
+      </div>
+    </>
   )
 }

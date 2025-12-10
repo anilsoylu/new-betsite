@@ -1,3 +1,4 @@
+import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 import { getTeamById } from "@/lib/api/football-api"
 import { extractTeamId } from "@/lib/utils"
@@ -6,9 +7,34 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Trophy } from "lucide-react"
 import type { TeamTrophy } from "@/types/football"
+import { SITE, SEO } from "@/lib/constants"
 
 interface TeamHistoryPageProps {
   params: Promise<{ slug: string }>
+}
+
+export async function generateMetadata({
+  params,
+}: TeamHistoryPageProps): Promise<Metadata> {
+  const { slug } = await params
+  const teamId = extractTeamId(slug)
+
+  if (!teamId) {
+    return { title: "Team Not Found" }
+  }
+
+  try {
+    const team = await getTeamById(teamId)
+    return {
+      title: SEO.teamHistory.titleTemplate(team.name),
+      description: SEO.teamHistory.descriptionTemplate(team.name),
+      alternates: {
+        canonical: `${SITE.url}/teams/${slug}/history`,
+      },
+    }
+  } catch {
+    return { title: "Team Not Found" }
+  }
 }
 
 export default async function TeamHistoryPage({

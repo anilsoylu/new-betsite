@@ -14,7 +14,12 @@ import {
   PlayerAttributes,
 } from "@/components/players";
 import { StandingsWidget } from "@/components/sidebar";
-import { SITE } from "@/lib/constants";
+import { SITE, SEO } from "@/lib/constants";
+import { JsonLdScript } from "@/components/seo";
+import {
+  generatePersonSchema,
+  generateBreadcrumbSchema,
+} from "@/lib/seo/json-ld";
 
 interface PlayerDetailPageProps {
   params: Promise<{ slug: string }>;
@@ -34,12 +39,22 @@ export async function generateMetadata({
     const player = await getPlayerById(playerId);
 
     return {
-      title: `${player.displayName} | ${SITE.name}`,
-      description:
-        `${player.displayName} profile, statistics and career history. ${player.position || ""} ${player.currentTeam?.teamName ? `at ${player.currentTeam.teamName}` : ""}`.trim(),
+      title: SEO.playerDetail.titleTemplate(player.displayName),
+      description: SEO.playerDetail.descriptionTemplate(
+        player.displayName,
+        player.position || "Football Player",
+        player.currentTeam?.teamName || "Free Agent"
+      ),
+      alternates: {
+        canonical: `${SITE.url}/players/${slug}`,
+      },
       openGraph: {
-        title: `${player.displayName} | ${SITE.name}`,
-        description: `${player.displayName} profile and career history.`,
+        title: SEO.playerDetail.titleTemplate(player.displayName),
+        description: SEO.playerDetail.descriptionTemplate(
+          player.displayName,
+          player.position || "Football Player",
+          player.currentTeam?.teamName || "Free Agent"
+        ),
         images: player.image ? [{ url: player.image }] : undefined,
       },
     };
@@ -68,8 +83,19 @@ export default async function PlayerDetailPage({
     notFound();
   }
 
+  // Generate structured data
+  const personSchema = generatePersonSchema(player);
+  const breadcrumbSchema = generateBreadcrumbSchema([
+    { name: "Home", url: SITE.url },
+    { name: "Players", url: `${SITE.url}/players` },
+    { name: player.displayName, url: `${SITE.url}/players/${slug}` },
+  ]);
+
   return (
     <main className="flex-1 overflow-auto">
+      <JsonLdScript id="person-schema" schema={personSchema} />
+      <JsonLdScript id="breadcrumb-schema" schema={breadcrumbSchema} />
+
       <div className="container mx-auto px-4 py-4">
         {/* 2-Column Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6">
