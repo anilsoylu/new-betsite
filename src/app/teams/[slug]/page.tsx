@@ -1,56 +1,57 @@
-import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import type { Metadata } from "next"
+import { notFound } from "next/navigation"
 import {
   getTeamById,
   getFixturesByTeam,
   getFixtureById,
   getStandingsBySeason,
-} from "@/lib/api/cached-football-api";
-import { extractTeamId, getFixtureUrl, getTeamUrl, slugify } from "@/lib/utils";
-import { TeamFixtures } from "@/components/teams/team-fixtures";
-import { FormStrip } from "@/components/teams/form-strip";
-import { TeamPitchView } from "@/components/teams/team-pitch-view";
-import { SITE, SEO } from "@/lib/constants";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Calendar, TrendingUp, Users } from "lucide-react";
-import Image from "next/image";
-import Link from "next/link";
+} from "@/lib/api/cached-football-api"
+import { extractTeamId, getFixtureUrl, getTeamUrl, slugify } from "@/lib/utils"
+import { TeamFixtures } from "@/components/teams/team-fixtures"
+import { FormStrip } from "@/components/teams/form-strip"
+import { TeamPitchView } from "@/components/teams/team-pitch-view"
+import { SITE, SEO } from "@/lib/constants"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Calendar, TrendingUp, Users } from "lucide-react"
+import Image from "next/image"
+import Link from "next/link"
 import type {
   Standing,
   StandingTable,
   Fixture,
   TeamLineup,
-} from "@/types/football";
-import { JsonLdScript } from "@/components/seo";
+} from "@/types/football"
+import { JsonLdScript } from "@/components/seo"
 import {
   generateSportsTeamSchema,
   generateBreadcrumbSchema,
-} from "@/lib/seo/json-ld";
+} from "@/lib/seo/json-ld"
+import { TeamAbout } from "@/components/teams/team-about"
 
 interface TeamDetailPageProps {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ slug: string }>
 }
 
 export async function generateMetadata({
   params,
 }: TeamDetailPageProps): Promise<Metadata> {
-  const { slug } = await params;
-  const teamId = extractTeamId(slug);
+  const { slug } = await params
+  const teamId = extractTeamId(slug)
 
   if (!teamId) {
-    return { title: "Team Not Found" };
+    return { title: "Team Not Found" }
   }
 
   try {
-    const team = await getTeamById(teamId);
+    const team = await getTeamById(teamId)
 
     return {
       title: SEO.teamDetail.titleTemplate(team.name),
       description: SEO.teamDetail.descriptionTemplate(
         team.name,
-        team.country?.name || "International",
+        team.country?.name || "International"
       ),
       alternates: {
         canonical: `${SITE.url}/teams/${slug}`,
@@ -59,118 +60,119 @@ export async function generateMetadata({
         title: SEO.teamDetail.titleTemplate(team.name),
         description: SEO.teamDetail.descriptionTemplate(
           team.name,
-          team.country?.name || "International",
+          team.country?.name || "International"
         ),
         images: team.logo ? [{ url: team.logo }] : undefined,
       },
-    };
+    }
   } catch {
-    return { title: "Team Not Found" };
+    return { title: "Team Not Found" }
   }
 }
 
 // Helper to get team form from fixtures
 function getFormFromFixtures(
   fixtures: Fixture[],
-  teamId: number,
+  teamId: number
 ): Array<"W" | "D" | "L"> {
   return fixtures
     .filter((f) => f.status === "finished" && f.score)
     .slice(0, 5)
     .map((f) => {
-      const isHome = f.homeTeam.id === teamId;
-      const teamScore = isHome ? f.score!.home : f.score!.away;
-      const opponentScore = isHome ? f.score!.away : f.score!.home;
+      const isHome = f.homeTeam.id === teamId
+      const teamScore = isHome ? f.score!.home : f.score!.away
+      const opponentScore = isHome ? f.score!.away : f.score!.home
 
-      if (teamScore > opponentScore) return "W";
-      if (teamScore < opponentScore) return "L";
-      return "D";
-    });
+      if (teamScore > opponentScore) return "W"
+      if (teamScore < opponentScore) return "L"
+      return "D"
+    })
 }
 
 // Helper to find team standing
 function findTeamStanding(
   standings: Standing[],
-  teamId: number,
+  teamId: number
 ): Standing | null {
-  return standings.find((s) => s.teamId === teamId) || null;
+  return standings.find((s) => s.teamId === teamId) || null
 }
 
 export default async function TeamOverviewPage({
   params,
 }: TeamDetailPageProps) {
-  const { slug } = await params;
-  const teamId = extractTeamId(slug);
+  const { slug } = await params
+  const teamId = extractTeamId(slug)
 
   if (!teamId) {
-    notFound();
+    notFound()
   }
 
-  let team;
-  let fixtures;
-  let allStandingsTables: StandingTable[] = [];
-  let lastLineup: TeamLineup | null = null;
+  let team
+  let fixtures
+  let allStandingsTables: StandingTable[] = []
+  let lastLineup: TeamLineup | null = null
 
   try {
-    [team, fixtures] = await Promise.all([
+    ;[team, fixtures] = await Promise.all([
       getTeamById(teamId),
       getFixturesByTeam(teamId, { past: 10, future: 10 }),
-    ]);
+    ])
 
     // Collect ALL unique seasonIds from fixtures to get standings for all leagues
-    const allFixtures = [...fixtures.recent, ...fixtures.upcoming];
+    const allFixtures = [...fixtures.recent, ...fixtures.upcoming]
     const uniqueSeasonIds = [
       ...new Set(allFixtures.map((f) => f.seasonId).filter(Boolean)),
-    ] as number[];
+    ] as number[]
 
     // Fetch standings for all seasons in parallel
     if (uniqueSeasonIds.length > 0) {
       const standingsPromises = uniqueSeasonIds.map(async (seasonId) => {
         try {
-          const tables = await getStandingsBySeason(seasonId);
-          return tables;
+          const tables = await getStandingsBySeason(seasonId)
+          return tables
         } catch {
-          return [];
+          return []
         }
-      });
+      })
 
-      const allResults = await Promise.all(standingsPromises);
+      const allResults = await Promise.all(standingsPromises)
       // Flatten and filter to only tables where this team appears
       allStandingsTables = allResults
         .flat()
-        .filter((table) => table.standings.some((s) => s.teamId === teamId));
+        .filter((table) => table.standings.some((s) => s.teamId === teamId))
     }
 
     // Fetch last lineup from most recent finished match
     const lastFinishedMatch = fixtures.recent.find(
-      (f) => f.status === "finished",
-    );
+      (f) => f.status === "finished"
+    )
     if (lastFinishedMatch) {
       try {
-        const fixtureDetail = await getFixtureById(lastFinishedMatch.id);
-        const isHome = lastFinishedMatch.homeTeam.id === teamId;
+        const fixtureDetail = await getFixtureById(lastFinishedMatch.id)
+        const isHome = lastFinishedMatch.homeTeam.id === teamId
         lastLineup = isHome
           ? fixtureDetail.homeLineup
-          : fixtureDetail.awayLineup;
+          : fixtureDetail.awayLineup
       } catch {
         // Lineup not available
       }
     }
   } catch {
-    notFound();
+    notFound()
   }
 
-  const form = getFormFromFixtures(fixtures.recent, teamId);
-  const nextMatch = fixtures.upcoming[0];
-  const secondUpcomingMatch = fixtures.upcoming[1]; // For the "Upcoming Match" card in sidebar
+  const form = getFormFromFixtures(fixtures.recent, teamId)
+  const nextMatch = fixtures.upcoming[0]
+  const lastMatch = fixtures.recent[0]
+  const secondUpcomingMatch = fixtures.upcoming[1] // For the "Upcoming Match" card in sidebar
 
   // Generate structured data
-  const sportsTeamSchema = generateSportsTeamSchema(team);
+  const sportsTeamSchema = generateSportsTeamSchema(team)
   const breadcrumbSchema = generateBreadcrumbSchema([
     { name: "Home", url: SITE.url },
     { name: "Teams", url: `${SITE.url}/teams` },
     { name: team.name, url: `${SITE.url}/teams/${slug}` },
-  ]);
+  ])
 
   return (
     <>
@@ -226,7 +228,7 @@ export default async function TeamOverviewPage({
                           {
                             hour: "2-digit",
                             minute: "2-digit",
-                          },
+                          }
                         )}
                       </span>
                       <span className="text-sm text-muted-foreground">
@@ -236,7 +238,7 @@ export default async function TeamOverviewPage({
                             weekday: "short",
                             day: "numeric",
                             month: "short",
-                          },
+                          }
                         )}
                       </span>
                     </div>
@@ -331,7 +333,7 @@ export default async function TeamOverviewPage({
                       <div className="text-right">
                         <p className="text-sm font-medium">
                           {new Date(
-                            secondUpcomingMatch.startTime,
+                            secondUpcomingMatch.startTime
                           ).toLocaleDateString("en-GB", {
                             day: "numeric",
                             month: "short",
@@ -339,7 +341,7 @@ export default async function TeamOverviewPage({
                         </p>
                         <p className="text-xs text-muted-foreground">
                           {new Date(
-                            secondUpcomingMatch.startTime,
+                            secondUpcomingMatch.startTime
                           ).toLocaleTimeString("en-GB", {
                             hour: "2-digit",
                             minute: "2-digit",
@@ -450,6 +452,15 @@ export default async function TeamOverviewPage({
               />
             </CardContent>
           </Card>
+
+          {/* About Section - SEO Content (visible on all tabs) */}
+          <div className="mt-8">
+            <TeamAbout
+              team={team}
+              nextMatch={nextMatch}
+              lastMatch={lastMatch}
+            />
+          </div>
         </div>
 
         {/* Sidebar (1/3) */}
@@ -468,14 +479,16 @@ export default async function TeamOverviewPage({
 
           {/* League Standings (Mini Tables for ALL leagues) */}
           {allStandingsTables.map((table) => {
-            const tableTeamStanding = findTeamStanding(table.standings, teamId);
-            if (!tableTeamStanding) return null;
+            const tableTeamStanding = findTeamStanding(table.standings, teamId)
+            if (!tableTeamStanding) return null
 
             return (
               <Card key={`${table.seasonId}-${table.groupName || "main"}`}>
                 <CardHeader className="pb-0">
                   <Link
-                    href={`/leagues/${slugify(table.leagueName || "league")}-${table.leagueId}`}
+                    href={`/leagues/${slugify(table.leagueName || "league")}-${
+                      table.leagueId
+                    }`}
                     className="flex items-center gap-2 hover:opacity-80 transition-opacity group"
                   >
                     <Avatar className="h-6 w-6 rounded bg-white">
@@ -515,9 +528,9 @@ export default async function TeamOverviewPage({
                           .filter((s) => {
                             // Show teams around the current team's position (±3)
                             const diff = Math.abs(
-                              s.position - tableTeamStanding.position,
-                            );
-                            return diff <= 3;
+                              s.position - tableTeamStanding.position
+                            )
+                            return diff <= 3
                           })
                           .sort((a, b) => a.position - b.position)
                           .map((standing) => (
@@ -532,7 +545,10 @@ export default async function TeamOverviewPage({
                               <td className="px-3 py-2">{standing.position}</td>
                               <td className="px-3 py-2">
                                 <Link
-                                  href={getTeamUrl(standing.teamName, standing.teamId)}
+                                  href={getTeamUrl(
+                                    standing.teamName,
+                                    standing.teamId
+                                  )}
                                   className="flex items-center gap-2 hover:text-primary transition-colors"
                                 >
                                   <div className="relative h-4 w-4 shrink-0">
@@ -561,7 +577,7 @@ export default async function TeamOverviewPage({
                   </div>
                 </CardContent>
               </Card>
-            );
+            )
           })}
 
           {/* Active Competitions */}
@@ -596,5 +612,5 @@ export default async function TeamOverviewPage({
         </div>
       </div>
     </>
-  );
+  )
 }

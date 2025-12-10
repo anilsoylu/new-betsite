@@ -1,6 +1,7 @@
 import Image from "next/image";
+import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
+import { cn, getTeamUrl } from "@/lib/utils";
 import type { StandingTable, Standing } from "@/types/football";
 
 interface StandingsTabProps {
@@ -86,7 +87,10 @@ function StandingRow({ standing, isHighlighted }: StandingRowProps) {
     >
       <td className="p-3 text-muted-foreground">{standing.position}</td>
       <td className="p-3">
-        <div className="flex items-center gap-2">
+        <Link
+          href={getTeamUrl(standing.teamName, standing.teamId)}
+          className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+        >
           {standing.teamLogo && (
             <Image
               src={standing.teamLogo}
@@ -104,7 +108,7 @@ function StandingRow({ standing, isHighlighted }: StandingRowProps) {
           >
             {standing.teamName}
           </span>
-        </div>
+        </Link>
       </td>
       <td className="p-3 text-center tabular-nums">{standing.played}</td>
       <td className="p-3 text-center tabular-nums">{standing.won}</td>

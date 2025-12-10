@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
+import { cn, getTeamUrl } from "@/lib/utils";
 import type {
   FixtureDetail,
   StandingTable,
@@ -312,7 +312,10 @@ export function LeagueMiniTable({
                     {standing.position}
                   </td>
                   <td className="py-2">
-                    <div className="flex items-center gap-1.5">
+                    <Link
+                      href={getTeamUrl(standing.teamName, standing.teamId)}
+                      className="flex items-center gap-1.5 hover:opacity-80 transition-opacity"
+                    >
                       {standing.teamLogo && (
                         <Image
                           src={standing.teamLogo}
@@ -330,7 +333,7 @@ export function LeagueMiniTable({
                       >
                         {standing.teamName}
                       </span>
-                    </div>
+                    </Link>
                   </td>
                   <td className="text-center py-2">{standing.played}</td>
                   <td className="text-center py-2">
