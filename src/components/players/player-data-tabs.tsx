@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { format } from "date-fns";
 import {
   BarChart3,
@@ -13,6 +14,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { PlayerSeasonStats, PlayerTransfer } from "@/types/football";
+import { getTeamUrl, getLeagueUrl } from "@/lib/utils";
 
 interface PlayerDataTabsProps {
   stats: Array<PlayerSeasonStats>;
@@ -168,22 +170,35 @@ export function PlayerDataTabs({ stats, transfers }: PlayerDataTabsProps) {
                           <td className="p-2">
                             <div className="flex items-center gap-2">
                               {season.teamLogo && (
-                                <Image
-                                  src={season.teamLogo}
-                                  alt={season.teamName}
-                                  width={16}
-                                  height={16}
-                                  className="object-contain w-auto h-auto"
-                                />
+                                <Link
+                                  href={getTeamUrl(
+                                    season.teamName,
+                                    season.teamId
+                                  )}
+                                >
+                                  <Image
+                                    src={season.teamLogo}
+                                    alt={season.teamName}
+                                    width={16}
+                                    height={16}
+                                    className="object-contain w-auto h-auto hover:opacity-80"
+                                  />
+                                </Link>
                               )}
                               <div className="min-w-0">
                                 <p className="font-medium truncate">
                                   {season.seasonName}
                                 </p>
-                                {season.leagueName && (
-                                  <p className="text-[10px] text-muted-foreground truncate">
+                                {season.leagueName && season.leagueId && (
+                                  <Link
+                                    href={getLeagueUrl(
+                                      season.leagueName,
+                                      season.leagueId
+                                    )}
+                                    className="text-[10px] text-muted-foreground truncate block hover:underline"
+                                  >
                                     {season.leagueName}
-                                  </p>
+                                  </Link>
                                 )}
                               </div>
                             </div>
@@ -254,7 +269,13 @@ export function PlayerDataTabs({ stats, transfers }: PlayerDataTabsProps) {
                     {/* Teams */}
                     <div className="flex items-center gap-2">
                       {/* From Team */}
-                      <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                      <Link
+                        href={getTeamUrl(
+                          transfer.fromTeamName,
+                          transfer.fromTeamId
+                        )}
+                        className="flex items-center gap-1.5 flex-1 min-w-0 hover:opacity-80 transition-opacity"
+                      >
                         {transfer.fromTeamLogo ? (
                           <Image
                             src={transfer.fromTeamLogo}
@@ -268,16 +289,22 @@ export function PlayerDataTabs({ stats, transfers }: PlayerDataTabsProps) {
                             {transfer.fromTeamName.charAt(0)}
                           </div>
                         )}
-                        <span className="text-sm truncate">
+                        <span className="text-sm truncate hover:underline">
                           {transfer.fromTeamName}
                         </span>
-                      </div>
+                      </Link>
 
                       {/* Arrow */}
                       <ArrowRight className="h-4 w-4 text-muted-foreground shrink-0" />
 
                       {/* To Team */}
-                      <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                      <Link
+                        href={getTeamUrl(
+                          transfer.toTeamName,
+                          transfer.toTeamId
+                        )}
+                        className="flex items-center gap-1.5 flex-1 min-w-0 hover:opacity-80 transition-opacity"
+                      >
                         {transfer.toTeamLogo ? (
                           <Image
                             src={transfer.toTeamLogo}
@@ -291,10 +318,10 @@ export function PlayerDataTabs({ stats, transfers }: PlayerDataTabsProps) {
                             {transfer.toTeamName.charAt(0)}
                           </div>
                         )}
-                        <span className="text-sm truncate">
+                        <span className="text-sm truncate hover:underline">
                           {transfer.toTeamName}
                         </span>
-                      </div>
+                      </Link>
                     </div>
                   </div>
                 ))}

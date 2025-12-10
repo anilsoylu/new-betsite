@@ -3,7 +3,7 @@ import Link from "next/link";
 import { format, isValid, parseISO } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { slugify } from "@/lib/utils";
+import { getPlayerMatchUrl } from "@/lib/utils";
 import type { PlayerMatch } from "@/types/football";
 
 function formatMatchDate(
@@ -74,7 +74,7 @@ export function PlayerMatches({ matches, playerId }: PlayerMatchesProps) {
           {matches.map((match) => (
             <Link
               key={match.id}
-              href={`/matches/${slugify(`${match.homeTeamName}-vs-${match.awayTeamName}`)}-${match.id}`}
+              href={getPlayerMatchUrl(match)}
               className="block p-3 hover:bg-muted/30 transition-colors"
             >
               {/* Date and League */}

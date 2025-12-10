@@ -1,8 +1,15 @@
 "use client"
 
+import Link from "next/link"
 import { SITE } from "@/lib/constants"
 import type { TeamDetail, Fixture } from "@/types/football"
 import { format } from "date-fns"
+import {
+  getTeamUrl,
+  getLeagueUrl,
+  getFixtureUrl,
+  getPlayerUrl,
+} from "@/lib/utils"
 
 interface TeamAboutProps {
   team: TeamDetail
@@ -22,33 +29,35 @@ export function TeamAbout({ team, nextMatch, lastMatch }: TeamAboutProps) {
   const squadCount = team.squad.length
   const countryName = team.country?.name || null
 
-  // Format next match info
+  // Format next match info with full team/league data for linking
   const nextMatchInfo = nextMatch
     ? {
         opponent:
           nextMatch.homeTeam.id === team.id
-            ? nextMatch.awayTeam.name
-            : nextMatch.homeTeam.name,
+            ? nextMatch.awayTeam
+            : nextMatch.homeTeam,
         date: format(new Date(nextMatch.startTime), "MMMM d, yyyy"),
         time: format(new Date(nextMatch.startTime), "h:mm a"),
-        league: nextMatch.league?.name || "League Match",
+        league: nextMatch.league,
         isHome: nextMatch.homeTeam.id === team.id,
+        fixture: nextMatch,
       }
     : null
 
-  // Format last match info
+  // Format last match info with full team/league data for linking
   const lastMatchInfo = lastMatch
     ? {
         opponent:
           lastMatch.homeTeam.id === team.id
-            ? lastMatch.awayTeam.name
-            : lastMatch.homeTeam.name,
-        league: lastMatch.league?.name || "League Match",
+            ? lastMatch.awayTeam
+            : lastMatch.homeTeam,
+        league: lastMatch.league,
         score: lastMatch.score
           ? `${lastMatch.score.home} - ${lastMatch.score.away}`
           : null,
         result: getMatchResult(lastMatch, team.id),
         isHome: lastMatch.homeTeam.id === team.id,
+        fixture: lastMatch,
       }
     : null
 
@@ -108,13 +117,40 @@ export function TeamAbout({ team, nextMatch, lastMatch }: TeamAboutProps) {
           <h3 className="text-base font-semibold">{team.name} Next Match</h3>
           <p className="text-sm text-muted-foreground leading-relaxed">
             {team.name} will play their next match against{" "}
-            <strong>{nextMatchInfo.opponent}</strong> on{" "}
-            <strong>{nextMatchInfo.date}</strong> at {nextMatchInfo.time} in{" "}
-            <strong>{nextMatchInfo.league}</strong>. When the match starts, you
-            will be able to follow{" "}
-            {nextMatchInfo.isHome
-              ? `${team.name} vs ${nextMatchInfo.opponent}`
-              : `${nextMatchInfo.opponent} vs ${team.name}`}{" "}
+            <Link
+              href={getTeamUrl(
+                nextMatchInfo.opponent.name,
+                nextMatchInfo.opponent.id
+              )}
+              className="font-bold hover:underline text-foreground"
+            >
+              {nextMatchInfo.opponent.name}
+            </Link>{" "}
+            on <strong>{nextMatchInfo.date}</strong> at {nextMatchInfo.time}
+            {nextMatchInfo.league && (
+              <>
+                {" "}
+                in{" "}
+                <Link
+                  href={getLeagueUrl(
+                    nextMatchInfo.league.name,
+                    nextMatchInfo.league.id
+                  )}
+                  className="font-bold hover:underline text-foreground"
+                >
+                  {nextMatchInfo.league.name}
+                </Link>
+              </>
+            )}
+            . When the match starts, you will be able to follow{" "}
+            <Link
+              href={getFixtureUrl(nextMatchInfo.fixture)}
+              className="font-semibold hover:underline text-foreground"
+            >
+              {nextMatchInfo.isHome
+                ? `${team.name} vs ${nextMatchInfo.opponent.name}`
+                : `${nextMatchInfo.opponent.name} vs ${team.name}`}
+            </Link>{" "}
             live score, standings, minute by minute updated live results and
             match statistics.
           </p>
@@ -129,9 +165,39 @@ export function TeamAbout({ team, nextMatch, lastMatch }: TeamAboutProps) {
           </h3>
           <p className="text-sm text-muted-foreground leading-relaxed">
             {team.name} previous match was against{" "}
-            <strong>{lastMatchInfo.opponent}</strong> in{" "}
-            <strong>{lastMatchInfo.league}</strong>, the match ended with result{" "}
-            <strong>{lastMatchInfo.score}</strong> ({lastMatchInfo.result}).
+            <Link
+              href={getTeamUrl(
+                lastMatchInfo.opponent.name,
+                lastMatchInfo.opponent.id
+              )}
+              className="font-bold hover:underline text-foreground"
+            >
+              {lastMatchInfo.opponent.name}
+            </Link>
+            {lastMatchInfo.league && (
+              <>
+                {" "}
+                in{" "}
+                <Link
+                  href={getLeagueUrl(
+                    lastMatchInfo.league.name,
+                    lastMatchInfo.league.id
+                  )}
+                  className="font-bold hover:underline text-foreground"
+                >
+                  {lastMatchInfo.league.name}
+                </Link>
+              </>
+            )}
+            , the{" "}
+            <Link
+              href={getFixtureUrl(lastMatchInfo.fixture)}
+              className="font-semibold hover:underline text-foreground"
+            >
+              match
+            </Link>{" "}
+            ended with result <strong>{lastMatchInfo.score}</strong> (
+            {lastMatchInfo.result}).
           </p>
         </section>
       )}
@@ -146,37 +212,65 @@ export function TeamAbout({ team, nextMatch, lastMatch }: TeamAboutProps) {
             {playersByPosition.goalkeepers.length > 0 && (
               <p>
                 <strong>Goalkeepers:</strong>{" "}
-                {playersByPosition.goalkeepers
-                  .map((p) => p.displayName)
-                  .join(", ")}
-                .
+                {playersByPosition.goalkeepers.map((p, i) => (
+                  <span key={p.playerId}>
+                    <Link
+                      href={getPlayerUrl(p.displayName, p.playerId)}
+                      className="hover:underline hover:text-foreground"
+                    >
+                      {p.displayName}
+                    </Link>
+                    {i < playersByPosition.goalkeepers.length - 1 ? ", " : "."}
+                  </span>
+                ))}
               </p>
             )}
             {playersByPosition.defenders.length > 0 && (
               <p>
                 <strong>Defenders:</strong>{" "}
-                {playersByPosition.defenders
-                  .map((p) => p.displayName)
-                  .join(", ")}
-                .
+                {playersByPosition.defenders.map((p, i) => (
+                  <span key={p.playerId}>
+                    <Link
+                      href={getPlayerUrl(p.displayName, p.playerId)}
+                      className="hover:underline hover:text-foreground"
+                    >
+                      {p.displayName}
+                    </Link>
+                    {i < playersByPosition.defenders.length - 1 ? ", " : "."}
+                  </span>
+                ))}
               </p>
             )}
             {playersByPosition.midfielders.length > 0 && (
               <p>
                 <strong>Midfielders:</strong>{" "}
-                {playersByPosition.midfielders
-                  .map((p) => p.displayName)
-                  .join(", ")}
-                .
+                {playersByPosition.midfielders.map((p, i) => (
+                  <span key={p.playerId}>
+                    <Link
+                      href={getPlayerUrl(p.displayName, p.playerId)}
+                      className="hover:underline hover:text-foreground"
+                    >
+                      {p.displayName}
+                    </Link>
+                    {i < playersByPosition.midfielders.length - 1 ? ", " : "."}
+                  </span>
+                ))}
               </p>
             )}
             {playersByPosition.forwards.length > 0 && (
               <p>
                 <strong>Forwards:</strong>{" "}
-                {playersByPosition.forwards
-                  .map((p) => p.displayName)
-                  .join(", ")}
-                .
+                {playersByPosition.forwards.map((p, i) => (
+                  <span key={p.playerId}>
+                    <Link
+                      href={getPlayerUrl(p.displayName, p.playerId)}
+                      className="hover:underline hover:text-foreground"
+                    >
+                      {p.displayName}
+                    </Link>
+                    {i < playersByPosition.forwards.length - 1 ? ", " : "."}
+                  </span>
+                ))}
               </p>
             )}
           </div>
@@ -349,9 +443,9 @@ export function TeamAbout({ team, nextMatch, lastMatch }: TeamAboutProps) {
                   className="text-sm text-muted-foreground mt-1"
                 >
                   <strong>{team.name}</strong>&apos;s next match is against{" "}
-                  <strong>{nextMatchInfo.opponent}</strong> on{" "}
-                  <strong>{nextMatchInfo.date}</strong> in{" "}
-                  {nextMatchInfo.league}.
+                  <strong>{nextMatchInfo.opponent.name}</strong> on{" "}
+                  <strong>{nextMatchInfo.date}</strong>
+                  {nextMatchInfo.league && <> in {nextMatchInfo.league.name}</>}.
                 </p>
               </div>
             </div>

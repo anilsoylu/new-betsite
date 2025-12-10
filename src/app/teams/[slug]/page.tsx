@@ -195,7 +195,7 @@ export default async function TeamOverviewPage({
             </CardHeader>
             <CardContent className="pt-6">
               <Link
-                href={`/matches/${nextMatch.id}`}
+                href={getFixtureUrl(nextMatch)}
                 className="block hover:bg-muted/50 rounded-lg p-4 -m-4 transition-colors"
               >
                 <div className="flex items-center justify-between">

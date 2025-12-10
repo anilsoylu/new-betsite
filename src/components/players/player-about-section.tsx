@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { format, differenceInYears, parseISO, isValid } from "date-fns";
 import type {
   PlayerDetail,
@@ -8,6 +9,11 @@ import type {
   PlayerTrophy,
   PlayerMatch,
 } from "@/types/football";
+import {
+  getTeamUrl,
+  getLeagueUrl,
+  getPlayerMatchUrl,
+} from "@/lib/utils";
 
 interface PlayerAboutSectionProps {
   player: PlayerDetail;
@@ -118,7 +124,13 @@ export function PlayerAboutSection({ player }: PlayerAboutSectionProps) {
           {currentTeam && (
             <>
               {" "}
-              and plays for <strong>{currentTeam.teamName}</strong>
+              and plays for{" "}
+              <Link
+                href={getTeamUrl(currentTeam.teamName, currentTeam.teamId)}
+                className="font-bold hover:underline"
+              >
+                {currentTeam.teamName}
+              </Link>
             </>
           )}
           .
@@ -168,10 +180,23 @@ export function PlayerAboutSection({ player }: PlayerAboutSectionProps) {
           <h3 className="text-base font-semibold">Current Season</h3>
           <p className="text-sm text-muted-foreground leading-relaxed">
             In the <strong>{currentSeasonStats.seasonName}</strong> season
-            {currentSeasonStats.leagueName && (
-              <> ({currentSeasonStats.leagueName})</>
+            {currentSeasonStats.leagueName && currentSeasonStats.leagueId && (
+              <>
+                {" "}
+                (
+                <Link
+                  href={getLeagueUrl(
+                    currentSeasonStats.leagueName,
+                    currentSeasonStats.leagueId
+                  )}
+                  className="hover:underline text-foreground"
+                >
+                  {currentSeasonStats.leagueName}
+                </Link>
+                )
+              </>
             )}
-            ,{displayName} has made{" "}
+            , {displayName} has made{" "}
             <strong>{currentSeasonStats.appearances} appearances</strong>
             {currentSeasonStats.goals > 0 && (
               <>
@@ -202,20 +227,43 @@ export function PlayerAboutSection({ player }: PlayerAboutSectionProps) {
         <section className="space-y-2">
           <h3 className="text-base font-semibold">Last Match</h3>
           <p className="text-sm text-muted-foreground leading-relaxed">
-            {displayName}&apos;s last match was{" "}
-            <strong>
-              {lastMatch.homeTeamName} - {lastMatch.awayTeamName}
-            </strong>
+            {displayName}&apos;s last{" "}
+            <Link
+              href={getPlayerMatchUrl(lastMatch)}
+              className="font-semibold hover:underline text-foreground"
+            >
+              match
+            </Link>{" "}
+            was{" "}
+            <Link
+              href={getTeamUrl(lastMatch.homeTeamName, lastMatch.homeTeamId)}
+              className="font-bold hover:underline text-foreground"
+            >
+              {lastMatch.homeTeamName}
+            </Link>
+            {" - "}
+            <Link
+              href={getTeamUrl(lastMatch.awayTeamName, lastMatch.awayTeamId)}
+              className="font-bold hover:underline text-foreground"
+            >
+              {lastMatch.awayTeamName}
+            </Link>
             {lastMatch.homeScore !== null && lastMatch.awayScore !== null && (
               <>
                 {" "}
                 ({lastMatch.homeScore} - {lastMatch.awayScore})
               </>
             )}
-            {lastMatch.leagueName && (
+            {lastMatch.leagueName && lastMatch.leagueId && (
               <>
                 {" "}
-                in <strong>{lastMatch.leagueName}</strong>
+                in{" "}
+                <Link
+                  href={getLeagueUrl(lastMatch.leagueName, lastMatch.leagueId)}
+                  className="font-bold hover:underline text-foreground"
+                >
+                  {lastMatch.leagueName}
+                </Link>
               </>
             )}
             {lastMatch.date && <> on {formatDate(lastMatch.date)}</>}.
@@ -229,8 +277,19 @@ export function PlayerAboutSection({ player }: PlayerAboutSectionProps) {
           <h3 className="text-base font-semibold">Transfer History</h3>
           <p className="text-sm text-muted-foreground leading-relaxed">
             {displayName}&apos;s most recent transfer was from{" "}
-            <strong>{lastTransfer.fromTeamName}</strong> to{" "}
-            <strong>{lastTransfer.toTeamName}</strong>
+            <Link
+              href={getTeamUrl(lastTransfer.fromTeamName, lastTransfer.fromTeamId)}
+              className="font-bold hover:underline text-foreground"
+            >
+              {lastTransfer.fromTeamName}
+            </Link>{" "}
+            to{" "}
+            <Link
+              href={getTeamUrl(lastTransfer.toTeamName, lastTransfer.toTeamId)}
+              className="font-bold hover:underline text-foreground"
+            >
+              {lastTransfer.toTeamName}
+            </Link>
             {lastTransfer.date && <> on {formatDate(lastTransfer.date)}</>}
             {lastTransfer.amount && lastTransfer.amount > 0 && (
               <>
@@ -293,7 +352,13 @@ export function PlayerAboutSection({ player }: PlayerAboutSectionProps) {
           )}
           {currentTeam && (
             <li>
-              <strong>Current Club:</strong> {currentTeam.teamName}
+              <strong>Current Club:</strong>{" "}
+              <Link
+                href={getTeamUrl(currentTeam.teamName, currentTeam.teamId)}
+                className="hover:underline"
+              >
+                {currentTeam.teamName}
+              </Link>
               {currentTeam.jerseyNumber && ` (#${currentTeam.jerseyNumber})`}
             </li>
           )}
@@ -375,7 +440,12 @@ export function PlayerAboutSection({ player }: PlayerAboutSectionProps) {
                   className="text-sm text-muted-foreground mt-1"
                 >
                   <strong>{displayName}</strong> currently plays for{" "}
-                  <strong>{currentTeam.teamName}</strong>
+                  <Link
+                    href={getTeamUrl(currentTeam.teamName, currentTeam.teamId)}
+                    className="font-bold hover:underline"
+                  >
+                    {currentTeam.teamName}
+                  </Link>
                   {currentTeam.jerseyNumber && (
                     <> wearing the number {currentTeam.jerseyNumber} jersey</>
                   )}

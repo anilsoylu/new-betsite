@@ -1,6 +1,6 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
-import type { Fixture } from "@/types/football";
+import type { Fixture, PlayerMatch } from "@/types/football";
 import { safeExtractIdFromSlug } from "@/lib/validation/schemas";
 
 export function cn(...inputs: ClassValue[]) {
@@ -33,6 +33,15 @@ export function generateFixtureSlug(fixture: Fixture): string {
  */
 export function getFixtureUrl(fixture: Fixture): string {
   return `/matches/${generateFixtureSlug(fixture)}`;
+}
+
+/**
+ * Generate match URL from PlayerMatch data
+ */
+export function getPlayerMatchUrl(match: PlayerMatch): string {
+  const homeSlug = slugify(match.homeTeamName);
+  const awaySlug = slugify(match.awayTeamName);
+  return `/matches/${homeSlug}-vs-${awaySlug}-${match.id}`;
 }
 
 /**
