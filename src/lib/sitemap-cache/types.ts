@@ -15,11 +15,16 @@ export interface SitemapEntry {
 
 /**
  * Match-specific sitemap entry with team names for URL generation.
+ * Unlike other entities, matches don't have a single `name` field -
+ * they use homeTeamName and awayTeamName instead.
  */
-export interface MatchSitemapEntry extends SitemapEntry {
+export interface MatchSitemapEntry {
+  id: number;
   homeTeamName: string;
   awayTeamName: string;
+  slug: string;
   kickoffAt: string;
+  lastModified: string;
 }
 
 /**

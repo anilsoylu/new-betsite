@@ -185,7 +185,6 @@ export function getMatchesForSitemap(page: number): MatchSitemapEntry[] {
         home_team_name as homeTeamName,
         away_team_name as awayTeamName,
         slug,
-        name,
         kickoff_at as kickoffAt,
         COALESCE(last_modified, updated_at) as lastModified
       FROM matches

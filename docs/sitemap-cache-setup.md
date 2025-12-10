@@ -25,6 +25,8 @@ Sitemap cache sistemi, Sportmonks API'sinden bağımsız olarak sitemap'lerin ol
 bun install
 # veya
 npm install
+# veya
+pnpm install
 ```
 
 ### 2. Veritabanını Başlatın
@@ -33,42 +35,43 @@ Veritabanı ilk kullanımda otomatik oluşturulur. Manuel test için:
 
 ```bash
 # Cache istatistiklerini göster (veritabanı yoksa oluşturur)
-bun sync:sitemap -- --stats
+pnpm run sync:sitemap --stats
+# veya pnpm yoksa: npx tsx scripts/sync-sitemap-cache.ts --stats
 ```
 
 ### 3. İlk Sync'i Çalıştırın
 
 ```bash
 # Tüm entity'leri sync et (varsayılan 20 sayfa)
-bun sync:sitemap
+pnpm run sync:sitemap
 
 # Veya entity bazlı sync
-bun sync:leagues      # Sadece ligler
-bun sync:teams        # Sadece takımlar
-bun sync:players      # Sadece oyuncular
-bun sync:matches      # Sadece maçlar
+pnpm run sync:leagues      # Sadece ligler
+pnpm run sync:teams        # Sadece takımlar
+pnpm run sync:players      # Sadece oyuncular
+pnpm run sync:matches      # Sadece maçlar
 ```
 
 ## Manuel Sync Komutları
 
 ```bash
 # Tüm entity'leri sync et
-bun sync:sitemap
+pnpm run sync:sitemap
 
 # Belirli entity'yi sync et
-bun sync:sitemap -e leagues
-bun sync:sitemap -e teams
-bun sync:sitemap -e players
-bun sync:sitemap -e matches
+pnpm run sync:sitemap -- -e leagues
+pnpm run sync:sitemap -- -e teams
+pnpm run sync:sitemap -- -e players
+pnpm run sync:sitemap -- -e matches
 
 # Max sayfa sayısını belirle
-bun sync:sitemap -e players -m 50    # Max 50 sayfa
+pnpm run sync:sitemap -- -e players -m 50    # Max 50 sayfa
 
 # Cache istatistiklerini göster
-bun sync:sitemap --stats
+pnpm run sync:sitemap --stats
 
 # Yardım mesajı
-bun sync:sitemap --help
+pnpm run sync:sitemap --help
 ```
 
 ## Cron Job Kurulumu (Self-Hosted)
@@ -80,13 +83,13 @@ bun sync:sitemap --help
 crontab -e
 
 # Her 6 saatte bir tüm entity'leri sync et
-0 */6 * * * cd /path/to/project && /usr/local/bin/bun sync:sitemap >> /var/log/sitemap-sync.log 2>&1
+0 */6 * * * cd /var/www/socceroffices.com && /usr/bin/env pnpm run sync:sitemap --stats >> /var/log/sitemap-sync.log 2>&1
 
 # Veya entity bazlı farklı zamanlarda
-0 0 * * * cd /path/to/project && /usr/local/bin/bun sync:leagues >> /var/log/sitemap-sync.log 2>&1
-0 2 * * * cd /path/to/project && /usr/local/bin/bun sync:teams >> /var/log/sitemap-sync.log 2>&1
-0 4 * * * cd /path/to/project && /usr/local/bin/bun sync:players >> /var/log/sitemap-sync.log 2>&1
-0 */3 * * * cd /path/to/project && /usr/local/bin/bun sync:matches >> /var/log/sitemap-sync.log 2>&1
+0 0 * * * cd /var/www/socceroffices.com && /usr/bin/env pnpm run sync:leagues >> /var/log/sitemap-sync.log 2>&1
+0 2 * * * cd /var/www/socceroffices.com && /usr/bin/env pnpm run sync:teams >> /var/log/sitemap-sync.log 2>&1
+0 4 * * * cd /var/www/socceroffices.com && /usr/bin/env pnpm run sync:players >> /var/log/sitemap-sync.log 2>&1
+0 */3 * * * cd /var/www/socceroffices.com && /usr/bin/env pnpm run sync:matches >> /var/log/sitemap-sync.log 2>&1
 ```
 
 ### systemd Timer (Önerilen)
@@ -101,9 +104,9 @@ After=network.target
 [Service]
 Type=oneshot
 User=www-data
-WorkingDirectory=/path/to/project
+WorkingDirectory=/var/www/socceroffices.com
 Environment=API_SPORTMONKS_KEY=your_api_key_here
-ExecStart=/usr/local/bin/bun sync:sitemap
+ExecStart=/usr/bin/env pnpm run sync:sitemap
 StandardOutput=journal
 StandardError=journal
 ```
@@ -142,9 +145,9 @@ sudo journalctl -u sitemap-sync.service -f
 module.exports = {
   apps: [{
     name: 'sitemap-sync',
-    script: 'bun',
-    args: 'sync:sitemap',
-    cwd: '/path/to/project',
+    script: 'pnpm',
+    args: 'run sync:sitemap',
+    cwd: '/var/www/socceroffices.com',
     cron_restart: '0 */6 * * *',  // Her 6 saatte
     autorestart: false,
     watch: false,
@@ -164,6 +167,7 @@ bun sync:sitemap --stats
 ```
 
 Çıktı:
+
 ```
 📊 Sitemap Cache Statistics
 ────────────────────────────────────────
@@ -187,10 +191,12 @@ Cron job'larınızın çıktısını bir log dosyasına yönlendirin:
 ### Panic Mode İzleme
 
 Sync script rate limit veya API hatası durumunda "panic mode"a girer:
+
 - 429 (rate limit) → 30 dakika bekleme
 - 5xx (server error) → 30 dakika bekleme
 
 Log'larda şu mesajları arayın:
+
 ```
 [leagues] 🚨 PANIC MODE activated until 2024-01-15T14:30:00.000Z
 [leagues] ⏸️  Panic mode active, 15 minutes remaining
@@ -235,7 +241,7 @@ Konfigürasyon `src/lib/sitemap-cache/config.ts` dosyasındadır:
 ```typescript
 export const SITEMAP_CONFIG = {
   // Veritabanı konumu
-  databasePath: './data/sitemap-cache.sqlite',
+  databasePath: "./data/sitemap-cache.sqlite",
 
   // Sitemap sayfa başına URL sayısı
   PAGE_SIZE: {
@@ -261,7 +267,7 @@ export const SITEMAP_CONFIG = {
 
   // Panic mode süresi (dakika)
   PANIC_MODE_DURATION_MINUTES: 30,
-};
+}
 ```
 
 ## Sitemap URL'leri

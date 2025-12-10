@@ -1,6 +1,7 @@
 # VDS Database Backup Rehberi
 
 ## Mevcut Durum
+
 - rclone v1.72.0 kurulu
 - Config dosyası henuz oluşturulmamış
 
@@ -11,11 +12,13 @@
 VDS headless olduğu için tarayıcı yok. Bu yüzden token'ı local bilgisayarında oluşturup VDS'e aktaracaksın.
 
 ### macOS'ta rclone Kurulumu:
+
 ```bash
 brew install rclone
 ```
 
 ### Windows'ta:
+
 https://rclone.org/downloads/ adresinden indir
 
 ---
@@ -23,6 +26,7 @@ https://rclone.org/downloads/ adresinden indir
 ## Adım 2: Local Bilgisayarında Google Drive Bağlantısı Yap
 
 Terminal'de şunu çalıştır:
+
 ```bash
 rclone config
 ```
@@ -42,11 +46,13 @@ Use auto config> y                # Evet (tarayıcı açılacak)
 ```
 
 **Tarayıcıda:**
+
 1. Google hesabına giriş yap
 2. "Allow" butonuna tıkla
 3. "Success!" mesajını gör
 
 Devam:
+
 ```
 Configure as team drive> n        # Hayır
 y/e/d> y                          # Kaydet
@@ -58,11 +64,13 @@ q                                 # Çık
 ## Adım 3: Config Dosyasını Görüntüle
 
 Local bilgisayarında:
+
 ```bash
 cat ~/.config/rclone/rclone.conf
 ```
 
 Çıktı şuna benzer olacak:
+
 ```ini
 [gdrive]
 type = drive
@@ -87,6 +95,7 @@ nano ~/.config/rclone/rclone.conf
 ```
 
 Nano açıldığında:
+
 1. Local'den kopyaladığın içeriği yapıştır
 2. `Ctrl + X` → `Y` → `Enter` ile kaydet
 
@@ -95,6 +104,7 @@ Nano açıldığında:
 ## Adım 5: Bağlantıyı Test Et
 
 VDS'te:
+
 ```bash
 rclone lsd gdrive:
 ```
@@ -127,36 +137,46 @@ Aşağıdaki içeriği yapıştır:
 ```bash
 #!/bin/bash
 
-# Değişkenler
-DB_PATH="/var/www/betsite/data/football.db"
+# Log dosyası
+LOG_FILE="/root/logs/backup.log"
+
+# Değişkenler (DATA_DIR'i kendi klasörüne göre güncelle)
+DATA_DIR="/var/www/socceroffices.com/data"
+DB_PATH="$DATA_DIR/sitemap-cache.sqlite"
 BACKUP_DIR="/tmp/db-backups"
 DATE=$(date +%Y-%m-%d_%H-%M)
-BACKUP_NAME="football_${DATE}.db.gz"
+DB_BACKUP_NAME="sitemap_cache_${DATE}.db.gz"
+DATA_BACKUP_NAME="data_folder_${DATE}.tar.gz"
 GDRIVE_FOLDER="betsite-backups"
 
 # Log başlat
-echo "[$(date)] Backup başlatılıyor..." >> /root/logs/backup.log
+echo "[$(date)] Backup başlatılıyor..." >> "$LOG_FILE"
 
 # Backup klasörü oluştur
-mkdir -p $BACKUP_DIR
+mkdir -p "$BACKUP_DIR"
 
 # SQLite'ı güvenli şekilde yedekle (WAL mode için)
-sqlite3 $DB_PATH ".backup '$BACKUP_DIR/football_backup.db'"
+sqlite3 "$DB_PATH" ".backup '$BACKUP_DIR/sitemap_cache_backup.db'"
 
-# Sıkıştır
-gzip -c "$BACKUP_DIR/football_backup.db" > "$BACKUP_DIR/$BACKUP_NAME"
+# DB'yi sıkıştır
+gzip -c "$BACKUP_DIR/sitemap_cache_backup.db" > "$BACKUP_DIR/$DB_BACKUP_NAME"
 
-# Google Drive'a yükle
-rclone copy "$BACKUP_DIR/$BACKUP_NAME" "gdrive:$GDRIVE_FOLDER/" --log-file=/root/logs/backup.log
+# Data klasörünü arşivle (WAL/shm dahil)
+tar -czf "$BACKUP_DIR/$DATA_BACKUP_NAME" -C "$DATA_DIR" .
 
-# Temp dosyaları temizle
-rm -f "$BACKUP_DIR/football_backup.db"
-rm -f "$BACKUP_DIR/$BACKUP_NAME"
+# Google Drive'a yükle (DB + data arşivi) — log seviyesini INFO yap
+rclone copy "$BACKUP_DIR/$DB_BACKUP_NAME" "gdrive:$GDRIVE_FOLDER/" --log-level INFO --log-file="$LOG_FILE"
+rclone copy "$BACKUP_DIR/$DATA_BACKUP_NAME" "gdrive:$GDRIVE_FOLDER/" --log-level INFO --log-file="$LOG_FILE"
+
+# Temp dosyalarını isteğe bağlı sil (otomatik silmek istersen yorumları kaldır)
+# rm -f "$BACKUP_DIR/sitemap_cache_backup.db"
+# rm -f "$BACKUP_DIR/$DB_BACKUP_NAME"
+# rm -f "$BACKUP_DIR/$DATA_BACKUP_NAME"
 
 # 7 günden eski yedekleri sil (opsiyonel)
-rclone delete gdrive:$GDRIVE_FOLDER/ --min-age 7d --log-file=/root/logs/backup.log
+rclone delete "gdrive:$GDRIVE_FOLDER/" --min-age 7d --log-file="$LOG_FILE"
 
-echo "[$(date)] Backup tamamlandı: $BACKUP_NAME" >> /root/logs/backup.log
+echo "[$(date)] Backup tamamlandı: $DB_BACKUP_NAME ve $DATA_BACKUP_NAME" >> "$LOG_FILE"
 ```
 
 Kaydet: `Ctrl + X` → `Y` → `Enter`
@@ -178,6 +198,7 @@ chmod +x /root/scripts/backup-db.sh
 ```
 
 Sonra kontrol et:
+
 ```bash
 # Log'a bak
 cat /root/logs/backup.log
@@ -195,13 +216,15 @@ crontab -e
 ```
 
 En alta şu satırı ekle:
+
 ```
-0 3 * * * /root/scripts/backup-db.sh
+0 3 * * * /root/scripts/backup-db.sh >> /root/logs/backup.log 2>&1
 ```
 
 Kaydet ve çık.
 
 Cron'u kontrol et:
+
 ```bash
 crontab -l
 ```
@@ -210,33 +233,37 @@ crontab -l
 
 ## Özet
 
-| Dosya | Konum |
-|-------|-------|
-| rclone config | `~/.config/rclone/rclone.conf` |
-| Backup script | `/root/scripts/backup-db.sh` |
-| Log dosyası | `/root/logs/backup.log` |
-| Yedekler | Google Drive → `betsite-backups/` |
+| Dosya         | Konum                             |
+| ------------- | --------------------------------- |
+| rclone config | `~/.config/rclone/rclone.conf`    |
+| Backup script | `/root/scripts/backup-db.sh`      |
+| Log dosyası   | `/root/logs/backup.log`           |
+| Yedekler      | Google Drive → `betsite-backups/` |
 
 ---
 
 ## Sorun Giderme
 
 ### "sqlite3 command not found"
+
 ```bash
 apt install sqlite3
 ```
 
 ### Google Drive bağlantı hatası
+
 ```bash
 rclone config reconnect gdrive:
 ```
 
 ### Yedekleri manuel listele
+
 ```bash
 rclone ls gdrive:betsite-backups/
 ```
 
 ### Log'ları izle
+
 ```bash
 tail -f /root/logs/backup.log
 ```
