@@ -53,6 +53,8 @@ import type {
   PlayerTransfer,
   PlayerTrophy,
   PlayerMatch,
+  TeamTransfer,
+  TeamTrophy,
 } from "@/types/football";
 
 // Map state developer_name to MatchStatus
@@ -385,36 +387,48 @@ export function mapStanding(raw: SportmonksStandingRaw): Standing {
 }
 
 // Map flat array of standings to grouped tables
-// API returns flat array, we group by league_id
+// API returns flat array, we group by league_id and group_id
 export function mapStandingsToTables(
   rawStandings: SportmonksStandingRaw[],
   seasonId: number,
 ): StandingTable[] {
   if (!rawStandings || rawStandings.length === 0) return [];
 
-  // Group standings by league_id
-  const grouped = new Map<number, SportmonksStandingRaw[]>();
+  // Group standings by league_id + group_id combination
+  // This handles Champions League groups (Group A, B, etc.)
+  const groupKey = (s: SportmonksStandingRaw) =>
+    `${s.league_id}-${s.group_id ?? "main"}`;
+  const grouped = new Map<string, SportmonksStandingRaw[]>();
 
   for (const standing of rawStandings) {
-    const leagueId = standing.league_id;
-    if (!grouped.has(leagueId)) {
-      grouped.set(leagueId, []);
+    const key = groupKey(standing);
+    if (!grouped.has(key)) {
+      grouped.set(key, []);
     }
-    grouped.get(leagueId)!.push(standing);
+    grouped.get(key)!.push(standing);
   }
 
   // Convert to StandingTable array
   const tables: StandingTable[] = [];
 
-  for (const [leagueId, standings] of grouped) {
+  for (const [, standings] of grouped) {
     // Sort by position
     standings.sort((a, b) => a.position - b.position);
 
+    // Get league and group info from first standing (they all share the same)
+    const first = standings[0];
+    const leagueName = first.league?.name ?? null;
+    const leagueLogo = first.league?.image_path ?? null;
+    const groupName = first.group?.name ?? null;
+
     tables.push({
-      id: leagueId, // Use league_id as table id
-      name: null,
-      leagueId,
+      id: first.league_id,
+      name: groupName,
+      leagueId: first.league_id,
       seasonId,
+      leagueName,
+      leagueLogo,
+      groupName,
       standings: standings.map(mapStanding),
     });
   }
@@ -801,6 +815,28 @@ export function mapTeamDetail(raw: SportmonksTeamRaw): TeamDetail {
       : null,
   }));
 
+  // Map trophies
+  const trophies: TeamTrophy[] = (raw.trophies || [])
+    .filter((t) => t.trophy) // Only include trophies with trophy info
+    .map((t) => ({
+      id: t.id,
+      trophyId: t.trophy_id,
+      name: t.trophy?.name || "Trophy",
+      position: t.trophy?.position || 1,
+      leagueId: t.league_id,
+      leagueName: t.league?.name || "Competition",
+      leagueLogo: t.league?.image_path || null,
+      seasonId: t.season_id,
+      seasonName: t.season?.name || "",
+    }))
+    .sort((a, b) => {
+      // Sort by season (newest first), then by position (winners first)
+      if (a.seasonId !== b.seasonId) {
+        return b.seasonId - a.seasonId;
+      }
+      return a.position - b.position;
+    });
+
   return {
     id: raw.id,
     name: raw.name,
@@ -812,6 +848,7 @@ export function mapTeamDetail(raw: SportmonksTeamRaw): TeamDetail {
     coach,
     squad,
     activeSeasons,
+    trophies,
   };
 }
 
@@ -1119,5 +1156,48 @@ export function mapTopScorer(raw: SportmonksTopScorerRaw): TopScorer {
     assists: isAssists ? raw.total : 0,
     yellowCards: raw.type_id === 210 ? raw.total : 0,
     redCards: raw.type_id === 211 ? raw.total : 0,
+  };
+}
+
+// Map team transfer entry
+export function mapTeamTransfer(
+  raw: SportmonksTransferRaw,
+  teamId: number,
+): TeamTransfer {
+  // Determine transfer direction based on teamId
+  const direction: "in" | "out" =
+    raw.to_team_id === teamId ? "in" : "out";
+
+  // Map transfer type from API
+  const typeCode = raw.type?.code?.toLowerCase() || "";
+  let type: TeamTransfer["type"] = "unknown";
+  if (typeCode.includes("loan")) {
+    type = raw.type?.developer_name?.includes("end") ? "end_of_loan" : "loan";
+  } else if (typeCode.includes("free") || raw.amount === 0) {
+    type = "free";
+  } else if (typeCode.includes("permanent") || raw.amount) {
+    type = "permanent";
+  }
+
+  return {
+    id: raw.id,
+    date: raw.date,
+    type,
+    direction,
+    playerId: raw.player_id,
+    playerName:
+      raw.player?.display_name ||
+      raw.player?.common_name ||
+      `${raw.player?.firstname || ""} ${raw.player?.lastname || ""}`.trim() ||
+      "Unknown Player",
+    playerImage: raw.player?.image_path || null,
+    fromTeamId: raw.from_team_id,
+    fromTeamName: raw.fromteam?.name || "Unknown",
+    fromTeamLogo: raw.fromteam?.image_path || null,
+    toTeamId: raw.to_team_id,
+    toTeamName: raw.toteam?.name || "Unknown",
+    toTeamLogo: raw.toteam?.image_path || null,
+    amount: raw.amount,
+    completed: raw.completed,
   };
 }

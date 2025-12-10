@@ -16,6 +16,7 @@ import {
   mapPlayerDetail,
   mapPlayerSearchResult,
   mapTopScorer,
+  mapTeamTransfer,
 } from "./sportmonks-mappers";
 import type {
   SportmonksFixtureRaw,
@@ -26,6 +27,7 @@ import type {
   SportmonksTeamRaw,
   SportmonksPlayerRaw,
   SportmonksTopScorerRaw,
+  SportmonksTransferRaw,
 } from "@/types/sportmonks/raw";
 import type {
   Fixture,
@@ -41,6 +43,7 @@ import type {
   PlayerSearchResult,
   TopScorer,
   LeaguePageData,
+  TeamTransfer,
 } from "@/types/football";
 import { API, UI } from "@/lib/constants";
 
@@ -212,7 +215,7 @@ export async function getStandingsBySeason(
 
   const response = await sportmonksRequest<Array<SportmonksStandingRaw>>({
     endpoint: `/standings/seasons/${seasonId}`,
-    include: ["participant", "details", "rule", "form"],
+    include: ["participant", "details", "rule", "form", "league", "group"],
     cache: "medium",
   });
 
@@ -279,6 +282,9 @@ const TEAM_DETAIL_INCLUDES = [
   "players.player",
   "players.position",
   "activeSeasons.league",
+  "trophies.trophy",
+  "trophies.league",
+  "trophies.season",
 ];
 
 const TEAM_SEARCH_INCLUDES = ["country"];
@@ -761,5 +767,59 @@ export async function getLeagueStatsData(
     redCards,
     cleanSheets,
     ratings,
+  };
+}
+
+/**
+ * Get transfers for a team
+ * Fetches both incoming and outgoing transfers
+ */
+export async function getTeamTransfers(
+  teamId: number,
+  options: {
+    perPage?: number;
+    page?: number;
+  } = {},
+): Promise<{
+  transfers: TeamTransfer[];
+  arrivals: TeamTransfer[];
+  departures: TeamTransfer[];
+  hasMore: boolean;
+}> {
+  idSchema.parse(teamId);
+
+  const { perPage = 50, page = 1 } = options;
+
+  const response = await sportmonksRequest<SportmonksTransferRaw[]>({
+    endpoint: `/transfers/teams/${teamId}`,
+    include: ["player", "fromTeam", "toTeam", "type"],
+    perPage,
+    page,
+    order: "desc",
+  });
+
+  const transfers = (response.data || []).map((raw) =>
+    mapTeamTransfer(raw, teamId),
+  );
+
+  // Sort by date (newest first)
+  transfers.sort(
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+  );
+
+  // Separate arrivals and departures
+  const arrivals = transfers.filter((t) => t.direction === "in");
+  const departures = transfers.filter((t) => t.direction === "out");
+
+  // Check if response has pagination info (cast to any for optional field access)
+  const paginatedResponse = response as {
+    pagination?: { has_more?: boolean };
+  };
+
+  return {
+    transfers,
+    arrivals,
+    departures,
+    hasMore: paginatedResponse.pagination?.has_more ?? false,
   };
 }

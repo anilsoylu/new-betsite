@@ -63,6 +63,27 @@ export interface SportmonksStandingRaw {
     type_id: number | null;
     position: number;
   };
+  league?: {
+    id: number;
+    sport_id: number;
+    country_id: number;
+    name: string;
+    active: boolean;
+    short_code: string | null;
+    image_path: string;
+    type: string;
+    sub_type: string;
+    category: number;
+    has_jerseys: boolean;
+  };
+  group?: {
+    id: number;
+    sport_id: number;
+    league_id: number;
+    season_id: number;
+    stage_id: number;
+    name: string;
+  };
 }
 
 // Standing response wrapper (grouped by stage/round)

@@ -140,6 +140,9 @@ export interface StandingTable {
   name: string | null;
   leagueId: number;
   seasonId: number;
+  leagueName: string | null;
+  leagueLogo: string | null;
+  groupName: string | null;
   standings: Array<Standing>;
 }
 
@@ -290,6 +293,7 @@ export interface TeamDetail {
       logo: string;
     } | null;
   }>;
+  trophies: Array<TeamTrophy>;
 }
 
 // Coach info
@@ -415,6 +419,38 @@ export interface PlayerTransfer {
   toTeamLogo: string;
   amount: number | null; // Transfer fee in currency
   completed: boolean;
+}
+
+// Team transfer record (includes player info)
+export interface TeamTransfer {
+  id: number;
+  date: string;
+  type: "loan" | "permanent" | "free" | "end_of_loan" | "unknown";
+  direction: "in" | "out"; // Whether player joined or left the team
+  playerId: number;
+  playerName: string;
+  playerImage: string | null;
+  fromTeamId: number;
+  fromTeamName: string;
+  fromTeamLogo: string | null;
+  toTeamId: number;
+  toTeamName: string;
+  toTeamLogo: string | null;
+  amount: number | null; // Transfer fee
+  completed: boolean;
+}
+
+// Team trophy/achievement
+export interface TeamTrophy {
+  id: number;
+  trophyId: number;
+  name: string; // e.g. "Winner", "Runner-up"
+  position: number; // 1 = winner, 2 = runner-up, etc.
+  leagueId: number;
+  leagueName: string;
+  leagueLogo: string | null;
+  seasonId: number;
+  seasonName: string;
 }
 
 // Player trophy/achievement

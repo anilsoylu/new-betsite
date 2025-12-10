@@ -88,7 +88,7 @@ function getLeagueFlag(shortCode: string): string {
 }
 
 export default function NotFound() {
-  const router = useRouter()
+  const router = useRouter();
 
   return (
     <div className="min-h-[85vh] flex flex-col items-center justify-center px-4 py-12">
@@ -219,5 +219,5 @@ export default function NotFound() {
         </div>
       </div>
     </div>
-  )
+  );
 }

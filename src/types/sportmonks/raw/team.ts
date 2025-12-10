@@ -31,6 +31,7 @@ export interface SportmonksTeamRaw {
   >;
   latest?: Array<SportmonksTeamFixtureRaw>;
   upcoming?: Array<SportmonksTeamFixtureRaw>;
+  trophies?: Array<SportmonksParticipantTrophyRaw>;
 }
 
 // Team coach relation
@@ -279,7 +280,7 @@ export interface SportmonksPlayerStatisticDetailRaw {
   };
 }
 
-// Transfer (from include=transfers on player endpoint)
+// Transfer (from include=transfers on player endpoint or team transfers endpoint)
 export interface SportmonksTransferRaw {
   id: number;
   sport_id: number;
@@ -294,6 +295,14 @@ export interface SportmonksTransferRaw {
   completed: boolean;
   amount: number | null;
   // Nested includes (API returns lowercase property names)
+  player?: {
+    id: number;
+    common_name: string;
+    display_name: string;
+    firstname: string;
+    lastname: string;
+    image_path: string | null;
+  };
   fromteam?: {
     id: number;
     name: string;

@@ -8,10 +8,11 @@ import { cn } from "@/lib/utils";
 import type { Fixture } from "@/types/football";
 
 interface TeamFixturesProps {
-  title: string;
+  title?: string;
   fixtures: Array<Fixture>;
   teamId: number;
   emptyMessage?: string;
+  variant?: "default" | "compact";
 }
 
 export function TeamFixtures({
@@ -19,7 +20,26 @@ export function TeamFixtures({
   fixtures,
   teamId,
   emptyMessage = "No matches",
+  variant = "default",
 }: TeamFixturesProps) {
+  // Compact variant: no card wrapper, just the list
+  if (variant === "compact") {
+    return (
+      <div className="py-2">
+        {fixtures.length === 0 ? (
+          <p className="text-sm text-muted-foreground px-4">{emptyMessage}</p>
+        ) : (
+          <div className="divide-y divide-border">
+            {fixtures.map((fixture) => (
+              <FixtureRow key={fixture.id} fixture={fixture} teamId={teamId} />
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // Default variant: with card wrapper
   return (
     <Card>
       <CardHeader className="pb-3">
@@ -71,7 +91,7 @@ function FixtureRow({ fixture, teamId }: FixtureRowProps) {
   return (
     <Link
       href={getFixtureUrl(fixture)}
-      className="flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-muted/50 transition-colors"
+      className="flex items-center gap-3 px-4 py-3 hover:bg-muted/50 transition-colors"
     >
       {/* Result Badge */}
       {isFinished && result && (
