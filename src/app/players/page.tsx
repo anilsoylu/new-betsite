@@ -87,9 +87,9 @@ export default async function PlayersPage() {
                           height={24}
                           className="object-contain"
                         />
-                        <CardTitle className="text-base group-hover:text-primary transition-colors">
+                        <h2 className="text-base group-hover:text-primary transition-colors leading-none font-semibold">
                           {league.leagueName}
-                        </CardTitle>
+                        </h2>
                         <ChevronRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
                       </Link>
                       <Badge variant="secondary" className="text-xs">
@@ -138,9 +138,9 @@ export default async function PlayersPage() {
 
                           {/* Player Info */}
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium truncate group-hover:text-primary transition-colors">
+                            <h3 className="text-sm font-medium truncate group-hover:text-primary transition-colors">
                               {scorer.playerName}
-                            </p>
+                            </h3>
                             <div className="flex items-center gap-2">
                               {scorer.teamLogo && (
                                 <Image
