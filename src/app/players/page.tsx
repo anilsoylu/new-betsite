@@ -10,7 +10,7 @@ import {
 import { slugify } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { TopLeagues, AdSpace, StandingsWidget } from "@/components/sidebar";
+import { TopLeagues, OtherLeagues, StandingsWidget } from "@/components/sidebar";
 
 export const metadata: Metadata = {
   title: `Players | ${SITE.name}`,
@@ -38,7 +38,7 @@ export default async function PlayersPage() {
           {/* Left Sidebar */}
           <aside className="hidden lg:flex flex-col gap-4">
             <TopLeagues />
-            <AdSpace size="medium-rectangle" />
+            <OtherLeagues />
           </aside>
 
           {/* Center Content */}
@@ -185,7 +185,6 @@ export default async function PlayersPage() {
           {/* Right Sidebar */}
           <aside className="hidden md:flex flex-col gap-4">
             <StandingsWidget leagueStandings={leagueStandings} />
-            <AdSpace size="medium-rectangle" />
           </aside>
         </div>
       </div>

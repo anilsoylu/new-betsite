@@ -71,7 +71,7 @@ export function FixtureList({
                 alt={league.name}
                 width={18}
                 height={18}
-                className="object-contain w-auto h-auto"
+                className="object-contain"
               />
             )}
             <div className="flex items-center gap-1.5 text-muted-foreground">

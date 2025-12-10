@@ -7,7 +7,7 @@ import {
 import { getTopLeaguesStandings } from "@/lib/queries";
 import { DateNavigation } from "@/components/matches/date-navigation";
 import { MatchesContent } from "@/components/matches/matches-content";
-import { TopLeagues, AdSpace, StandingsWidget } from "@/components/sidebar";
+import { TopLeagues, OtherLeagues, StandingsWidget } from "@/components/sidebar";
 import { SITE, DATE_FORMATS } from "@/lib/constants";
 
 export const metadata: Metadata = {
@@ -70,7 +70,7 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
           {/* Left Sidebar - Hidden on mobile/tablet */}
           <aside className="hidden lg:flex flex-col gap-4">
             <TopLeagues />
-            <AdSpace size="medium-rectangle" />
+            <OtherLeagues />
           </aside>
 
           {/* Center Content */}
@@ -91,7 +91,6 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
           {/* Right Sidebar - Hidden on mobile */}
           <aside className="hidden md:flex flex-col gap-4">
             <StandingsWidget leagueStandings={leagueStandings} />
-            <AdSpace size="medium-rectangle" />
           </aside>
         </div>
       </div>

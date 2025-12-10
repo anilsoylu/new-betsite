@@ -13,13 +13,13 @@ interface LeagueHeaderProps {
 }
 
 export function LeagueHeader({ league, seasonName }: LeagueHeaderProps) {
-  const { isFavorite, toggleFavorite } = useFavoritesStore();
-  // Hydration-safe: start with false, update after mount
+  const leagues = useFavoritesStore((state) => state.leagues);
+  const toggleFavorite = useFavoritesStore((state) => state.toggleFavorite);
   const [isFollowing, setIsFollowing] = useState(false);
 
   useEffect(() => {
-    setIsFollowing(isFavorite("leagues", league.id));
-  }, [isFavorite, league.id]);
+    setIsFollowing(leagues.includes(league.id));
+  }, [leagues, league.id]);
 
   return (
     <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary/10 via-background to-background border border-border">
@@ -38,7 +38,7 @@ export function LeagueHeader({ league, seasonName }: LeagueHeaderProps) {
                 alt={league.name}
                 width={56}
                 height={56}
-                className="object-contain w-auto h-auto"
+                className="object-contain"
               />
             </div>
           </div>
@@ -54,7 +54,7 @@ export function LeagueHeader({ league, seasonName }: LeagueHeaderProps) {
                       alt={league.country.name}
                       width={20}
                       height={14}
-                      className="object-contain rounded-sm w-auto h-auto"
+                      className="object-contain rounded-sm"
                     />
                   )}
                   <span className="text-sm text-muted-foreground">

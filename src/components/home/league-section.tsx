@@ -6,16 +6,7 @@ import Link from "next/link";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { cn, getLeagueUrl } from "@/lib/utils";
 import { MatchRow } from "./match-row";
-import { AdSpace } from "@/components/sidebar";
 import type { Fixture } from "@/types/football";
-
-// Configuration for inline ads between matches
-const MATCH_AD_CONFIG = {
-  enabled: true,
-  count: 2, // Number of ads to show between matches
-  startAfter: 3, // Show first ad after this many matches
-  interval: 5, // Show subsequent ads every N matches
-};
 
 interface LeagueSectionProps {
   leagueId: number;
@@ -71,7 +62,7 @@ export function LeagueSection({
                 alt={leagueName}
                 width={20}
                 height={20}
-                className="object-contain w-auto h-auto"
+                className="object-contain"
               />
             )}
           </div>
@@ -121,38 +112,12 @@ export function LeagueSection({
         </div>
       </div>
 
-      {/* Matches with Inline Ads */}
+      {/* Matches */}
       {isExpanded && (
         <div className="divide-y divide-border/30">
-          {fixtures.map((fixture, index) => {
-            // Calculate ad positions
-            const adPositions: number[] = [];
-            if (MATCH_AD_CONFIG.enabled) {
-              for (let i = 0; i < MATCH_AD_CONFIG.count; i++) {
-                adPositions.push(
-                  MATCH_AD_CONFIG.startAfter + i * MATCH_AD_CONFIG.interval,
-                );
-              }
-            }
-
-            // Check if we should show an ad after this match
-            const showAdAfter =
-              adPositions.includes(index + 1) && index < fixtures.length - 1;
-
-            return (
-              <div key={fixture.id}>
-                <MatchRow fixture={fixture} />
-                {showAdAfter && (
-                  <div className="border-t border-border/30">
-                    <AdSpace
-                      size="inline-banner"
-                      className="rounded-none border-0 bg-muted/20"
-                    />
-                  </div>
-                )}
-              </div>
-            );
-          })}
+          {fixtures.map((fixture) => (
+            <MatchRow key={fixture.id} fixture={fixture} />
+          ))}
         </div>
       )}
     </div>

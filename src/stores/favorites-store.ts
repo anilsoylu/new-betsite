@@ -4,11 +4,14 @@ import { toast } from "sonner";
 
 export type FavoriteType = "teams" | "leagues" | "players" | "matches";
 
-const typeLabels: Record<FavoriteType, { singular: string; icon: string }> = {
-  teams: { singular: "Takım", icon: "⚽" },
-  leagues: { singular: "Lig", icon: "🏆" },
-  players: { singular: "Oyuncu", icon: "👤" },
-  matches: { singular: "Maç", icon: "📅" },
+const typeLabels: Record<
+  FavoriteType,
+  { singular: string; plural: string; icon: string }
+> = {
+  teams: { singular: "Team", plural: "teams", icon: "⚽" },
+  leagues: { singular: "League", plural: "leagues", icon: "🏆" },
+  players: { singular: "Player", plural: "players", icon: "👤" },
+  matches: { singular: "Match", plural: "matches", icon: "📅" },
 };
 
 interface FavoritesState {
@@ -49,16 +52,21 @@ export const useFavoritesStore = create<FavoritesState>()(
         if (state[type].includes(id)) {
           // Remove from favorites
           set({ [type]: state[type].filter((fid) => fid !== id) });
-          toast(`${label.singular} favorilerden çıkarıldı`, {
+          toast(`${label.singular} unfollowed`, {
+            description: `Removed from your ${label.plural}`,
+            icon: "💔",
             action: {
-              label: "Geri Al",
+              label: "Undo",
               onClick: () => get().addFavorite(type, id),
             },
           });
         } else {
           // Add to favorites
           set({ [type]: [...state[type], id] });
-          toast.success(`${label.icon} Favorilere eklendi`);
+          toast.success(`Now following!`, {
+            description: `Added to your ${label.plural} ${label.icon}`,
+            icon: "⭐",
+          });
         }
       },
 

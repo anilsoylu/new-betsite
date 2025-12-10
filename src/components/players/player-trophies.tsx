@@ -61,7 +61,7 @@ export function PlayerTrophies({ trophies }: PlayerTrophiesProps) {
                       alt={trophy.leagueName}
                       width={24}
                       height={24}
-                      className="object-contain w-auto h-auto"
+                      className="object-contain"
                     />
                   ) : (
                     <Trophy className="h-4 w-4 text-yellow-500" />
@@ -126,7 +126,7 @@ export function PlayerTrophies({ trophies }: PlayerTrophiesProps) {
                             alt={trophy.leagueName}
                             width={16}
                             height={16}
-                            className="object-contain w-auto h-auto opacity-60"
+                            className="object-contain opacity-60"
                           />
                         ) : (
                           <div className="w-4 h-4 rounded bg-muted/50" />

@@ -180,7 +180,7 @@ export function PlayerCareer({
                       alt={team.teamName}
                       width={28}
                       height={28}
-                      className="object-contain w-auto h-auto"
+                      className="object-contain"
                     />
                   ) : (
                     <span className="text-xs font-medium text-muted-foreground">

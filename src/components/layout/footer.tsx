@@ -1,13 +1,13 @@
-import Link from "next/link";
-import { cn } from "@/lib/utils";
-import { SITE } from "@/lib/constants";
+import Link from "next/link"
+import { cn } from "@/lib/utils"
+import { SITE } from "@/lib/constants"
 
 interface FooterProps {
-  className?: string;
+  className?: string
 }
 
 export function Footer({ className }: FooterProps) {
-  const currentYear = new Date().getFullYear();
+  const currentYear = new Date().getFullYear()
 
   return (
     <footer className={cn("border-t bg-background", className)}>
@@ -83,19 +83,8 @@ export function Footer({ className }: FooterProps) {
           <p>
             &copy; {currentYear} {SITE.name}. All rights reserved.
           </p>
-          <p className="mt-1 text-xs">
-            Data provided by{" "}
-            <a
-              href="https://www.sportmonks.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="underline hover:text-foreground"
-            >
-              Sportmonks
-            </a>
-          </p>
         </div>
       </div>
     </footer>
-  );
+  )
 }

@@ -14,7 +14,6 @@ import {
   MatchInfoWidget,
 } from "@/components/match-detail";
 import { SITE, SEO, DATE_FORMATS } from "@/lib/constants";
-import { AdSpace } from "@/components/sidebar";
 import { JsonLdScript } from "@/components/seo";
 import {
   generateSportsEventSchema,
@@ -143,9 +142,6 @@ export default async function MatchDetailPage({
             />
           )}
 
-          {/* Ad Space */}
-          <AdSpace size="medium-rectangle" />
-
           {/* Team Form Comparison */}
           <TeamFormWidget
             homeTeam={fixture.homeTeam}
@@ -153,9 +149,6 @@ export default async function MatchDetailPage({
             homeForm={homeForm}
             awayForm={awayForm}
           />
-
-          {/* Ad Space */}
-          <AdSpace size="medium-rectangle" />
 
           {/* Mini League Table */}
           <LeagueMiniTable

@@ -18,7 +18,12 @@ interface MatchRowProps {
 
 export function MatchRow({ fixture, showFavorites = true }: MatchRowProps) {
   const { homeTeam, awayTeam, startTime, id: fixtureId } = fixture;
-  const { isFavorite, toggleFavorite } = useFavoritesStore();
+
+  // Use selectors for proper reactivity
+  const favoriteMatches = useFavoritesStore((state) => state.matches);
+  const favoriteTeams = useFavoritesStore((state) => state.teams);
+  const toggleFavorite = useFavoritesStore((state) => state.toggleFavorite);
+
   const [hasMounted, setHasMounted] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
 
@@ -35,10 +40,10 @@ export function MatchRow({ fixture, showFavorites = true }: MatchRowProps) {
     ? format(new Date(startTime), "HH:mm")
     : "--:--";
 
-  // Only check favorites after mount
-  const isHomeFavorite = hasMounted && isFavorite("teams", homeTeam.id);
-  const isAwayFavorite = hasMounted && isFavorite("teams", awayTeam.id);
-  const isMatchFavorite = hasMounted && isFavorite("matches", fixtureId);
+  // Only check favorites after mount - using selector values for reactivity
+  const isHomeFavorite = hasMounted && favoriteTeams.includes(homeTeam.id);
+  const isAwayFavorite = hasMounted && favoriteTeams.includes(awayTeam.id);
+  const isMatchFavorite = hasMounted && favoriteMatches.includes(fixtureId);
   const hasFavoriteTeam = isHomeFavorite || isAwayFavorite;
 
   const handleFavoriteClick = (e: React.MouseEvent) => {

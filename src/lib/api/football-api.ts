@@ -249,6 +249,26 @@ export async function getAllLeagues(page = 1): Promise<{
 }
 
 /**
+ * Get all leagues (all pages combined)
+ * Fetches multiple pages to get complete league list
+ * Cache: long (6hr) - league list rarely changes
+ */
+export async function getAllLeaguesFull(): Promise<Array<League>> {
+  const allLeagues: Array<League> = [];
+  let page = 1;
+  let hasMore = true;
+
+  while (hasMore && page <= 10) {
+    const result = await getAllLeagues(page);
+    allLeagues.push(...result.leagues);
+    hasMore = result.hasMore;
+    page++;
+  }
+
+  return allLeagues;
+}
+
+/**
  * Get single league by ID with current season
  * Endpoint: GET /leagues/{leagueId}
  * Cache: long (6hr) - league metadata rarely changes

@@ -106,7 +106,7 @@ export function PlayerStats({ stats }: PlayerStatsProps) {
                           alt={season.teamName}
                           width={16}
                           height={16}
-                          className="object-contain w-auto h-auto"
+                          className="object-contain"
                         />
                       )}
                       <div className="min-w-0">

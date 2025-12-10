@@ -28,7 +28,9 @@ export function TeamCard({
   showFavorite = true,
   form,
 }: TeamCardProps) {
-  const { toggleFavorite, isFavorite } = useFavoritesStore();
+  // Use selectors for proper reactivity
+  const favoriteTeams = useFavoritesStore((state) => state.teams);
+  const toggleFavorite = useFavoritesStore((state) => state.toggleFavorite);
   const [hasMounted, setHasMounted] = useState(false);
 
   useEffect(() => {
@@ -36,7 +38,7 @@ export function TeamCard({
   }, []);
 
   const slug = generateTeamSlug(team.name, team.id);
-  const isTeamFavorite = hasMounted && isFavorite("teams", team.id);
+  const isTeamFavorite = hasMounted && favoriteTeams.includes(team.id);
 
   const handleFavoriteClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -55,7 +57,7 @@ export function TeamCard({
                   src={team.logo}
                   alt={team.name}
                   fill
-                  className="object-contain w-auto h-auto"
+                  className="object-contain"
                 />
               ) : (
                 <div className="h-full w-full bg-muted rounded-lg flex items-center justify-center">
@@ -109,7 +111,7 @@ export function TeamCard({
                   src={team.logo}
                   alt={team.name}
                   fill
-                  className="object-contain w-auto h-auto"
+                  className="object-contain"
                 />
               </div>
             ) : (
@@ -151,7 +153,7 @@ export function TeamCard({
                       alt={team.country.name}
                       width={14}
                       height={10}
-                      className="object-contain w-auto h-auto"
+                      className="object-contain"
                     />
                   )}
                   <span className="truncate">{team.country.name}</span>

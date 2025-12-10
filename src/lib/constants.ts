@@ -119,6 +119,11 @@ export const SEO = {
     title: `Your Favorites | ${SITE.name}`,
     description: "Your saved favorite teams, players and matches.",
   },
+  live: {
+    title: `Live Football Scores | ${SITE.name}`,
+    description:
+      "Watch live football scores and real-time match updates. Follow ongoing games with minute-by-minute updates, live statistics and instant notifications.",
+  },
   privacy: {
     title: `Privacy Policy | ${SITE.name}`,
     description: `${SITE.name} privacy policy. How we collect, use and protect your data.`,

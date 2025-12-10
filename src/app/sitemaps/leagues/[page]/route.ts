@@ -5,69 +5,68 @@
  * Route: GET /sitemaps/leagues/[page]
  */
 
-import { NextResponse } from "next/server";
-import { notFound } from "next/navigation";
-import { SITE } from "@/lib/constants";
+import { NextResponse } from "next/server"
+import { notFound } from "next/navigation"
+import { SITE } from "@/lib/constants"
 import {
   getLeaguesForSitemap,
   getLeaguePageCount,
   initializeSchema,
-} from "@/lib/sitemap-cache";
-import { getLeagueUrl } from "@/lib/utils";
+} from "@/lib/sitemap-cache"
+import { getLeagueUrl } from "@/lib/utils"
 
-export const dynamic = "force-dynamic";
-export const revalidate = 3600; // 1 hour
+export const revalidate = 3600 // 1 hour
 
 export async function GET(
   _request: Request,
-  { params }: { params: Promise<{ page: string }> },
+  { params }: { params: Promise<{ page: string }> }
 ) {
-  const { page: pageParam } = await params;
-  const page = Number.parseInt(pageParam, 10);
+  const { page: pageParam } = await params
+  const page = Number.parseInt(pageParam, 10)
 
   if (Number.isNaN(page) || page < 1) {
-    notFound();
+    notFound()
   }
 
   try {
-    initializeSchema();
+    initializeSchema()
 
-    const pageCount = getLeaguePageCount();
+    const pageCount = getLeaguePageCount()
     if (page > pageCount) {
-      notFound();
+      notFound()
     }
 
-    const leagues = getLeaguesForSitemap(page);
+    const leagues = getLeaguesForSitemap(page)
 
     const urlEntries = leagues
       .map((league) => {
-        const url = getLeagueUrl(league.name, league.id);
+        const url = getLeagueUrl(league.name, league.id)
         const lastmod = league.lastModified
           ? new Date(league.lastModified).toISOString()
-          : new Date().toISOString();
+          : new Date().toISOString()
 
         return `  <url>
     <loc>${SITE.url}${url}</loc>
     <lastmod>${lastmod}</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
-  </url>`;
+  </url>`
       })
-      .join("\n");
+      .join("\n")
 
     const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${urlEntries}
-</urlset>`;
+</urlset>`
 
     return new NextResponse(xml, {
       headers: {
         "Content-Type": "application/xml",
         "Cache-Control": "public, max-age=3600, s-maxage=3600",
       },
-    });
+    })
   } catch (error) {
-    console.error("[Sitemap] Failed to generate leagues page:", page, error);
-    notFound();
+    console.error("[Sitemap] Failed to generate leagues page:", page, error)
+    notFound()
   }
 }

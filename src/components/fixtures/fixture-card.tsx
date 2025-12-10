@@ -35,7 +35,12 @@ export function FixtureCard({
     league,
     venue,
   } = fixture;
-  const { isFavorite, toggleFavorite } = useFavoritesStore();
+
+  // Use selectors for proper reactivity
+  const favoriteMatches = useFavoritesStore((state) => state.matches);
+  const favoriteTeams = useFavoritesStore((state) => state.teams);
+  const toggleFavorite = useFavoritesStore((state) => state.toggleFavorite);
+
   const [hasMounted, setHasMounted] = useState(false);
   const [animatingStars, setAnimatingStars] = useState<Record<string, boolean>>(
     {},
@@ -57,10 +62,10 @@ export function FixtureCard({
     ? format(new Date(startTime), "dd MMM")
     : "-- ---";
 
-  // Only check favorites after mount to avoid hydration mismatch
-  const isHomeFavorite = hasMounted && isFavorite("teams", homeTeam.id);
-  const isAwayFavorite = hasMounted && isFavorite("teams", awayTeam.id);
-  const isMatchFavorite = hasMounted && isFavorite("matches", fixtureId);
+  // Only check favorites after mount - using selector values for reactivity
+  const isHomeFavorite = hasMounted && favoriteTeams.includes(homeTeam.id);
+  const isAwayFavorite = hasMounted && favoriteTeams.includes(awayTeam.id);
+  const isMatchFavorite = hasMounted && favoriteMatches.includes(fixtureId);
   const hasFavoriteTeam = isHomeFavorite || isAwayFavorite;
 
   const triggerStarAnimation = (key: string) => {
@@ -174,7 +179,7 @@ export function FixtureCard({
                     alt={homeTeam.name}
                     width={variant === "featured" ? 32 : 24}
                     height={variant === "featured" ? 32 : 24}
-                    className="object-contain w-auto h-auto"
+                    className="object-contain"
                   />
                 ) : (
                   <div
@@ -239,7 +244,7 @@ export function FixtureCard({
                     alt={awayTeam.name}
                     width={variant === "featured" ? 32 : 24}
                     height={variant === "featured" ? 32 : 24}
-                    className="object-contain w-auto h-auto"
+                    className="object-contain"
                   />
                 ) : (
                   <div

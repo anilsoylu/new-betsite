@@ -181,7 +181,7 @@ export function PlayerDataTabs({ stats, transfers }: PlayerDataTabsProps) {
                                     alt={season.teamName}
                                     width={16}
                                     height={16}
-                                    className="object-contain w-auto h-auto hover:opacity-80"
+                                    className="object-contain hover:opacity-80"
                                   />
                                 </Link>
                               )}

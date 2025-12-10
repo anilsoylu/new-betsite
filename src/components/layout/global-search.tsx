@@ -19,7 +19,12 @@ interface SearchResults {
 
 export function GlobalSearch() {
   const router = useRouter();
-  const { toggleFavorite, isFavorite } = useFavoritesStore();
+
+  // Use selectors for proper reactivity
+  const favoritePlayers = useFavoritesStore((state) => state.players);
+  const favoriteTeams = useFavoritesStore((state) => state.teams);
+  const toggleFavorite = useFavoritesStore((state) => state.toggleFavorite);
+
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResults>({
     players: [],
@@ -38,9 +43,12 @@ export function GlobalSearch() {
 
   const hasResults = results.players.length > 0 || results.teams.length > 0;
 
-  // Helper to check favorites only after mount
+  // Helper to check favorites only after mount - using selector values for reactivity
   const checkIsFavorite = (type: "players" | "teams", id: number) => {
-    return hasMounted && isFavorite(type, id);
+    if (!hasMounted) return false;
+    return type === "players"
+      ? favoritePlayers.includes(id)
+      : favoriteTeams.includes(id);
   };
 
   const searchAll = useCallback(async (searchQuery: string) => {
@@ -293,7 +301,7 @@ export function GlobalSearch() {
                               src={team.logo}
                               alt={team.name}
                               fill
-                              className="object-contain w-auto h-auto"
+                              className="object-contain"
                             />
                           ) : (
                             <div className="h-full w-full bg-muted rounded-full flex items-center justify-center text-sm font-medium">

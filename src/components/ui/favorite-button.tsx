@@ -80,7 +80,7 @@ export function FavoriteButton({
         className,
       )}
       aria-label={
-        ariaLabel || (isFavorite ? "Favorilerden çıkar" : "Favorilere ekle")
+        ariaLabel || (isFavorite ? "Remove from favorites" : "Add to favorites")
       }
       aria-pressed={isFavorite}
     >

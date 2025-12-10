@@ -23,7 +23,9 @@ export function PlayerCard({
   variant = "default",
   showFavorite = true,
 }: PlayerCardProps) {
-  const { toggleFavorite, isFavorite } = useFavoritesStore();
+  // Use selectors for proper reactivity
+  const favoritePlayers = useFavoritesStore((state) => state.players);
+  const toggleFavorite = useFavoritesStore((state) => state.toggleFavorite);
   const [hasMounted, setHasMounted] = useState(false);
 
   useEffect(() => {
@@ -31,7 +33,7 @@ export function PlayerCard({
   }, []);
 
   const slug = generatePlayerSlug(player.displayName || player.name, player.id);
-  const isPlayerFavorite = hasMounted && isFavorite("players", player.id);
+  const isPlayerFavorite = hasMounted && favoritePlayers.includes(player.id);
 
   const handleFavoriteClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -155,7 +157,7 @@ export function PlayerCard({
                       alt={player.country.name}
                       width={14}
                       height={10}
-                      className="object-contain w-auto h-auto"
+                      className="object-contain"
                     />
                   )}
                   <span className="truncate">{player.country.name}</span>

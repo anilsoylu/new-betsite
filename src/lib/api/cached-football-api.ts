@@ -25,6 +25,7 @@ export * from "./football-api";
 // Import the original functions we want to wrap
 import {
   getAllLeagues as _getAllLeagues,
+  getAllLeaguesFull as _getAllLeaguesFull,
   getFixtureById as _getFixtureById,
   getFixturesByDate as _getFixturesByDate,
   getFixturesByTeam as _getFixturesByTeam,
@@ -115,6 +116,19 @@ export async function getAllLeagues(
   cacheLeagues(result.leagues);
 
   return result;
+}
+
+/**
+ * Get all leagues (all pages) with cache population.
+ */
+export async function getAllLeaguesFull(): Promise<League[]> {
+  const leagues = await _getAllLeaguesFull();
+
+  // Cache in background
+  ensureSchema();
+  cacheLeagues(leagues);
+
+  return leagues;
 }
 
 /**

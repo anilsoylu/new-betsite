@@ -39,7 +39,11 @@ export function HomeContent({
   const [isLoading, setIsLoading] = useState(false);
   const [hasMounted, setHasMounted] = useState(false);
 
-  const { isFavorite } = useFavoritesStore();
+  // Use selectors for proper reactivity
+  const favoriteTeams = useFavoritesStore((state) => state.teams);
+  const favoriteMatches = useFavoritesStore((state) => state.matches);
+  const isFavorite = (type: "teams" | "matches", id: number) =>
+    type === "teams" ? favoriteTeams.includes(id) : favoriteMatches.includes(id);
 
   useEffect(() => {
     setHasMounted(true);
@@ -137,7 +141,7 @@ export function HomeContent({
 
   // Get favorite matches from current fixtures
   const allCurrentFixtures = [...liveFixtures, ...fixtures];
-  const favoriteMatches = hasMounted
+  const favoriteFixtures = hasMounted
     ? allCurrentFixtures.filter(
         (f) =>
           isFavorite("matches", f.id) ||
@@ -156,7 +160,7 @@ export function HomeContent({
       />
 
       {/* Favorites Section */}
-      {favoriteMatches.length > 0 && (
+      {favoriteFixtures.length > 0 && (
         <div className="border border-yellow-500/30 rounded-xl overflow-hidden bg-yellow-500/5">
           <div className="flex items-center gap-2 px-3 py-2.5 border-b border-yellow-500/20">
             <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
@@ -164,17 +168,13 @@ export function HomeContent({
               My Favorites
             </span>
             <span className="text-xs text-muted-foreground ml-auto">
-              {favoriteMatches.length}{" "}
-              {favoriteMatches.length === 1 ? "match" : "matches"}
+              {favoriteFixtures.length}{" "}
+              {favoriteFixtures.length === 1 ? "match" : "matches"}
             </span>
           </div>
           <div className="divide-y divide-yellow-500/10">
-            {favoriteMatches.map((fixture) => (
-              <MatchRow
-                key={`fav-${fixture.id}`}
-                fixture={fixture}
-                showFavorites={false}
-              />
+            {favoriteFixtures.map((fixture) => (
+              <MatchRow key={`fav-${fixture.id}`} fixture={fixture} />
             ))}
           </div>
         </div>

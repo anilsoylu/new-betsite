@@ -6,7 +6,6 @@ import { TopScorersCard } from "./top-scorers-card";
 import { FixturesCard } from "./fixtures-card";
 import { StandingsTable } from "./standings-table";
 import { LeagueAboutSection } from "./league-about-section";
-import { AdSpace } from "@/components/sidebar";
 import type { LeaguePageData } from "@/types/football";
 
 interface LeagueContentProps {
@@ -53,9 +52,6 @@ export function LeagueContent({ data }: LeagueContentProps) {
                 onViewAll={() => setActiveTab("fixtures")}
               />
 
-              {/* Ad Space */}
-              <AdSpace size="inline-banner" />
-
               {/* Recent Results */}
               <FixturesCard
                 title="Recent Results"
@@ -80,9 +76,6 @@ export function LeagueContent({ data }: LeagueContentProps) {
                 <StandingsTable standings={standings.slice(0, 8)} compact />
               )}
 
-              {/* Ad Space */}
-              <AdSpace size="large-rectangle" />
-
               {/* Top Scorers */}
               <TopScorersCard
                 title="Top Scorers"
@@ -98,9 +91,6 @@ export function LeagueContent({ data }: LeagueContentProps) {
                 scorers={data.topAssists}
                 onViewAll={() => setActiveTab("stats")}
               />
-
-              {/* Ad Space */}
-              <AdSpace size="large-rectangle" />
             </div>
           </div>
         )}

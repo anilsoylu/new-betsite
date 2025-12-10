@@ -1,13 +1,15 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { format } from "date-fns";
-import { ArrowLeft, MapPin, Calendar, User } from "lucide-react";
+import { ArrowLeft, MapPin, Calendar, User, Star, Bell, Share2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { getTeamUrl } from "@/lib/utils";
+import { cn, getTeamUrl } from "@/lib/utils";
 import { useLiveFixture } from "@/hooks";
+import { useFavoritesStore } from "@/stores/favorites-store";
 import { FormStrip, getFormFromFixtures } from "@/components/teams/form-strip";
 import type { FixtureDetail, FormFixtureData } from "@/types/football";
 
@@ -18,6 +20,19 @@ interface MatchHeaderProps {
 }
 
 export function MatchHeader({ fixture, homeForm, awayForm }: MatchHeaderProps) {
+  const matches = useFavoritesStore((state) => state.matches);
+  const toggleFavorite = useFavoritesStore((state) => state.toggleFavorite);
+  const [isFollowing, setIsFollowing] = useState(false);
+
+  useEffect(() => {
+    setIsFollowing(matches.includes(fixture.id));
+  }, [matches, fixture.id]);
+
+  const handleFollowClick = () => {
+    toggleFavorite("matches", fixture.id);
+    setIsFollowing(!isFollowing);
+  };
+
   const {
     homeTeam,
     awayTeam,
@@ -50,28 +65,60 @@ export function MatchHeader({ fixture, homeForm, awayForm }: MatchHeaderProps) {
         <span>Back to matches</span>
       </Link>
 
-      {/* League info */}
-      {league && (
-        <div className="flex items-center gap-3">
-          {league.logo && (
-            <Image
-              src={league.logo}
-              alt={league.name}
-              width={28}
-              height={28}
-              className="object-contain w-auto h-auto"
-            />
-          )}
-          <div>
-            <p className="font-medium">{league.name}</p>
-            {league.country && (
-              <p className="text-sm text-muted-foreground">
-                {league.country.name}
-              </p>
+      {/* League info & Actions */}
+      <div className="flex items-center justify-between">
+        {league && (
+          <div className="flex items-center gap-3">
+            {league.logo && (
+              <Image
+                src={league.logo}
+                alt={league.name}
+                width={28}
+                height={28}
+                className="object-contain"
+              />
             )}
+            <div>
+              <p className="font-medium">{league.name}</p>
+              {league.country && (
+                <p className="text-sm text-muted-foreground">
+                  {league.country.name}
+                </p>
+              )}
+            </div>
           </div>
+        )}
+
+        {/* Actions */}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleFollowClick}
+            className={cn(
+              "flex items-center gap-2 px-4 py-2 rounded-full font-medium text-sm transition-all",
+              isFollowing
+                ? "bg-yellow-500 text-white hover:bg-yellow-600"
+                : "bg-muted hover:bg-muted/80 text-foreground"
+            )}
+          >
+            <Star className={cn("h-4 w-4", isFollowing && "fill-current")} />
+            <span className="hidden sm:inline">
+              {isFollowing ? "Following" : "Follow"}
+            </span>
+          </button>
+          <button
+            className="p-2 rounded-full bg-muted hover:bg-muted/80 transition-colors"
+            aria-label="Notifications"
+          >
+            <Bell className="h-4 w-4" />
+          </button>
+          <button
+            className="p-2 rounded-full bg-muted hover:bg-muted/80 transition-colors"
+            aria-label="Share"
+          >
+            <Share2 className="h-4 w-4" />
+          </button>
         </div>
-      )}
+      </div>
 
       {/* Main match card */}
       <Card>

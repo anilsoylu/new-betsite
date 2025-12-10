@@ -93,7 +93,7 @@ function StandingRow({ standing, isHighlighted }: StandingRowProps) {
               alt={standing.teamName}
               width={20}
               height={20}
-              className="object-contain w-auto h-auto"
+              className="object-contain"
             />
           )}
           <span

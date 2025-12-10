@@ -6,7 +6,7 @@ import {
   getFixtureById,
   getStandingsBySeason,
 } from "@/lib/api/cached-football-api";
-import { extractTeamId, getFixtureUrl } from "@/lib/utils";
+import { extractTeamId, getFixtureUrl, getTeamUrl, slugify } from "@/lib/utils";
 import { TeamFixtures } from "@/components/teams/team-fixtures";
 import { FormStrip } from "@/components/teams/form-strip";
 import { TeamPitchView } from "@/components/teams/team-pitch-view";
@@ -474,7 +474,10 @@ export default async function TeamOverviewPage({
             return (
               <Card key={`${table.seasonId}-${table.groupName || "main"}`}>
                 <CardHeader className="pb-0">
-                  <div className="flex items-center gap-2">
+                  <Link
+                    href={`/leagues/${slugify(table.leagueName || "league")}-${table.leagueId}`}
+                    className="flex items-center gap-2 hover:opacity-80 transition-opacity group"
+                  >
                     <Avatar className="h-6 w-6 rounded bg-white">
                       <AvatarImage
                         src={table.leagueLogo || undefined}
@@ -485,10 +488,10 @@ export default async function TeamOverviewPage({
                         {(table.leagueName || "L").charAt(0)}
                       </AvatarFallback>
                     </Avatar>
-                    <CardTitle className="text-base truncate">
+                    <CardTitle className="text-base truncate group-hover:text-primary transition-colors">
                       {table.groupName || table.leagueName || "League Table"}
                     </CardTitle>
-                  </div>
+                  </Link>
                 </CardHeader>
                 <CardContent className="p-0">
                   <div className="overflow-x-auto">
@@ -528,7 +531,10 @@ export default async function TeamOverviewPage({
                             >
                               <td className="px-3 py-2">{standing.position}</td>
                               <td className="px-3 py-2">
-                                <div className="flex items-center gap-2">
+                                <Link
+                                  href={getTeamUrl(standing.teamName, standing.teamId)}
+                                  className="flex items-center gap-2 hover:text-primary transition-colors"
+                                >
                                   <div className="relative h-4 w-4 shrink-0">
                                     <Image
                                       src={standing.teamLogo}
@@ -540,7 +546,7 @@ export default async function TeamOverviewPage({
                                   <span className="truncate max-w-[100px]">
                                     {standing.teamName}
                                   </span>
-                                </div>
+                                </Link>
                               </td>
                               <td className="px-3 py-2 text-center">
                                 {standing.played}

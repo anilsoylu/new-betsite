@@ -8,11 +8,11 @@ import {
   getTopLeaguesStandings,
 } from "@/lib/queries";
 import { slugify } from "@/lib/utils";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { TopLeagues, AdSpace, StandingsWidget } from "@/components/sidebar";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { TopLeagues, OtherLeagues, StandingsWidget } from "@/components/sidebar";
 
 export const metadata: Metadata = {
-  title: `Teams | ${SITE.name}`,
+  title: `Football Teams | ${SITE.name}`,
   description:
     "Discover and browse football teams from top leagues. Find team information, squad, fixtures and statistics.",
 };
@@ -37,7 +37,7 @@ export default async function TeamsPage() {
           {/* Left Sidebar */}
           <aside className="hidden lg:flex flex-col gap-4">
             <TopLeagues />
-            <AdSpace size="medium-rectangle" />
+            <OtherLeagues />
           </aside>
 
           {/* Center Content */}
@@ -86,9 +86,9 @@ export default async function TeamsPage() {
                           height={24}
                           className="object-contain"
                         />
-                        <CardTitle className="text-base group-hover:text-primary transition-colors">
+                        <h2 className="text-base font-semibold group-hover:text-primary transition-colors">
                           {league.leagueName}
-                        </CardTitle>
+                        </h2>
                         <ChevronRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
                       </Link>
                       <span className="text-xs text-muted-foreground">
@@ -147,7 +147,6 @@ export default async function TeamsPage() {
           {/* Right Sidebar */}
           <aside className="hidden md:flex flex-col gap-4">
             <StandingsWidget leagueStandings={leagueStandings} />
-            <AdSpace size="medium-rectangle" />
           </aside>
         </div>
       </div>

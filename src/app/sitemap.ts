@@ -1,18 +1,18 @@
-import type { MetadataRoute } from "next";
-import { SITE } from "@/lib/constants";
-import { TOP_LEAGUES } from "@/components/sidebar/top-leagues";
+import type { MetadataRoute } from "next"
+import { SITE } from "@/lib/constants"
+import { TOP_LEAGUES } from "@/components/sidebar/top-leagues"
 
 // Helper to create URL-friendly slug
 function createSlug(name: string): string {
   return name
     .toLowerCase()
     .replace(/\s+/g, "-")
-    .replace(/[^a-z0-9-]/g, "");
+    .replace(/[^a-z0-9-]/g, "")
 }
 
-export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = SITE.url;
-  const now = new Date();
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const baseUrl = SITE.url
+  const now = new Date()
 
   // Static core pages
   const staticPages: MetadataRoute.Sitemap = [
@@ -27,6 +27,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: now,
       changeFrequency: "always",
       priority: 0.9,
+    },
+    {
+      url: `${baseUrl}/live`,
+      lastModified: now,
+      changeFrequency: "always",
+      priority: 0.95,
     },
     {
       url: `${baseUrl}/leagues`,
@@ -58,11 +64,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "yearly",
       priority: 0.3,
     },
-  ];
+  ]
 
   // Dynamic league pages from TOP_LEAGUES
   const leaguePages: MetadataRoute.Sitemap = TOP_LEAGUES.flatMap((league) => {
-    const leagueSlug = `${createSlug(league.name)}-${league.id}`;
+    const leagueSlug = `${createSlug(league.name)}-${league.id}`
     return [
       {
         url: `${baseUrl}/leagues/${leagueSlug}`,
@@ -88,8 +94,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
         changeFrequency: "daily" as const,
         priority: 0.7,
       },
-    ];
-  });
+    ]
+  })
 
   // Section sitemap indexes (XML sitemaps fed from SQLite cache)
   const sectionSitemaps: MetadataRoute.Sitemap = [
@@ -117,7 +123,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "daily",
       priority: 0.9,
     },
-  ];
+  ]
 
-  return [...staticPages, ...leaguePages, ...sectionSitemaps];
+  return [...staticPages, ...leaguePages, ...sectionSitemaps]
 }

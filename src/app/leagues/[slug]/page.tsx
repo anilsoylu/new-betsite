@@ -10,7 +10,6 @@ import {
   StandingsTable,
   LeagueAboutSection,
 } from "@/components/leagues";
-import { AdSpace } from "@/components/sidebar";
 import { JsonLdScript } from "@/components/seo";
 import {
   generateSportsLeagueSchema,
@@ -106,9 +105,6 @@ export default async function LeagueOverviewPage({ params }: LeaguePageProps) {
             type="upcoming"
           />
 
-          {/* Ad Space */}
-          <AdSpace size="inline-banner" />
-
           {/* Recent Results */}
           <FixturesCard
             title="Recent Results"
@@ -140,9 +136,6 @@ export default async function LeagueOverviewPage({ params }: LeaguePageProps) {
             <StandingsTable standings={standings.slice(0, 8)} compact />
           )}
 
-          {/* Ad Space */}
-          <AdSpace size="large-rectangle" />
-
           {/* Top Scorers */}
           <TopScorersCard
             title="Top Scorers"
@@ -156,9 +149,6 @@ export default async function LeagueOverviewPage({ params }: LeaguePageProps) {
             type="assists"
             scorers={data.topAssists}
           />
-
-          {/* Ad Space */}
-          <AdSpace size="large-rectangle" />
         </div>
       </div>
     </>
