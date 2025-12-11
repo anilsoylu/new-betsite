@@ -2,7 +2,7 @@
  * Matches Sitemap Page
  * Returns a urlset XML with match entries for the given page.
  *
- * Route: GET /sitemaps/matches/[page]
+ * Route: GET /sitemaps/matches/[page].xml
  */
 
 import { NextResponse } from "next/server"

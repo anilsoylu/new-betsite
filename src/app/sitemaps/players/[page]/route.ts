@@ -2,7 +2,7 @@
  * Players Sitemap Page
  * Returns a urlset XML with player entries for the given page.
  *
- * Route: GET /sitemaps/players/[page]
+ * Route: GET /sitemaps/players/[page].xml
  */
 
 import { NextResponse } from "next/server"

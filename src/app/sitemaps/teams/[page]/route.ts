@@ -2,7 +2,7 @@
  * Teams Sitemap Page
  * Returns a urlset XML with team entries for the given page.
  *
- * Route: GET /sitemaps/teams/[page]
+ * Route: GET /sitemaps/teams/[page].xml
  */
 
 import { NextResponse } from "next/server"
