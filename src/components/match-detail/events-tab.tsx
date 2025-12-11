@@ -1,16 +1,16 @@
-"use client";
+"use client"
 
-import { useMemo } from "react";
-import Image from "next/image";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
-import type { MatchEvent, Team } from "@/types/football";
+import { useMemo } from "react"
+import Image from "next/image"
+import { Card, CardContent } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { cn } from "@/lib/utils"
+import type { MatchEvent, Team } from "@/types/football"
 
 interface EventsTabProps {
-  events: Array<MatchEvent>;
-  homeTeam: Team;
-  awayTeam: Team;
+  events: Array<MatchEvent>
+  homeTeam: Team
+  awayTeam: Team
 }
 
 // Event type configuration for icons and colors
@@ -75,141 +75,143 @@ const EVENT_CONFIG = {
     borderClass: "border-border",
     textClass: "text-muted-foreground",
   },
-} as const;
+} as const
 
-type EventConfigKey = keyof typeof EVENT_CONFIG;
+type EventConfigKey = keyof typeof EVENT_CONFIG
 
 function getEventConfig(
-  event: MatchEvent,
+  event: MatchEvent
 ): (typeof EVENT_CONFIG)[EventConfigKey] {
   if (event.type === "goal") {
     // Use subType for specific goal types
-    if (event.subType === "ownGoal") return EVENT_CONFIG.ownGoal;
-    if (event.subType === "missedPenalty") return EVENT_CONFIG.missedPenalty;
-    if (event.subType === "penalty") return EVENT_CONFIG.penalty;
-    return EVENT_CONFIG.goal;
+    if (event.subType === "ownGoal") return EVENT_CONFIG.ownGoal
+    if (event.subType === "missedPenalty") return EVENT_CONFIG.missedPenalty
+    if (event.subType === "penalty") return EVENT_CONFIG.penalty
+    return EVENT_CONFIG.goal
   }
 
   if (event.type === "card") {
     // Use subType for card color
-    if (event.subType === "yellowred") return EVENT_CONFIG.yellowRed;
-    if (event.subType === "red") return EVENT_CONFIG.redCard;
-    return EVENT_CONFIG.yellowCard;
+    if (event.subType === "yellowred") return EVENT_CONFIG.yellowRed
+    if (event.subType === "red") return EVENT_CONFIG.redCard
+    return EVENT_CONFIG.yellowCard
   }
 
-  if (event.type === "substitution") return EVENT_CONFIG.substitution;
-  if (event.type === "var") return EVENT_CONFIG.var;
+  if (event.type === "substitution") return EVENT_CONFIG.substitution
+  if (event.type === "var") return EVENT_CONFIG.var
 
-  return EVENT_CONFIG.other;
+  return EVENT_CONFIG.other
 }
 
 function getEventLabel(event: MatchEvent): string {
   if (event.type === "goal") {
-    if (event.subType === "ownGoal") return "Own Goal";
-    if (event.subType === "missedPenalty") return "Penalty Missed";
-    if (event.subType === "penalty") return "Penalty";
-    return "Goal";
+    if (event.subType === "ownGoal") return "Own Goal"
+    if (event.subType === "missedPenalty") return "Penalty Missed"
+    if (event.subType === "penalty") return "Penalty"
+    return "Goal"
   }
 
   if (event.type === "card") {
-    if (event.subType === "yellowred") return "Second Yellow";
-    if (event.subType === "red") return "Red Card";
-    return "Yellow Card";
+    if (event.subType === "yellowred") return "Second Yellow"
+    if (event.subType === "red") return "Red Card"
+    return "Yellow Card"
   }
 
-  if (event.type === "substitution") return "Substitution";
-  if (event.type === "var") return "VAR Decision";
+  if (event.type === "substitution") return "Substitution"
+  if (event.type === "var") return "VAR Decision"
 
-  return "Event";
+  return "Event"
 }
 
 function formatMinute(minute: number, extraMinute: number | null): string {
   if (extraMinute && extraMinute > 0) {
-    return `${minute}+${extraMinute}'`;
+    return `${minute}+${extraMinute}'`
   }
-  return `${minute}'`;
+  return `${minute}'`
 }
 
 interface EventGroup {
-  name: string;
-  events: MatchEvent[];
+  name: string
+  events: MatchEvent[]
 }
 
 function groupEventsByHalf(events: MatchEvent[]): EventGroup[] {
-  const firstHalf: MatchEvent[] = [];
-  const secondHalf: MatchEvent[] = [];
-  const extraTime: MatchEvent[] = [];
+  const firstHalf: MatchEvent[] = []
+  const secondHalf: MatchEvent[] = []
+  const extraTime: MatchEvent[] = []
 
   for (const event of events) {
     if (event.minute <= 45 || (event.minute === 45 && event.extraMinute)) {
-      firstHalf.push(event);
+      firstHalf.push(event)
     } else if (
       event.minute <= 90 ||
       (event.minute === 90 && event.extraMinute)
     ) {
-      secondHalf.push(event);
+      secondHalf.push(event)
     } else {
-      extraTime.push(event);
+      extraTime.push(event)
     }
   }
 
-  const groups: EventGroup[] = [];
-  if (firstHalf.length > 0)
-    groups.push({ name: "1st Half", events: firstHalf });
+  const groups: EventGroup[] = []
+  if (firstHalf.length > 0) groups.push({ name: "1st Half", events: firstHalf })
   if (secondHalf.length > 0)
-    groups.push({ name: "2nd Half", events: secondHalf });
+    groups.push({ name: "2nd Half", events: secondHalf })
   if (extraTime.length > 0)
-    groups.push({ name: "Extra Time", events: extraTime });
+    groups.push({ name: "Extra Time", events: extraTime })
 
-  return groups;
+  return groups
 }
 
 export function EventsTab({ events, homeTeam, awayTeam }: EventsTabProps) {
   // Sort events by minute and group by half
   const sortedEvents = useMemo(() => {
     return [...events].sort((a, b) => {
-      if (a.minute !== b.minute) return a.minute - b.minute;
-      return (a.extraMinute || 0) - (b.extraMinute || 0);
-    });
-  }, [events]);
+      if (a.minute !== b.minute) return a.minute - b.minute
+      return (a.extraMinute || 0) - (b.extraMinute || 0)
+    })
+  }, [events])
 
   const eventGroups = useMemo(
     () => groupEventsByHalf(sortedEvents),
-    [sortedEvents],
-  );
+    [sortedEvents]
+  )
 
   // Calculate goal scorers for summary
   const goalScorers = useMemo(() => {
-    const homeScorers: string[] = [];
-    const awayScorers: string[] = [];
+    const homeScorers: string[] = []
+    const awayScorers: string[] = []
 
     for (const event of sortedEvents) {
       if (event.type === "goal") {
         // Skip missed penalties
-        if (event.subType === "missedPenalty") continue;
+        if (event.subType === "missedPenalty") continue
 
-        const isOwnGoal = event.subType === "ownGoal";
-        const isPenalty = event.subType === "penalty";
-        const scorer = `${event.playerName} ${formatMinute(event.minute, event.extraMinute)}${isPenalty ? " (P)" : ""}`;
+        const isOwnGoal = event.subType === "ownGoal"
+        const isPenalty = event.subType === "penalty"
+        const scorer = `${event.playerName} ${formatMinute(
+          event.minute,
+          event.extraMinute
+        )}${isPenalty ? " (P)" : ""}`
 
         if (event.teamId === homeTeam.id) {
           if (isOwnGoal) {
-            awayScorers.push(`${scorer} (OG)`);
+            awayScorers.push(`${scorer} (OG)`)
           } else {
-            homeScorers.push(scorer);
+            homeScorers.push(scorer)
           }
         } else {
           if (isOwnGoal) {
-            homeScorers.push(`${scorer} (OG)`);
+            homeScorers.push(`${scorer} (OG)`)
           } else {
-            awayScorers.push(scorer);
+            awayScorers.push(scorer)
           }
         }
       }
     }
 
-    return { home: homeScorers, away: awayScorers };
-  }, [sortedEvents, homeTeam.id]);
+    return { home: homeScorers, away: awayScorers }
+  }, [sortedEvents, homeTeam.id])
 
   if (events.length === 0) {
     return (
@@ -221,14 +223,14 @@ export function EventsTab({ events, homeTeam, awayTeam }: EventsTabProps) {
           </p>
         </CardContent>
       </Card>
-    );
+    )
   }
 
   return (
     <div className="space-y-4">
       {/* Goal Scorers Summary - FotMob Style */}
       {(goalScorers.home.length > 0 || goalScorers.away.length > 0) && (
-        <Card className="overflow-hidden">
+        <Card className="overflow-hidden pt-0">
           {/* Header with gradient */}
           <div className="bg-gradient-to-r from-green-500/10 via-green-500/5 to-green-500/10 px-4 py-2 border-b">
             <div className="flex items-center justify-center gap-2">
@@ -329,7 +331,7 @@ export function EventsTab({ events, homeTeam, awayTeam }: EventsTabProps) {
       )}
 
       {/* Event Timeline */}
-      <Card>
+      <Card className="pt-0">
         <CardContent className="p-0">
           {eventGroups.map((group, groupIndex) => (
             <div key={group.name}>
@@ -359,31 +361,31 @@ export function EventsTab({ events, homeTeam, awayTeam }: EventsTabProps) {
         </CardContent>
       </Card>
     </div>
-  );
+  )
 }
 
 interface EventRowProps {
-  event: MatchEvent;
-  homeTeamId: number;
+  event: MatchEvent
+  homeTeamId: number
 }
 
 function EventRow({ event, homeTeamId }: EventRowProps) {
-  const config = getEventConfig(event);
-  const label = getEventLabel(event);
-  const isHomeTeam = event.teamId === homeTeamId;
+  const config = getEventConfig(event)
+  const label = getEventLabel(event)
+  const isHomeTeam = event.teamId === homeTeamId
 
   return (
     <div
       className={cn(
         "flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-3 transition-colors hover:bg-muted/30",
-        isHomeTeam ? "flex-row" : "flex-row-reverse",
+        isHomeTeam ? "flex-row" : "flex-row-reverse"
       )}
     >
       {/* Event content */}
       <div
         className={cn(
           "flex-1 flex items-center gap-2 sm:gap-3 min-w-0",
-          isHomeTeam ? "flex-row" : "flex-row-reverse",
+          isHomeTeam ? "flex-row" : "flex-row-reverse"
         )}
       >
         {/* Event icon */}
@@ -391,15 +393,25 @@ function EventRow({ event, homeTeamId }: EventRowProps) {
           className={cn(
             "flex-shrink-0 w-7 h-7 sm:w-9 sm:h-9 rounded-full flex items-center justify-center border",
             config.bgClass,
-            config.borderClass,
+            config.borderClass
           )}
         >
           <span className="text-sm sm:text-base">{config.icon}</span>
         </div>
 
         {/* Event details */}
-        <div className={cn("min-w-0 flex-1", isHomeTeam ? "text-left" : "text-right")}>
-          <p className={cn("font-medium text-xs sm:text-sm truncate", config.textClass)}>
+        <div
+          className={cn(
+            "min-w-0 flex-1",
+            isHomeTeam ? "text-left" : "text-right"
+          )}
+        >
+          <p
+            className={cn(
+              "font-medium text-xs sm:text-sm truncate",
+              config.textClass
+            )}
+          >
             {event.playerName}
           </p>
           {event.type === "substitution" && event.relatedPlayerName && (
@@ -414,13 +426,18 @@ function EventRow({ event, homeTeamId }: EventRowProps) {
               Assist: {event.relatedPlayerName}
             </p>
           )}
-          <p className="text-[10px] sm:text-xs text-muted-foreground">{label}</p>
+          <p className="text-[10px] sm:text-xs text-muted-foreground">
+            {label}
+          </p>
         </div>
       </div>
 
       {/* Minute badge - always in center */}
       <div className="flex-shrink-0 w-12 sm:w-14 text-center">
-        <Badge variant="outline" className="text-[10px] sm:text-xs font-mono tabular-nums">
+        <Badge
+          variant="outline"
+          className="text-[10px] sm:text-xs font-mono tabular-nums"
+        >
           {formatMinute(event.minute, event.extraMinute)}
         </Badge>
       </div>
@@ -428,5 +445,5 @@ function EventRow({ event, homeTeamId }: EventRowProps) {
       {/* Spacer to balance the layout */}
       <div className="flex-1 min-w-0" />
     </div>
-  );
+  )
 }
