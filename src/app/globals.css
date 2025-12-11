@@ -200,10 +200,24 @@
 @layer base {
   * {
     @apply border-border outline-ring/50;
+    cursor: default;
   }
   body {
     @apply bg-background text-foreground;
     letter-spacing: var(--tracking-normal);
+  }
+  a,
+  button,
+  [role="button"],
+  input[type="submit"],
+  input[type="button"],
+  .cursor-pointer {
+    cursor: pointer;
+  }
+  input,
+  textarea,
+  [contenteditable="true"] {
+    cursor: text;
   }
 }
 
