@@ -239,8 +239,8 @@ export function EventsTab({ events, homeTeam, awayTeam }: EventsTabProps) {
             </div>
           </div>
 
-          <CardContent className="p-4">
-            <div className="grid grid-cols-[1fr_auto_1fr] gap-4">
+          <CardContent className="p-3 sm:p-4">
+            <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto_1fr] gap-4 sm:gap-6">
               {/* Home scorers */}
               <div className="space-y-2">
                 <div className="flex items-center gap-2 pb-2 border-b border-border/50">
@@ -250,10 +250,10 @@ export function EventsTab({ events, homeTeam, awayTeam }: EventsTabProps) {
                       alt={homeTeam.name}
                       width={24}
                       height={24}
-                      className="object-contain"
+                      className="object-contain w-5 h-5 sm:w-6 sm:h-6"
                     />
                   )}
-                  <span className="text-sm font-semibold truncate">
+                  <span className="text-xs sm:text-sm font-semibold truncate">
                     {homeTeam.name}
                   </span>
                 </div>
@@ -262,33 +262,33 @@ export function EventsTab({ events, homeTeam, awayTeam }: EventsTabProps) {
                     goalScorers.home.map((scorer, i) => (
                       <div
                         key={i}
-                        className="flex items-center gap-2 text-sm group"
+                        className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm group"
                       >
-                        <div className="w-5 h-5 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
-                          <span className="text-xs">⚽</span>
+                        <div className="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
+                          <span className="text-[10px] sm:text-xs">⚽</span>
                         </div>
-                        <span className="text-foreground group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors">
+                        <span className="text-foreground group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors truncate">
                           {scorer}
                         </span>
                       </div>
                     ))
                   ) : (
-                    <p className="text-sm text-muted-foreground italic">
+                    <p className="text-xs sm:text-sm text-muted-foreground italic">
                       No goals
                     </p>
                   )}
                 </div>
               </div>
 
-              {/* Center divider with VS */}
-              <div className="flex flex-col items-center justify-center">
+              {/* Center divider with VS - Hidden on mobile */}
+              <div className="hidden sm:flex flex-col items-center justify-center">
                 <div className="w-px h-full bg-gradient-to-b from-transparent via-border to-transparent" />
               </div>
 
               {/* Away scorers */}
               <div className="space-y-2">
-                <div className="flex items-center justify-end gap-2 pb-2 border-b border-border/50">
-                  <span className="text-sm font-semibold truncate">
+                <div className="flex items-center sm:justify-end gap-2 pb-2 border-b border-border/50">
+                  <span className="text-xs sm:text-sm font-semibold truncate sm:order-2">
                     {awayTeam.name}
                   </span>
                   {awayTeam.logo && (
@@ -297,7 +297,7 @@ export function EventsTab({ events, homeTeam, awayTeam }: EventsTabProps) {
                       alt={awayTeam.name}
                       width={24}
                       height={24}
-                      className="object-contain"
+                      className="object-contain w-5 h-5 sm:w-6 sm:h-6 sm:order-3"
                     />
                   )}
                 </div>
@@ -306,18 +306,18 @@ export function EventsTab({ events, homeTeam, awayTeam }: EventsTabProps) {
                     goalScorers.away.map((scorer, i) => (
                       <div
                         key={i}
-                        className="flex items-center justify-end gap-2 text-sm group"
+                        className="flex items-center gap-1.5 sm:gap-2 sm:justify-end text-xs sm:text-sm group"
                       >
-                        <span className="text-foreground group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors">
+                        <div className="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0 sm:order-2">
+                          <span className="text-[10px] sm:text-xs">⚽</span>
+                        </div>
+                        <span className="text-foreground group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors truncate sm:order-1">
                           {scorer}
                         </span>
-                        <div className="w-5 h-5 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
-                          <span className="text-xs">⚽</span>
-                        </div>
                       </div>
                     ))
                   ) : (
-                    <p className="text-sm text-muted-foreground italic text-right">
+                    <p className="text-xs sm:text-sm text-muted-foreground italic sm:text-right">
                       No goals
                     </p>
                   )}
@@ -375,58 +375,58 @@ function EventRow({ event, homeTeamId }: EventRowProps) {
   return (
     <div
       className={cn(
-        "flex items-center gap-3 px-4 py-3 transition-colors hover:bg-muted/30",
+        "flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-3 transition-colors hover:bg-muted/30",
         isHomeTeam ? "flex-row" : "flex-row-reverse",
       )}
     >
       {/* Event content */}
       <div
         className={cn(
-          "flex-1 flex items-center gap-3",
+          "flex-1 flex items-center gap-2 sm:gap-3 min-w-0",
           isHomeTeam ? "flex-row" : "flex-row-reverse",
         )}
       >
         {/* Event icon */}
         <div
           className={cn(
-            "flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center border",
+            "flex-shrink-0 w-7 h-7 sm:w-9 sm:h-9 rounded-full flex items-center justify-center border",
             config.bgClass,
             config.borderClass,
           )}
         >
-          <span className="text-base">{config.icon}</span>
+          <span className="text-sm sm:text-base">{config.icon}</span>
         </div>
 
         {/* Event details */}
-        <div className={cn("min-w-0", isHomeTeam ? "text-left" : "text-right")}>
-          <p className={cn("font-medium text-sm", config.textClass)}>
+        <div className={cn("min-w-0 flex-1", isHomeTeam ? "text-left" : "text-right")}>
+          <p className={cn("font-medium text-xs sm:text-sm truncate", config.textClass)}>
             {event.playerName}
           </p>
           {event.type === "substitution" && event.relatedPlayerName && (
-            <p className="text-xs text-muted-foreground">
+            <p className="text-[10px] sm:text-xs text-muted-foreground truncate">
               {isHomeTeam ? "↔ " : ""}
               {event.relatedPlayerName}
               {!isHomeTeam ? " ↔" : ""}
             </p>
           )}
           {event.type === "goal" && event.relatedPlayerName && (
-            <p className="text-xs text-muted-foreground">
+            <p className="text-[10px] sm:text-xs text-muted-foreground truncate">
               Assist: {event.relatedPlayerName}
             </p>
           )}
-          <p className="text-xs text-muted-foreground">{label}</p>
+          <p className="text-[10px] sm:text-xs text-muted-foreground">{label}</p>
         </div>
       </div>
 
       {/* Minute badge - always in center */}
-      <div className="flex-shrink-0 w-14 text-center">
-        <Badge variant="outline" className="text-xs font-mono tabular-nums">
+      <div className="flex-shrink-0 w-12 sm:w-14 text-center">
+        <Badge variant="outline" className="text-[10px] sm:text-xs font-mono tabular-nums">
           {formatMinute(event.minute, event.extraMinute)}
         </Badge>
       </div>
 
       {/* Spacer to balance the layout */}
-      <div className="flex-1" />
+      <div className="flex-1 min-w-0" />
     </div>
   );
 }

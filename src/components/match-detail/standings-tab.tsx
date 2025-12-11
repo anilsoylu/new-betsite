@@ -40,15 +40,15 @@ export function StandingsTab({
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b bg-muted/50">
-                <th className="text-left p-3 w-8">#</th>
-                <th className="text-left p-3">Team</th>
-                <th className="text-center p-3 w-10">P</th>
-                <th className="text-center p-3 w-10">W</th>
-                <th className="text-center p-3 w-10">D</th>
-                <th className="text-center p-3 w-10">L</th>
-                <th className="text-center p-3 w-12">GD</th>
-                <th className="text-center p-3 w-10 font-semibold">Pts</th>
-                <th className="text-center p-3 w-24 hidden sm:table-cell">
+                <th className="text-left p-2 sm:p-3 w-6 sm:w-8 text-xs sm:text-sm">#</th>
+                <th className="text-left p-2 sm:p-3 text-xs sm:text-sm">Team</th>
+                <th className="text-center p-2 sm:p-3 w-8 sm:w-10 text-xs sm:text-sm">P</th>
+                <th className="text-center p-2 sm:p-3 w-8 sm:w-10 text-xs sm:text-sm hidden md:table-cell">W</th>
+                <th className="text-center p-2 sm:p-3 w-8 sm:w-10 text-xs sm:text-sm hidden md:table-cell">D</th>
+                <th className="text-center p-2 sm:p-3 w-8 sm:w-10 text-xs sm:text-sm hidden md:table-cell">L</th>
+                <th className="text-center p-2 sm:p-3 w-10 sm:w-12 text-xs sm:text-sm">GD</th>
+                <th className="text-center p-2 sm:p-3 w-8 sm:w-10 font-semibold text-xs sm:text-sm">Pts</th>
+                <th className="text-center p-2 sm:p-3 w-20 sm:w-24 text-xs sm:text-sm hidden lg:table-cell">
                   Form
                 </th>
               </tr>
@@ -85,11 +85,11 @@ function StandingRow({ standing, isHighlighted }: StandingRowProps) {
         isHighlighted && "bg-primary/5",
       )}
     >
-      <td className="p-3 text-muted-foreground">{standing.position}</td>
-      <td className="p-3">
+      <td className="p-2 sm:p-3 text-muted-foreground text-xs sm:text-sm">{standing.position}</td>
+      <td className="p-2 sm:p-3">
         <Link
           href={getTeamUrl(standing.teamName, standing.teamId)}
-          className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+          className="flex items-center gap-1.5 sm:gap-2 hover:opacity-80 transition-opacity"
         >
           {standing.teamLogo && (
             <Image
@@ -97,12 +97,12 @@ function StandingRow({ standing, isHighlighted }: StandingRowProps) {
               alt={standing.teamName}
               width={20}
               height={20}
-              className="object-contain"
+              className="object-contain w-4 h-4 sm:w-5 sm:h-5"
             />
           )}
           <span
             className={cn(
-              "truncate max-w-[120px] sm:max-w-[180px]",
+              "truncate max-w-[80px] sm:max-w-[120px] md:max-w-[180px] text-xs sm:text-sm",
               isHighlighted && "font-semibold",
             )}
           >
@@ -110,11 +110,11 @@ function StandingRow({ standing, isHighlighted }: StandingRowProps) {
           </span>
         </Link>
       </td>
-      <td className="p-3 text-center tabular-nums">{standing.played}</td>
-      <td className="p-3 text-center tabular-nums">{standing.won}</td>
-      <td className="p-3 text-center tabular-nums">{standing.drawn}</td>
-      <td className="p-3 text-center tabular-nums">{standing.lost}</td>
-      <td className="p-3 text-center tabular-nums">
+      <td className="p-2 sm:p-3 text-center tabular-nums text-xs sm:text-sm">{standing.played}</td>
+      <td className="p-2 sm:p-3 text-center tabular-nums text-xs sm:text-sm hidden md:table-cell">{standing.won}</td>
+      <td className="p-2 sm:p-3 text-center tabular-nums text-xs sm:text-sm hidden md:table-cell">{standing.drawn}</td>
+      <td className="p-2 sm:p-3 text-center tabular-nums text-xs sm:text-sm hidden md:table-cell">{standing.lost}</td>
+      <td className="p-2 sm:p-3 text-center tabular-nums text-xs sm:text-sm">
         <span
           className={cn(
             standing.goalDifference > 0 && "text-green-600 dark:text-green-400",
@@ -126,11 +126,11 @@ function StandingRow({ standing, isHighlighted }: StandingRowProps) {
             : standing.goalDifference}
         </span>
       </td>
-      <td className="p-3 text-center font-semibold tabular-nums">
+      <td className="p-2 sm:p-3 text-center font-semibold tabular-nums text-xs sm:text-sm">
         {standing.points}
       </td>
-      <td className="p-3 hidden sm:table-cell">
-        <div className="flex justify-center gap-1">
+      <td className="p-2 sm:p-3 hidden lg:table-cell">
+        <div className="flex justify-center gap-0.5 sm:gap-1">
           {standing.form.slice(0, 5).map((result, index) => (
             <FormBadge key={index} result={result} />
           ))}

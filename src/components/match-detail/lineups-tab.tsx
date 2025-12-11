@@ -2,13 +2,14 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { AlertCircle, Users } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { cn } from "@/lib/utils";
+import { cn, getPlayerUrl } from "@/lib/utils";
 import type { TeamLineup, Team, LineupPlayer } from "@/types/football";
 
 interface LineupsTabProps {
@@ -458,9 +459,15 @@ function PlayerList({ players, compact = false }: PlayerListProps) {
           <span className="w-6 text-muted-foreground tabular-nums text-right">
             {player.jerseyNumber}
           </span>
-          <span className={compact ? "text-muted-foreground" : "font-medium"}>
+          <Link
+            href={getPlayerUrl(player.name, player.playerId)}
+            className={cn(
+              "hover:underline transition-colors",
+              compact ? "text-muted-foreground hover:text-foreground" : "font-medium hover:text-primary"
+            )}
+          >
             {player.name}
-          </span>
+          </Link>
         </div>
       ))}
     </div>

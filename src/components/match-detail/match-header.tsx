@@ -155,12 +155,12 @@ export function MatchHeader({ fixture, homeForm, awayForm }: MatchHeaderProps) {
           </div>
 
           {/* Teams and score */}
-          <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center justify-between gap-2 sm:gap-3 md:gap-4">
             {/* Home team */}
-            <div className="flex-1 text-center">
+            <div className="flex-1 text-center min-w-0">
               <Link
                 href={getTeamUrl(homeTeam.name, homeTeam.id)}
-                className="group inline-block"
+                className="group inline-block w-full"
               >
                 {homeTeam.logo && (
                   <Image
@@ -168,33 +168,34 @@ export function MatchHeader({ fixture, homeForm, awayForm }: MatchHeaderProps) {
                     alt={homeTeam.name}
                     width={80}
                     height={80}
-                    className="object-contain mx-auto mb-3 group-hover:scale-105 transition-transform"
+                    className="object-contain mx-auto mb-2 sm:mb-3 group-hover:scale-105 transition-transform w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20"
                   />
                 )}
                 <p
-                  className={`font-semibold text-lg group-hover:text-primary transition-colors ${
+                  className={`font-semibold text-sm sm:text-base md:text-lg line-clamp-2 text-center overflow-hidden hyphens-auto group-hover:text-primary transition-colors ${
                     homeTeam.isWinner
                       ? "text-foreground"
                       : "text-muted-foreground"
                   }`}
+                  style={{ wordBreak: 'break-word', overflowWrap: 'break-word' }}
                 >
                   {homeTeam.name}
                 </p>
               </Link>
               {homeFormResults.length > 0 && (
-                <div className="flex justify-center mt-2">
+                <div className="hidden sm:flex justify-center mt-2">
                   <FormStrip form={homeFormResults} size="sm" />
                 </div>
               )}
             </div>
 
             {/* Score */}
-            <div className="text-center px-6">
+            <div className="text-center px-3 sm:px-4 md:px-6">
               {score ||
               isLive ||
               status === "halftime" ||
               status === "finished" ? (
-                <div className="text-5xl font-bold tabular-nums">
+                <div className="text-3xl sm:text-4xl md:text-5xl font-bold tabular-nums">
                   <span
                     className={
                       homeTeam.isWinner
@@ -204,7 +205,7 @@ export function MatchHeader({ fixture, homeForm, awayForm }: MatchHeaderProps) {
                   >
                     {homeScore}
                   </span>
-                  <span className="text-muted-foreground mx-3">-</span>
+                  <span className="text-muted-foreground mx-2 sm:mx-3">-</span>
                   <span
                     className={
                       awayTeam.isWinner
@@ -216,24 +217,24 @@ export function MatchHeader({ fixture, homeForm, awayForm }: MatchHeaderProps) {
                   </span>
                 </div>
               ) : (
-                <div className="text-3xl font-bold text-muted-foreground">
+                <div className="text-2xl sm:text-3xl font-bold text-muted-foreground">
                   vs
                 </div>
               )}
               {score &&
                 score.halftimeHome !== null &&
                 score.halftimeAway !== null && (
-                  <p className="text-sm text-muted-foreground mt-2">
+                  <p className="text-xs sm:text-sm text-muted-foreground mt-1 sm:mt-2">
                     HT: {score.halftimeHome} - {score.halftimeAway}
                   </p>
                 )}
             </div>
 
             {/* Away team */}
-            <div className="flex-1 text-center">
+            <div className="flex-1 text-center min-w-0">
               <Link
                 href={getTeamUrl(awayTeam.name, awayTeam.id)}
-                className="group inline-block"
+                className="group inline-block w-full"
               >
                 {awayTeam.logo && (
                   <Image
@@ -241,21 +242,22 @@ export function MatchHeader({ fixture, homeForm, awayForm }: MatchHeaderProps) {
                     alt={awayTeam.name}
                     width={80}
                     height={80}
-                    className="object-contain mx-auto mb-3 group-hover:scale-105 transition-transform"
+                    className="object-contain mx-auto mb-2 sm:mb-3 group-hover:scale-105 transition-transform w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20"
                   />
                 )}
                 <p
-                  className={`font-semibold text-lg group-hover:text-primary transition-colors ${
+                  className={`font-semibold text-sm sm:text-base md:text-lg line-clamp-2 text-center overflow-hidden hyphens-auto group-hover:text-primary transition-colors ${
                     awayTeam.isWinner
                       ? "text-foreground"
                       : "text-muted-foreground"
                   }`}
+                  style={{ wordBreak: 'break-word', overflowWrap: 'break-word' }}
                 >
                   {awayTeam.name}
                 </p>
               </Link>
               {awayFormResults.length > 0 && (
-                <div className="flex justify-center mt-2">
+                <div className="hidden sm:flex justify-center mt-2">
                   <FormStrip form={awayFormResults} size="sm" />
                 </div>
               )}

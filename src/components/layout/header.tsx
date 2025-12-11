@@ -3,23 +3,14 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Moon, Sun, Star } from "lucide-react"
+import { Moon, Sun } from "lucide-react"
 import { useTheme } from "next-themes"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { SITE } from "@/lib/constants"
 import { GlobalSearch } from "@/components/layout/global-search"
 import { useFavoritesStore } from "@/stores/favorites-store"
-
-const navItems = [
-  { href: "/", label: "Home" },
-  { href: "/matches", label: "Matches" },
-  { href: "/teams", label: "Teams" },
-  { href: "/leagues", label: "Leagues" },
-  { href: "/live", label: "Live", isLive: true },
-  { href: "/players", label: "Players" },
-  { href: "/favorites", label: "Favorites", icon: Star },
-]
+import { getDesktopNavItems } from "@/config/navigation"
 
 export function Header() {
   const pathname = usePathname()
@@ -45,6 +36,7 @@ export function Header() {
   }
 
   const displayCount = hasMounted ? favoriteCount : 0
+  const navItems = getDesktopNavItems()
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
@@ -60,8 +52,8 @@ export function Header() {
         <nav className="hidden md:flex items-center space-x-1 text-sm font-medium">
           {navItems.map((item) => {
             const isActive = pathname === item.href
-            const isFavorites = item.href === "/favorites"
-            const isLiveItem = "isLive" in item && item.isLive
+            const isFavorites = item.showFavoritesCount
+            const isLiveItem = item.isLive
 
             return (
               <Link
@@ -82,8 +74,8 @@ export function Header() {
                     <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500" />
                   </span>
                 )}
-                {isFavorites && (
-                  <Star
+                {isFavorites && item.icon && (
+                  <item.icon
                     className={cn(
                       "h-4 w-4",
                       isActive && "fill-yellow-500 text-yellow-500"

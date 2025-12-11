@@ -198,12 +198,12 @@ export default async function TeamOverviewPage({
               <CardContent className="pt-6">
                 <Link
                   href={getFixtureUrl(nextMatch)}
-                  className="block hover:bg-muted/50 rounded-lg p-4 -m-4 transition-colors"
+                  className="block hover:bg-muted/50 rounded-lg p-3 sm:p-4 -m-3 sm:-m-4 transition-colors"
                 >
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between gap-2 sm:gap-3">
                     {/* Home Team */}
-                    <div className="flex flex-col items-center gap-3 flex-1">
-                      <div className="relative h-20 w-20">
+                    <div className="flex flex-col items-center gap-2 sm:gap-3 flex-1 min-w-0">
+                      <div className="relative h-14 w-14 sm:h-16 sm:w-16 md:h-20 md:w-20">
                         <Image
                           src={nextMatch.homeTeam.logo}
                           alt={nextMatch.homeTeam.name}
@@ -212,7 +212,7 @@ export default async function TeamOverviewPage({
                         />
                       </div>
                       <span
-                        className={`text-sm font-medium text-center ${
+                        className={`text-xs sm:text-sm font-medium text-center line-clamp-2 ${
                           nextMatch.homeTeam.id === teamId ? "text-primary" : ""
                         }`}
                       >
@@ -221,8 +221,8 @@ export default async function TeamOverviewPage({
                     </div>
 
                     {/* Match Time */}
-                    <div className="flex flex-col items-center gap-2 px-6">
-                      <span className="text-2xl font-bold">
+                    <div className="flex flex-col items-center gap-1 sm:gap-2 px-3 sm:px-4 md:px-6 flex-shrink-0">
+                      <span className="text-xl sm:text-2xl font-bold">
                         {new Date(nextMatch.startTime).toLocaleTimeString(
                           "en-GB",
                           {
@@ -231,7 +231,7 @@ export default async function TeamOverviewPage({
                           }
                         )}
                       </span>
-                      <span className="text-sm text-muted-foreground">
+                      <span className="text-xs sm:text-sm text-muted-foreground whitespace-nowrap">
                         {new Date(nextMatch.startTime).toLocaleDateString(
                           "en-GB",
                           {
@@ -244,8 +244,8 @@ export default async function TeamOverviewPage({
                     </div>
 
                     {/* Away Team */}
-                    <div className="flex flex-col items-center gap-3 flex-1">
-                      <div className="relative h-20 w-20">
+                    <div className="flex flex-col items-center gap-2 sm:gap-3 flex-1 min-w-0">
+                      <div className="relative h-14 w-14 sm:h-16 sm:w-16 md:h-20 md:w-20">
                         <Image
                           src={nextMatch.awayTeam.logo}
                           alt={nextMatch.awayTeam.name}
@@ -254,7 +254,7 @@ export default async function TeamOverviewPage({
                         />
                       </div>
                       <span
-                        className={`text-sm font-medium text-center ${
+                        className={`text-xs sm:text-sm font-medium text-center line-clamp-2 ${
                           nextMatch.awayTeam.id === teamId ? "text-primary" : ""
                         }`}
                       >
@@ -372,42 +372,42 @@ export default async function TeamOverviewPage({
               </div>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-4 gap-4 text-center">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 text-center">
                 <div>
-                  <p className="text-2xl font-bold">
+                  <p className="text-xl sm:text-2xl font-bold">
                     {
                       team.squad.filter((p) => p.positionGroup === "Goalkeeper")
                         .length
                     }
                   </p>
-                  <p className="text-xs text-muted-foreground">Goalkeepers</p>
+                  <p className="text-[10px] sm:text-xs text-muted-foreground">Goalkeepers</p>
                 </div>
                 <div>
-                  <p className="text-2xl font-bold">
+                  <p className="text-xl sm:text-2xl font-bold">
                     {
                       team.squad.filter((p) => p.positionGroup === "Defender")
                         .length
                     }
                   </p>
-                  <p className="text-xs text-muted-foreground">Defenders</p>
+                  <p className="text-[10px] sm:text-xs text-muted-foreground">Defenders</p>
                 </div>
                 <div>
-                  <p className="text-2xl font-bold">
+                  <p className="text-xl sm:text-2xl font-bold">
                     {
                       team.squad.filter((p) => p.positionGroup === "Midfielder")
                         .length
                     }
                   </p>
-                  <p className="text-xs text-muted-foreground">Midfielders</p>
+                  <p className="text-[10px] sm:text-xs text-muted-foreground">Midfielders</p>
                 </div>
                 <div>
-                  <p className="text-2xl font-bold">
+                  <p className="text-xl sm:text-2xl font-bold">
                     {
                       team.squad.filter((p) => p.positionGroup === "Attacker")
                         .length
                     }
                   </p>
-                  <p className="text-xs text-muted-foreground">Attackers</p>
+                  <p className="text-[10px] sm:text-xs text-muted-foreground">Attackers</p>
                 </div>
               </div>
               <div className="mt-4 pt-4 border-t">
@@ -508,17 +508,17 @@ export default async function TeamOverviewPage({
                 </CardHeader>
                 <CardContent className="p-0">
                   <div className="overflow-x-auto">
-                    <table className="w-full text-sm">
+                    <table className="w-full text-xs sm:text-sm">
                       <thead>
                         <tr className="border-b text-muted-foreground">
-                          <th className="px-3 py-2 text-left font-medium">#</th>
-                          <th className="px-3 py-2 text-left font-medium">
+                          <th className="px-2 sm:px-3 py-2 text-left font-medium">#</th>
+                          <th className="px-2 sm:px-3 py-2 text-left font-medium">
                             Team
                           </th>
-                          <th className="px-3 py-2 text-center font-medium">
+                          <th className="px-2 sm:px-3 py-2 text-center font-medium">
                             P
                           </th>
-                          <th className="px-3 py-2 text-center font-medium">
+                          <th className="px-2 sm:px-3 py-2 text-center font-medium">
                             Pts
                           </th>
                         </tr>
@@ -542,16 +542,16 @@ export default async function TeamOverviewPage({
                                   : ""
                               }`}
                             >
-                              <td className="px-3 py-2">{standing.position}</td>
-                              <td className="px-3 py-2">
+                              <td className="px-2 sm:px-3 py-2">{standing.position}</td>
+                              <td className="px-2 sm:px-3 py-2">
                                 <Link
                                   href={getTeamUrl(
                                     standing.teamName,
                                     standing.teamId
                                   )}
-                                  className="flex items-center gap-2 hover:text-primary transition-colors"
+                                  className="flex items-center gap-1.5 sm:gap-2 hover:text-primary transition-colors"
                                 >
-                                  <div className="relative h-4 w-4 shrink-0">
+                                  <div className="relative h-3 w-3 sm:h-4 sm:w-4 shrink-0">
                                     <Image
                                       src={standing.teamLogo}
                                       alt={standing.teamName}
@@ -559,15 +559,15 @@ export default async function TeamOverviewPage({
                                       className="object-contain"
                                     />
                                   </div>
-                                  <span className="truncate max-w-[100px]">
+                                  <span className="truncate max-w-[70px] sm:max-w-[100px]">
                                     {standing.teamName}
                                   </span>
                                 </Link>
                               </td>
-                              <td className="px-3 py-2 text-center">
+                              <td className="px-2 sm:px-3 py-2 text-center">
                                 {standing.played}
                               </td>
-                              <td className="px-3 py-2 text-center font-medium">
+                              <td className="px-2 sm:px-3 py-2 text-center font-medium">
                                 {standing.points}
                               </td>
                             </tr>

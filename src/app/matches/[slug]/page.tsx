@@ -106,7 +106,7 @@ export default async function MatchDetailPage({
       {/* Main content grid */}
       <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_280px]">
         {/* Tabs section */}
-        <div className="order-2 lg:order-1">
+        <div className="lg:order-1">
           <MatchTabs fixture={fixture} standings={standings} h2h={h2h} />
 
           {/* Match Article */}
@@ -120,7 +120,7 @@ export default async function MatchDetailPage({
         </div>
 
         {/* Sidebar */}
-        <div className="order-1 lg:order-2 space-y-4">
+        <div className="lg:order-2 space-y-4">
           {/* Odds Card */}
           {odds && (
             <OddsCard

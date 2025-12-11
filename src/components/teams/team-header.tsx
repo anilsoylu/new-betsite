@@ -33,11 +33,39 @@ export function TeamHeader({ team }: TeamHeaderProps) {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,_var(--primary)_1px,_transparent_1px)] bg-[length:20px_20px]" />
       </div>
 
-      <div className="relative p-6">
-        <div className="flex items-start gap-5">
+      <div className="relative p-4 sm:p-6">
+        {/* Actions - Mobile: Absolute top-right, Desktop: In flow */}
+        <div className="absolute top-3 right-3 sm:static sm:hidden flex items-center gap-1.5">
+          <button
+            onClick={handleFollowClick}
+            className={cn(
+              "p-2 rounded-full transition-all",
+              isFollowing
+                ? "bg-yellow-500 text-white hover:bg-yellow-600"
+                : "bg-muted/80 backdrop-blur-sm hover:bg-muted text-foreground"
+            )}
+          >
+            <Star className={cn("h-4 w-4", isFollowing && "fill-current")} />
+          </button>
+          <button
+            className="p-2 rounded-full bg-muted/80 backdrop-blur-sm hover:bg-muted transition-colors"
+            aria-label="Notifications"
+          >
+            <Bell className="h-4 w-4" />
+          </button>
+          <button
+            className="p-2 rounded-full bg-muted/80 backdrop-blur-sm hover:bg-muted transition-colors"
+            aria-label="Share"
+          >
+            <Share2 className="h-4 w-4" />
+          </button>
+        </div>
+
+        {/* Mobile: Centered stack, Desktop: Horizontal */}
+        <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-5">
           {/* Team Logo */}
           <div className="shrink-0">
-            <div className="h-20 w-20 sm:h-24 sm:w-24 rounded-2xl bg-white shadow-lg flex items-center justify-center p-3">
+            <div className="h-20 w-20 sm:h-20 sm:w-20 md:h-24 md:w-24 rounded-2xl bg-white shadow-lg flex items-center justify-center p-3">
               {team.logo ? (
                 <Image
                   src={team.logo}
@@ -48,18 +76,18 @@ export function TeamHeader({ team }: TeamHeaderProps) {
                   priority
                 />
               ) : (
-                <span className="text-4xl font-bold text-muted-foreground">
+                <span className="text-3xl sm:text-3xl md:text-4xl font-bold text-muted-foreground">
                   {team.name.charAt(0)}
                 </span>
               )}
             </div>
           </div>
 
-          {/* Team Info */}
-          <div className="flex-1 min-w-0">
+          {/* Team Info - Mobile: Centered, Desktop: Left aligned */}
+          <div className="flex-1 min-w-0 text-center sm:text-left">
             {/* Country */}
             {team.country && (
-              <div className="flex items-center gap-2 mb-1">
+              <div className="flex items-center justify-center sm:justify-start gap-1.5 sm:gap-2 mb-1">
                 {team.country.flag && (
                   <Image
                     src={team.country.flag}
@@ -69,20 +97,27 @@ export function TeamHeader({ team }: TeamHeaderProps) {
                     className="object-contain rounded-sm"
                   />
                 )}
-                <span className="text-sm text-muted-foreground">
+                <span className="text-xs sm:text-sm text-muted-foreground">
                   {team.country.name}
                 </span>
               </div>
             )}
 
-            <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-2">
+            <h1 className="text-2xl sm:text-2xl md:text-3xl font-bold tracking-tight mb-2">
               {team.name}
             </h1>
 
-            {/* Badges & Info */}
-            <div className="flex flex-wrap items-center gap-2">
+            {/* Short Code Badge - Always visible */}
+            {team.shortCode && (
+              <div className="flex justify-center sm:justify-start mb-3 sm:mb-0 sm:hidden">
+                <Badge variant="outline" className="text-xs">{team.shortCode}</Badge>
+              </div>
+            )}
+
+            {/* Meta Info - Hidden on mobile, shown on tablet+ */}
+            <div className="hidden sm:flex flex-wrap items-center gap-2 mt-1">
               {team.shortCode && (
-                <Badge variant="outline">{team.shortCode}</Badge>
+                <Badge variant="outline" className="text-xs">{team.shortCode}</Badge>
               )}
               {team.founded && (
                 <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-muted text-muted-foreground text-xs">
@@ -105,24 +140,32 @@ export function TeamHeader({ team }: TeamHeaderProps) {
 
             {/* Active Competitions */}
             {team.activeSeasons.length > 0 && (
-              <div className="mt-3 flex flex-wrap items-center gap-2">
-                <Trophy className="h-4 w-4 text-muted-foreground" />
-                {team.activeSeasons.slice(0, 4).map((season) => (
-                  <Badge key={season.id} variant="secondary" className="text-xs">
-                    {season.league?.name || season.name}
-                  </Badge>
-                ))}
-                {team.activeSeasons.length > 4 && (
-                  <Badge variant="outline" className="text-xs">
-                    +{team.activeSeasons.length - 4} more
-                  </Badge>
-                )}
+              <div className="mt-3 flex flex-wrap items-center justify-center sm:justify-start gap-1.5 sm:gap-2">
+                <Trophy className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
+                {/* Mobile: Text only, no badges */}
+                <span className="sm:hidden text-xs text-muted-foreground">
+                  {team.activeSeasons.slice(0, 3).map(s => s.league?.name || s.name).join(" • ")}
+                  {team.activeSeasons.length > 3 && ` +${team.activeSeasons.length - 3}`}
+                </span>
+                {/* Desktop: Badges */}
+                <div className="hidden sm:flex flex-wrap gap-1.5">
+                  {team.activeSeasons.slice(0, 4).map((season) => (
+                    <Badge key={season.id} variant="secondary" className="text-xs">
+                      {season.league?.name || season.name}
+                    </Badge>
+                  ))}
+                  {team.activeSeasons.length > 4 && (
+                    <Badge variant="outline" className="text-xs">
+                      +{team.activeSeasons.length - 4}
+                    </Badge>
+                  )}
+                </div>
               </div>
             )}
           </div>
 
-          {/* Actions */}
-          <div className="flex items-center gap-2 shrink-0">
+          {/* Desktop Actions - Hidden on mobile */}
+          <div className="hidden sm:flex items-center gap-2 shrink-0">
             <button
               onClick={handleFollowClick}
               className={cn(
@@ -133,9 +176,7 @@ export function TeamHeader({ team }: TeamHeaderProps) {
               )}
             >
               <Star className={cn("h-4 w-4", isFollowing && "fill-current")} />
-              <span className="hidden sm:inline">
-                {isFollowing ? "Following" : "Follow"}
-              </span>
+              {isFollowing ? "Following" : "Follow"}
             </button>
             <button
               className="p-2 rounded-full bg-muted hover:bg-muted/80 transition-colors"

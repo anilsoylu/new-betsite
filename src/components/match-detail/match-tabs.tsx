@@ -1,44 +1,40 @@
-"use client";
+"use client"
 
-import { useState } from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { EventsTab } from "./events-tab";
-import { StatisticsTab } from "./statistics-tab";
-import { LineupsTab } from "./lineups-tab";
-import { StandingsTab } from "./standings-tab";
-import { H2HTab } from "./h2h-tab";
-import { useLiveFixture } from "@/hooks";
-import type {
-  FixtureDetail,
-  StandingTable,
-  H2HFixture,
-} from "@/types/football";
+import { useState } from "react"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { EventsTab } from "./events-tab"
+import { StatisticsTab } from "./statistics-tab"
+import { LineupsTab } from "./lineups-tab"
+import { StandingsTab } from "./standings-tab"
+import { H2HTab } from "./h2h-tab"
+import { useLiveFixture } from "@/hooks"
+import type { FixtureDetail, StandingTable, H2HFixture } from "@/types/football"
 
 interface MatchTabsProps {
-  fixture: FixtureDetail;
-  standings: Array<StandingTable>;
-  h2h: Array<H2HFixture>;
+  fixture: FixtureDetail
+  standings: Array<StandingTable>
+  h2h: Array<H2HFixture>
 }
 
 export function MatchTabs({ fixture, standings, h2h }: MatchTabsProps) {
-  const hasEvents = fixture.events.length > 0;
-  const hasStatistics = fixture.statistics.length > 0;
-  const hasLineups = fixture.homeLineup || fixture.awayLineup;
-  const hasStandings = standings.length > 0;
-  const hasH2H = h2h.length > 0;
+  const hasEvents = fixture.events.length > 0
+  const hasStatistics = fixture.statistics.length > 0
+  const hasLineups = fixture.homeLineup || fixture.awayLineup
+  const hasStandings = standings.length > 0
+  const hasH2H = h2h.length > 0
 
   // Determine default tab based on available data
   const getDefaultTab = () => {
     // For live/finished matches, prioritize events
-    if (hasEvents) return "events";
-    if (hasLineups) return "lineups";
-    if (hasStatistics) return "statistics";
-    if (hasStandings) return "standings";
-    if (hasH2H) return "h2h";
-    return "lineups";
-  };
+    if (hasEvents) return "events"
+    if (hasLineups) return "lineups"
+    if (hasStatistics) return "statistics"
+    if (hasStandings) return "standings"
+    if (hasH2H) return "h2h"
+    return "lineups"
+  }
 
-  const [activeTab, setActiveTab] = useState(getDefaultTab);
+  const [activeTab, setActiveTab] = useState(getDefaultTab)
 
   return (
     <Tabs
@@ -47,12 +43,22 @@ export function MatchTabs({ fixture, standings, h2h }: MatchTabsProps) {
       onValueChange={setActiveTab}
       className="w-full"
     >
-      <TabsList className="w-full grid grid-cols-5 mb-4">
-        <TabsTrigger value="events">Events</TabsTrigger>
-        <TabsTrigger value="lineups">Lineups</TabsTrigger>
-        <TabsTrigger value="statistics">Statistics</TabsTrigger>
-        <TabsTrigger value="standings">Standings</TabsTrigger>
-        <TabsTrigger value="h2h">H2H</TabsTrigger>
+      <TabsList className="w-full inline-flex md:grid md:grid-cols-5 min-w-max md:min-w-0">
+        <TabsTrigger value="events" className="text-sm w-full">
+          Events
+        </TabsTrigger>
+        <TabsTrigger value="lineups" className="text-sm w-full">
+          Lineups
+        </TabsTrigger>
+        <TabsTrigger value="statistics" className="text-sm w-full">
+          Statistics
+        </TabsTrigger>
+        <TabsTrigger value="standings" className="text-sm w-full">
+          Standings
+        </TabsTrigger>
+        <TabsTrigger value="h2h" className="text-sm w-full">
+          H2H
+        </TabsTrigger>
       </TabsList>
 
       <TabsContent value="events">
@@ -112,7 +118,7 @@ export function MatchTabs({ fixture, standings, h2h }: MatchTabsProps) {
         )}
       </TabsContent>
     </Tabs>
-  );
+  )
 }
 
 function EmptyState({ message }: { message: string }) {
@@ -120,5 +126,5 @@ function EmptyState({ message }: { message: string }) {
     <div className="py-12 text-center text-muted-foreground">
       <p>{message}</p>
     </div>
-  );
+  )
 }
