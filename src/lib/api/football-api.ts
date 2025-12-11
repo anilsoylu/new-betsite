@@ -93,7 +93,8 @@ export async function getLiveFixtures(): Promise<Array<Fixture>> {
     cache: "live",
   });
 
-  const fixtures = response.data.map(mapFixture);
+  // Handle case when no live fixtures (API returns undefined/null)
+  const fixtures = (response.data ?? []).map(mapFixture);
   return fixtures.slice(0, UI.fixtures.maxLiveFixtures);
 }
 
