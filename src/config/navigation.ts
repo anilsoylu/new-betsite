@@ -66,7 +66,8 @@ export const NAV_ITEMS: NavItem[] = [
     label: "Players",
     icon: Shirt,
     showOnDesktop: true,
-    showOnMobile: true, // Bottom nav
+    showOnMobile: false,
+    showInMobileSheet: true, // In hamburger menu (moved from bottom nav)
   },
   {
     href: "/leagues",
@@ -81,8 +82,7 @@ export const NAV_ITEMS: NavItem[] = [
     label: "Live",
     icon: Radio,
     showOnDesktop: true,
-    showOnMobile: false,
-    showInMobileSheet: true, // In hamburger menu
+    showOnMobile: true, // Bottom nav (moved from sheet)
     isLive: true,
   },
   {

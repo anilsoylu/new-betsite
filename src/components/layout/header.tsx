@@ -42,8 +42,8 @@ export function Header() {
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
       <div className="container mx-auto flex h-14 items-center px-4">
         {/* Logo */}
-        <Link href="/" className="mr-8 flex items-center space-x-2">
-          <h1 className="text-xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+        <Link href="/" className="mr-2 sm:mr-8 flex items-center space-x-2">
+          <h1 className="text-sm sm:text-xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
             {SITE.name}
           </h1>
         </Link>

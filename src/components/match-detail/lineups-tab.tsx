@@ -102,69 +102,97 @@ function PitchView({
     <Card className="overflow-hidden py-0">
       <CardContent className="p-0">
         {/* Header with team names and formations */}
-        <div className="flex justify-between items-center px-4 py-3 bg-muted/50 border-b">
-          <div className="flex items-center gap-2">
+        <div className="flex justify-between items-center px-2 sm:px-4 py-2 sm:py-3 bg-muted/50 border-b">
+          <div className="flex items-center gap-1 sm:gap-2 min-w-0">
             {homeTeam.logo && (
               <Image
                 src={homeTeam.logo}
                 alt={homeTeam.name}
                 width={24}
                 height={24}
-                className="object-contain"
+                className="object-contain shrink-0"
               />
             )}
-            <span className="font-medium text-sm">{homeTeam.name}</span>
+            <span className="font-medium text-xs sm:text-sm truncate max-w-[80px] sm:max-w-none">
+              {homeTeam.name}
+            </span>
             {homeLineup?.formation && (
-              <Badge variant="outline" className="text-xs font-mono">
+              <Badge
+                variant="outline"
+                className="text-[10px] sm:text-xs font-mono shrink-0"
+              >
                 {homeLineup.formation}
               </Badge>
             )}
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 sm:gap-2 min-w-0">
             {awayLineup?.formation && (
-              <Badge variant="outline" className="text-xs font-mono">
+              <Badge
+                variant="outline"
+                className="text-[10px] sm:text-xs font-mono shrink-0"
+              >
                 {awayLineup.formation}
               </Badge>
             )}
-            <span className="font-medium text-sm">{awayTeam.name}</span>
+            <span className="font-medium text-xs sm:text-sm truncate max-w-[80px] sm:max-w-none">
+              {awayTeam.name}
+            </span>
             {awayTeam.logo && (
               <Image
                 src={awayTeam.logo}
                 alt={awayTeam.name}
                 width={24}
                 height={24}
-                className="object-contain"
+                className="object-contain shrink-0"
               />
             )}
           </div>
         </div>
 
-        {/* Football Pitch - Horizontal */}
-        <div className="relative bg-gradient-to-r from-green-700 via-green-600 to-green-700 dark:from-green-900 dark:via-green-800 dark:to-green-900">
-          {/* Pitch markings */}
-          <div className="absolute inset-0 pointer-events-none">
-            {/* Center line */}
-            <div className="absolute top-0 bottom-0 left-1/2 w-px bg-white/30" />
+        {/* Football Pitch - Vertical on mobile, Horizontal on desktop */}
+        <div className="relative bg-gradient-to-b sm:bg-gradient-to-r from-green-700 via-green-600 to-green-700 dark:from-green-900 dark:via-green-800 dark:to-green-900">
+          {/* Pitch markings - Mobile (vertical) */}
+          <div className="absolute inset-0 pointer-events-none sm:hidden">
+            {/* Center line - horizontal on mobile */}
+            <div className="absolute left-0 right-0 top-1/2 h-px bg-white/30" />
             {/* Center circle */}
-            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 border border-white/30 rounded-full" />
+            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 border border-white/30 rounded-full" />
             {/* Center dot */}
-            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 bg-white/30 rounded-full" />
+            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-white/30 rounded-full" />
 
-            {/* Left penalty area (Home) */}
-            <div className="absolute top-1/2 -translate-y-1/2 left-0 w-16 h-36 border-t border-b border-r border-white/30" />
-            <div className="absolute top-1/2 -translate-y-1/2 left-0 w-6 h-20 border-t border-b border-r border-white/30" />
+            {/* Top penalty area (Home) */}
+            <div className="absolute left-1/2 -translate-x-1/2 top-0 w-32 h-12 border-b border-l border-r border-white/30" />
+            <div className="absolute left-1/2 -translate-x-1/2 top-0 w-16 h-5 border-b border-l border-r border-white/30" />
 
-            {/* Right penalty area (Away) */}
-            <div className="absolute top-1/2 -translate-y-1/2 right-0 w-16 h-36 border-t border-b border-l border-white/30" />
-            <div className="absolute top-1/2 -translate-y-1/2 right-0 w-6 h-20 border-t border-b border-l border-white/30" />
+            {/* Bottom penalty area (Away) */}
+            <div className="absolute left-1/2 -translate-x-1/2 bottom-0 w-32 h-12 border-t border-l border-r border-white/30" />
+            <div className="absolute left-1/2 -translate-x-1/2 bottom-0 w-16 h-5 border-t border-l border-r border-white/30" />
           </div>
 
-          {/* Players container - Horizontal layout */}
-          <div className="relative flex min-h-[500px] py-4">
-            {/* Home team (left side) */}
+          {/* Pitch markings - Desktop (horizontal) */}
+          <div className="absolute inset-0 pointer-events-none hidden sm:block">
+            {/* Center line - vertical on desktop */}
+            <div className="absolute top-0 bottom-0 left-1/2 w-px bg-white/30" />
+            {/* Center circle */}
+            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 sm:w-20 sm:h-20 md:w-24 md:h-24 border border-white/30 rounded-full" />
+            {/* Center dot */}
+            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 sm:w-2 sm:h-2 bg-white/30 rounded-full" />
+
+            {/* Left penalty area (Home) */}
+            <div className="absolute top-1/2 -translate-y-1/2 left-0 sm:w-12 md:w-16 sm:h-30 md:h-36 border-t border-b border-r border-white/30" />
+            <div className="absolute top-1/2 -translate-y-1/2 left-0 sm:w-5 md:w-6 sm:h-16 md:h-20 border-t border-b border-r border-white/30" />
+
+            {/* Right penalty area (Away) */}
+            <div className="absolute top-1/2 -translate-y-1/2 right-0 sm:w-12 md:w-16 sm:h-30 md:h-36 border-t border-b border-l border-white/30" />
+            <div className="absolute top-1/2 -translate-y-1/2 right-0 sm:w-5 md:w-6 sm:h-16 md:h-20 border-t border-b border-l border-white/30" />
+          </div>
+
+          {/* Players container - Vertical on mobile, Horizontal on desktop */}
+          <div className="relative flex flex-col sm:flex-row min-h-[500px] sm:min-h-[420px] md:min-h-[500px] py-2 sm:py-4">
+            {/* Home team (top on mobile, left on desktop) */}
             <div className="flex-1 relative">
               {homeLineup ? (
-                <HorizontalFormation lineup={homeLineup} isHome={true} />
+                <FormationView lineup={homeLineup} isHome={true} />
               ) : (
                 <div className="flex items-center justify-center h-full text-white/60">
                   Not available
@@ -172,10 +200,10 @@ function PitchView({
               )}
             </div>
 
-            {/* Away team (right side) */}
+            {/* Away team (bottom on mobile, right on desktop) */}
             <div className="flex-1 relative">
               {awayLineup ? (
-                <HorizontalFormation lineup={awayLineup} isHome={false} />
+                <FormationView lineup={awayLineup} isHome={false} />
               ) : (
                 <div className="flex items-center justify-center h-full text-white/60">
                   Not available
@@ -189,26 +217,35 @@ function PitchView({
   );
 }
 
-// Horizontal Formation Layout Component
-interface HorizontalFormationProps {
+// Formation Layout Component - Vertical on mobile, Horizontal on desktop
+interface FormationViewProps {
   lineup: TeamLineup;
   isHome: boolean;
 }
 
-function HorizontalFormation({ lineup, isHome }: HorizontalFormationProps) {
+function FormationView({ lineup, isHome }: FormationViewProps) {
   const columns = groupPlayersByPosition(lineup.starters);
 
   return (
     <div
       className={cn(
         "flex h-full items-stretch",
-        isHome ? "flex-row" : "flex-row-reverse",
+        // Mobile: vertical (columns become rows)
+        // Desktop: horizontal
+        isHome
+          ? "flex-col sm:flex-row"
+          : "flex-col-reverse sm:flex-row-reverse",
       )}
     >
       {columns.map((column, colIndex) => (
         <div
           key={colIndex}
-          className="flex flex-col justify-around items-center flex-1 py-4"
+          className={cn(
+            "flex justify-around items-center flex-1",
+            // Mobile: horizontal row of players, Desktop: vertical column
+            "flex-row sm:flex-col",
+            "px-1 py-1 sm:px-0 sm:py-2 md:py-4",
+          )}
         >
           {column.map((player) => (
             <PlayerMarker key={player.id} player={player} isHome={isHome} />
@@ -285,14 +322,14 @@ function PlayerMarker({ player, isHome, onClick }: PlayerMarkerProps) {
       <div className="relative">
         <Avatar
           className={cn(
-            "w-9 h-9 sm:w-11 sm:h-11 border-2 shadow-lg",
+            "w-7 h-7 sm:w-9 sm:h-9 md:w-11 md:h-11 border-2 shadow-lg",
             isHome ? "border-blue-400" : "border-red-400",
           )}
         >
           <AvatarImage src={player.image || undefined} alt={player.name} />
           <AvatarFallback
             className={cn(
-              "text-xs font-bold",
+              "text-[10px] sm:text-xs font-bold",
               isHome ? "bg-blue-600 text-white" : "bg-red-600 text-white",
             )}
           >
@@ -302,7 +339,7 @@ function PlayerMarker({ player, isHome, onClick }: PlayerMarkerProps) {
         {/* Jersey number badge */}
         <span
           className={cn(
-            "absolute -bottom-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold shadow border",
+            "absolute -bottom-0.5 -right-0.5 sm:-bottom-1 sm:-right-1 w-4 h-4 sm:w-5 sm:h-5 rounded-full flex items-center justify-center text-[8px] sm:text-[10px] font-bold shadow border",
             isHome
               ? "bg-blue-700 text-white border-blue-500"
               : "bg-red-700 text-white border-red-500",
@@ -312,7 +349,7 @@ function PlayerMarker({ player, isHome, onClick }: PlayerMarkerProps) {
         </span>
       </div>
       {/* Player name */}
-      <span className="text-[8px] sm:text-[10px] font-medium text-white text-center leading-tight max-w-[55px] sm:max-w-[65px] truncate drop-shadow-md">
+      <span className="text-[7px] sm:text-[8px] md:text-[10px] font-medium text-white text-center leading-tight max-w-[45px] sm:max-w-[55px] md:max-w-[65px] truncate drop-shadow-md">
         {shortName}
       </span>
     </button>
@@ -351,34 +388,47 @@ function ListView({
 }: ListViewProps) {
   return (
     <div className="space-y-4">
-      {/* Formations header */}
-      <div className="flex justify-between items-center">
-        <div className="text-center">
-          <p className="text-sm text-muted-foreground">{homeTeam.name}</p>
-          {homeLineup?.formation && (
-            <Badge variant="outline" className="mt-1">
-              {homeLineup.formation}
-            </Badge>
-          )}
+      {/* Formations header - responsive */}
+      <div className="grid grid-cols-2 gap-2 sm:gap-4">
+        <div className="flex items-center gap-2 p-2 sm:p-3 bg-muted/50 rounded-lg">
+          <div className="min-w-0 flex-1">
+            <p className="text-xs sm:text-sm text-muted-foreground truncate">
+              {homeTeam.name}
+            </p>
+            {homeLineup?.formation && (
+              <Badge variant="outline" className="mt-1 text-xs">
+                {homeLineup.formation}
+              </Badge>
+            )}
+          </div>
         </div>
-        <div className="text-sm text-muted-foreground">Formation</div>
-        <div className="text-center">
-          <p className="text-sm text-muted-foreground">{awayTeam.name}</p>
-          {awayLineup?.formation && (
-            <Badge variant="outline" className="mt-1">
-              {awayLineup.formation}
-            </Badge>
-          )}
+        <div className="flex items-center gap-2 p-2 sm:p-3 bg-muted/50 rounded-lg justify-end text-right">
+          <div className="min-w-0 flex-1">
+            <p className="text-xs sm:text-sm text-muted-foreground truncate">
+              {awayTeam.name}
+            </p>
+            {awayLineup?.formation && (
+              <Badge variant="outline" className="mt-1 text-xs">
+                {awayLineup.formation}
+              </Badge>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Starting XI */}
-      <div className="grid grid-cols-2 gap-4">
+      {/* Starting XI - responsive grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
         <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Starting XI</CardTitle>
+          <CardHeader className="pb-2 px-3 sm:px-6">
+            <CardTitle className="text-xs sm:text-sm font-medium flex items-center gap-2">
+              <span className="hidden sm:inline">{homeTeam.name}</span>
+              <span className="sm:hidden truncate max-w-[120px]">
+                {homeTeam.name}
+              </span>
+              <span className="text-muted-foreground">- Starting XI</span>
+            </CardTitle>
           </CardHeader>
-          <CardContent className="pt-0">
+          <CardContent className="pt-0 px-3 sm:px-6">
             {homeLineup ? (
               <PlayerList players={homeLineup.starters} />
             ) : (
@@ -388,10 +438,16 @@ function ListView({
         </Card>
 
         <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Starting XI</CardTitle>
+          <CardHeader className="pb-2 px-3 sm:px-6">
+            <CardTitle className="text-xs sm:text-sm font-medium flex items-center gap-2">
+              <span className="hidden sm:inline">{awayTeam.name}</span>
+              <span className="sm:hidden truncate max-w-[120px]">
+                {awayTeam.name}
+              </span>
+              <span className="text-muted-foreground">- Starting XI</span>
+            </CardTitle>
           </CardHeader>
-          <CardContent className="pt-0">
+          <CardContent className="pt-0 px-3 sm:px-6">
             {awayLineup ? (
               <PlayerList players={awayLineup.starters} />
             ) : (
@@ -401,16 +457,16 @@ function ListView({
         </Card>
       </div>
 
-      {/* Substitutes */}
+      {/* Substitutes - responsive grid */}
       {hasAnySubstitutes && (
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
           <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Substitutes
+            <CardHeader className="pb-2 px-3 sm:px-6">
+              <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground">
+                {homeTeam.name} - Substitutes
               </CardTitle>
             </CardHeader>
-            <CardContent className="pt-0">
+            <CardContent className="pt-0 px-3 sm:px-6">
               {homeLineup && homeLineup.substitutes.length > 0 ? (
                 <PlayerList players={homeLineup.substitutes} compact />
               ) : (
@@ -420,12 +476,12 @@ function ListView({
           </Card>
 
           <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Substitutes
+            <CardHeader className="pb-2 px-3 sm:px-6">
+              <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground">
+                {awayTeam.name} - Substitutes
               </CardTitle>
             </CardHeader>
-            <CardContent className="pt-0">
+            <CardContent className="pt-0 px-3 sm:px-6">
               {awayLineup && awayLineup.substitutes.length > 0 ? (
                 <PlayerList players={awayLineup.substitutes} compact />
               ) : (
@@ -450,20 +506,25 @@ function PlayerList({ players, compact = false }: PlayerListProps) {
   );
 
   return (
-    <div className={compact ? "space-y-1" : "space-y-2"}>
+    <div className={compact ? "space-y-1" : "space-y-1.5 sm:space-y-2"}>
       {sortedPlayers.map((player) => (
         <div
           key={player.id}
-          className={cn("flex items-center gap-2", compact && "text-sm")}
+          className={cn(
+            "flex items-center gap-1.5 sm:gap-2",
+            compact ? "text-xs sm:text-sm" : "text-sm",
+          )}
         >
-          <span className="w-6 text-muted-foreground tabular-nums text-right">
+          <span className="w-5 sm:w-6 text-muted-foreground tabular-nums text-right text-xs sm:text-sm">
             {player.jerseyNumber}
           </span>
           <Link
             href={getPlayerUrl(player.name, player.playerId)}
             className={cn(
-              "hover:underline transition-colors",
-              compact ? "text-muted-foreground hover:text-foreground" : "font-medium hover:text-primary"
+              "hover:underline transition-colors truncate",
+              compact
+                ? "text-muted-foreground hover:text-foreground"
+                : "font-medium hover:text-primary",
             )}
           >
             {player.name}

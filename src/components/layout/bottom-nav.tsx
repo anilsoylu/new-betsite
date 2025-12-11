@@ -28,67 +28,76 @@ export function BottomNav() {
 
       <nav className="fixed bottom-0 left-0 right-0 z-50 border-t bg-background md:hidden safe-area-bottom">
         <div className="flex items-center justify-around h-16">
-        {navItems.map((item) => {
-          const isActive = pathname === item.href;
-          const isFavorites = item.showFavoritesCount;
+          {navItems.map((item) => {
+            const isActive = pathname === item.href;
+            const isFavorites = item.showFavoritesCount;
+            const isLiveItem = item.isLive;
 
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                "flex flex-col items-center justify-center gap-1 w-full h-full transition-colors relative",
-                isActive
-                  ? "text-primary"
-                  : "text-muted-foreground hover:text-foreground",
-              )}
-            >
-              <div className="relative">
-                {item.icon && (
-                  <item.icon
-                    className={cn(
-                      "h-5 w-5 transition-transform",
-                      isActive && "scale-110",
-                      isFavorites &&
-                        isActive &&
-                        "fill-yellow-500 text-yellow-500",
-                    )}
-                  />
-                )}
-                {/* Favorite count badge */}
-                {isFavorites && favoriteCount > 0 && (
-                  <span className="absolute -top-1.5 -right-2 min-w-[16px] h-4 px-1 text-[10px] font-bold bg-yellow-500 text-yellow-950 rounded-full flex items-center justify-center">
-                    {favoriteCount > 99 ? "99+" : favoriteCount}
-                  </span>
-                )}
-              </div>
-              <span
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
                 className={cn(
-                  "text-[10px] font-medium",
-                  isActive && "font-semibold",
+                  "flex flex-col items-center justify-center gap-1 w-full h-full transition-colors relative",
+                  isActive
+                    ? "text-primary"
+                    : "text-muted-foreground hover:text-foreground",
+                  isLiveItem && !isActive && "text-red-500",
                 )}
               >
-                {item.label}
-              </span>
-              {/* Active indicator */}
-              {isActive && (
-                <span className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-primary rounded-full" />
-              )}
-            </Link>
-          );
-        })}
+                <div className="relative">
+                  {item.icon && (
+                    <item.icon
+                      className={cn(
+                        "h-5 w-5 transition-transform",
+                        isActive && "scale-110",
+                        isFavorites &&
+                          isActive &&
+                          "fill-yellow-500 text-yellow-500",
+                      )}
+                    />
+                  )}
+                  {/* Live indicator - pulsing red dot */}
+                  {isLiveItem && (
+                    <span className="absolute -top-1 -right-1 flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75" />
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500" />
+                    </span>
+                  )}
+                  {/* Favorite count badge */}
+                  {isFavorites && favoriteCount > 0 && (
+                    <span className="absolute -top-1.5 -right-2 min-w-[16px] h-4 px-1 text-[10px] font-bold bg-yellow-500 text-yellow-950 rounded-full flex items-center justify-center">
+                      {favoriteCount > 99 ? "99+" : favoriteCount}
+                    </span>
+                  )}
+                </div>
+                <span
+                  className={cn(
+                    "text-[10px] font-medium",
+                    isActive && "font-semibold",
+                  )}
+                >
+                  {item.label}
+                </span>
+                {/* Active indicator */}
+                {isActive && (
+                  <span className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-primary rounded-full" />
+                )}
+              </Link>
+            );
+          })}
 
-        {/* Hamburger Menu Button */}
-        <button
-          type="button"
-          onClick={() => setSheetOpen(true)}
-          className="flex flex-col items-center justify-center gap-1 w-full h-full transition-colors text-muted-foreground hover:text-foreground"
-        >
-          <Menu className="h-5 w-5" />
-          <span className="text-[10px] font-medium">Menu</span>
-        </button>
-      </div>
-    </nav>
+          {/* Hamburger Menu Button */}
+          <button
+            type="button"
+            onClick={() => setSheetOpen(true)}
+            className="flex flex-col items-center justify-center gap-1 w-full h-full transition-colors text-muted-foreground hover:text-foreground"
+          >
+            <Menu className="h-5 w-5" />
+            <span className="text-[10px] font-medium">Menu</span>
+          </button>
+        </div>
+      </nav>
     </>
   );
 }
