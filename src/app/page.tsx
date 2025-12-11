@@ -9,11 +9,14 @@ import {
   BuildXI,
   StandingsWidget,
 } from "@/components/sidebar"
-import { SEO } from "@/lib/constants"
+import { SEO, SITE } from "@/lib/constants"
 
 export const metadata: Metadata = {
   title: SEO.home.title,
   description: SEO.home.description,
+  alternates: {
+    canonical: SITE.url,
+  },
 }
 
 export default async function HomePage() {

@@ -1,5 +1,5 @@
 import type { Metadata } from "next"
-import { SEO } from "@/lib/constants"
+import { SEO, SITE } from "@/lib/constants"
 
 export const metadata: Metadata = {
   title: SEO.favorites.title,
@@ -7,6 +7,9 @@ export const metadata: Metadata = {
   robots: {
     index: false,
     follow: false,
+  },
+  alternates: {
+    canonical: `${SITE.url}/favorites`,
   },
 }
 

@@ -113,14 +113,14 @@ export function TeamTabs({
 
   return (
     <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-      <div className="border-b border-border sticky top-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-10">
-        <TabsList className="h-auto p-0 bg-transparent rounded-none flex gap-1 overflow-x-auto scrollbar-hide">
+      <div className="border-b border-border sticky top-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-10 overflow-x-auto scrollbar-hide">
+        <TabsList className="h-auto p-0 bg-transparent rounded-none flex gap-1">
           {visibleTabs.map((tab) => (
             <TabsTrigger
               key={tab}
               value={tab}
               className={cn(
-                "px-4 py-3 text-sm font-medium rounded-none border-b-2 transition-colors whitespace-nowrap data-[state=inactive]:border-transparent",
+                "flex-shrink-0 px-4 py-3 text-sm font-medium rounded-none border-b-2 transition-colors whitespace-nowrap data-[state=inactive]:border-transparent",
                 "data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none",
                 "data-[state=inactive]:text-muted-foreground hover:text-foreground hover:border-border"
               )}

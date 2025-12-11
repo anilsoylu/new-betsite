@@ -16,6 +16,9 @@ export const metadata: Metadata = {
   title: `Players | ${SITE.name}`,
   description:
     "Discover top goalscorers from the best football leagues. Find player statistics, career history and more.",
+  alternates: {
+    canonical: `${SITE.url}/players`,
+  },
 };
 
 export default async function PlayersPage() {

@@ -81,6 +81,26 @@ export function HomeContent({
     }
   };
 
+  // Poll live fixtures every 30 seconds when viewing today
+  useEffect(() => {
+    if (!isToday) return;
+
+    const pollLiveFixtures = async () => {
+      try {
+        const response = await fetch("/api/fixtures/live");
+        if (response.ok) {
+          const data = await response.json();
+          setLiveFixtures(data.fixtures || []);
+        }
+      } catch (error) {
+        console.error("Failed to poll live fixtures:", error);
+      }
+    };
+
+    const interval = setInterval(pollLiveFixtures, 30000);
+    return () => clearInterval(interval);
+  }, [isToday]);
+
   // Group fixtures by league
   const groupFixturesByLeague = (
     fixtures: Fixture[],

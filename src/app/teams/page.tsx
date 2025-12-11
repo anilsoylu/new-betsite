@@ -15,6 +15,9 @@ export const metadata: Metadata = {
   title: `Football Teams | ${SITE.name}`,
   description:
     "Discover and browse football teams from top leagues. Find team information, squad, fixtures and statistics.",
+  alternates: {
+    canonical: `${SITE.url}/teams`,
+  },
 };
 
 export default async function TeamsPage() {

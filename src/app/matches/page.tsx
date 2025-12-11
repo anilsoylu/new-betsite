@@ -14,6 +14,9 @@ export const metadata: Metadata = {
   title: `All Matches | ${SITE.name}`,
   description:
     "Browse all football matches by date. Find live scores, upcoming fixtures and match results.",
+  alternates: {
+    canonical: `${SITE.url}/matches`,
+  },
 };
 
 interface MatchesPageProps {
