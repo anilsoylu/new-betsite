@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { format } from "date-fns";
 import { getMatchDetailData } from "@/lib/queries";
@@ -107,7 +108,9 @@ export default async function MatchDetailPage({
       <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_280px]">
         {/* Tabs section */}
         <div className="lg:order-1">
-          <MatchTabs fixture={fixture} standings={standings} h2h={h2h} />
+          <Suspense fallback={null}>
+            <MatchTabs fixture={fixture} standings={standings} h2h={h2h} />
+          </Suspense>
 
           {/* Match Article */}
           <MatchArticle

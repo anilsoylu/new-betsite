@@ -1,83 +1,41 @@
-import type { Metadata } from "next";
-import { notFound } from "next/navigation";
-import { getTeamById } from "@/lib/api/cached-football-api";
-import { extractTeamId, getPlayerUrl } from "@/lib/utils";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import Image from "next/image";
-import Link from "next/link";
-import { User } from "lucide-react";
-import type { SquadPlayer } from "@/types/football";
-import { SITE, SEO } from "@/lib/constants";
-
-interface TeamSquadPageProps {
-  params: Promise<{ slug: string }>;
-}
-
-export async function generateMetadata({
-  params,
-}: TeamSquadPageProps): Promise<Metadata> {
-  const { slug } = await params;
-  const teamId = extractTeamId(slug);
-
-  if (!teamId) {
-    return { title: "Team Not Found" };
-  }
-
-  try {
-    const team = await getTeamById(teamId);
-    return {
-      title: SEO.teamSquad.titleTemplate(team.name),
-      description: SEO.teamSquad.descriptionTemplate(team.name),
-      alternates: {
-        canonical: `${SITE.url}/teams/${slug}/squad`,
-      },
-    };
-  } catch {
-    return { title: "Team Not Found" };
-  }
-}
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import Image from "next/image"
+import Link from "next/link"
+import { User } from "lucide-react"
+import { getPlayerUrl } from "@/lib/utils"
+import type { TeamDetail, SquadPlayer } from "@/types/football"
 
 // Position group order
-const POSITION_ORDER = ["Goalkeeper", "Defender", "Midfielder", "Attacker"];
+const POSITION_ORDER = ["Goalkeeper", "Defender", "Midfielder", "Attacker"]
 
-export default async function TeamSquadPage({ params }: TeamSquadPageProps) {
-  const { slug } = await params;
-  const teamId = extractTeamId(slug);
+interface TeamSquadContentProps {
+  team: TeamDetail
+}
 
-  if (!teamId) {
-    notFound();
-  }
-
-  let team;
-  try {
-    team = await getTeamById(teamId);
-  } catch {
-    notFound();
-  }
-
+export function TeamSquadContent({ team }: TeamSquadContentProps) {
   // Group players by position
   const squadByPosition = team.squad.reduce(
     (acc, player) => {
-      const group = player.positionGroup || "Unknown";
+      const group = player.positionGroup || "Unknown"
       if (!acc[group]) {
-        acc[group] = [];
+        acc[group] = []
       }
-      acc[group].push(player);
-      return acc;
+      acc[group].push(player)
+      return acc
     },
-    {} as Record<string, SquadPlayer[]>,
-  );
+    {} as Record<string, SquadPlayer[]>
+  )
 
   // Sort groups by position order
   const sortedGroups = Object.entries(squadByPosition).sort(([a], [b]) => {
-    const indexA = POSITION_ORDER.indexOf(a);
-    const indexB = POSITION_ORDER.indexOf(b);
-    if (indexA === -1 && indexB === -1) return 0;
-    if (indexA === -1) return 1;
-    if (indexB === -1) return -1;
-    return indexA - indexB;
-  });
+    const indexA = POSITION_ORDER.indexOf(a)
+    const indexB = POSITION_ORDER.indexOf(b)
+    if (indexA === -1 && indexB === -1) return 0
+    if (indexA === -1) return 1
+    if (indexB === -1) return -1
+    return indexA - indexB
+  })
 
   return (
     <div className="space-y-6">
@@ -121,7 +79,7 @@ export default async function TeamSquadPage({ params }: TeamSquadPageProps) {
                         day: "numeric",
                         month: "long",
                         year: "numeric",
-                      },
+                      }
                     )}
                   </p>
                 )}
@@ -162,20 +120,20 @@ export default async function TeamSquadPage({ params }: TeamSquadPageProps) {
         </Card>
       )}
     </div>
-  );
+  )
 }
 
 interface PlayerRowProps {
-  player: SquadPlayer;
+  player: SquadPlayer
 }
 
 function PlayerRow({ player }: PlayerRowProps) {
   const age = player.dateOfBirth
     ? Math.floor(
         (Date.now() - new Date(player.dateOfBirth).getTime()) /
-          (365.25 * 24 * 60 * 60 * 1000),
+          (365.25 * 24 * 60 * 60 * 1000)
       )
-    : null;
+    : null
 
   return (
     <Link
@@ -227,5 +185,5 @@ function PlayerRow({ player }: PlayerRowProps) {
         </div>
       )}
     </Link>
-  );
+  )
 }

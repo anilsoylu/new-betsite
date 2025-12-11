@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation"
-import { getTeamById, getFixturesByTeam } from "@/lib/api/cached-football-api"
+import { getTeamById } from "@/lib/api/cached-football-api"
 import { extractTeamId } from "@/lib/utils"
-import { TeamHeader, TeamNavTabs } from "@/components/teams"
+import { TeamHeader } from "@/components/teams"
 
 interface TeamLayoutProps {
   children: React.ReactNode
@@ -20,25 +20,12 @@ export default async function TeamLayout({
   }
 
   let team
-  let fixtures
 
   try {
-    ;[team, fixtures] = await Promise.all([
-      getTeamById(teamId),
-      getFixturesByTeam(teamId, { past: 5, future: 5 }),
-    ])
+    team = await getTeamById(teamId)
   } catch {
     notFound()
   }
-
-  // Check data availability for conditional tabs
-  // For now, we'll show all tabs and handle empty states in each page
-  const hasStats = true
-  const hasTransfers = true
-  const hasHistory = true
-
-  const nextMatch = fixtures.upcoming[0] || null
-  const lastMatch = fixtures.recent[0] || null
 
   return (
     <main className="flex-1 overflow-auto">
@@ -48,16 +35,8 @@ export default async function TeamLayout({
           <TeamHeader team={team} />
         </div>
 
-        {/* Navigation Tabs */}
-        <TeamNavTabs
-          slug={slug}
-          hasStats={hasStats}
-          hasTransfers={hasTransfers}
-          hasHistory={hasHistory}
-        />
-
-        {/* Tab Content */}
-        <div className="mt-6">{children}</div>
+        {/* Tab Content - tabs are now inside TeamTabs component */}
+        {children}
       </div>
     </main>
   )

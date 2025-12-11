@@ -1,14 +1,26 @@
 "use client"
 
-import { useState } from "react"
+import { useCallback, useEffect, useState } from "react"
+import { useSearchParams, usePathname } from "next/navigation"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { EventsTab } from "./events-tab"
 import { StatisticsTab } from "./statistics-tab"
 import { LineupsTab } from "./lineups-tab"
 import { StandingsTab } from "./standings-tab"
 import { H2HTab } from "./h2h-tab"
-import { useLiveFixture } from "@/hooks"
 import type { FixtureDetail, StandingTable, H2HFixture } from "@/types/football"
+
+export type MatchTab = "events" | "lineups" | "statistics" | "standings" | "h2h"
+
+const VALID_TABS: MatchTab[] = ["events", "lineups", "statistics", "standings", "h2h"]
+
+const TAB_LABELS: Record<MatchTab, string> = {
+  events: "Events",
+  lineups: "Lineups",
+  statistics: "Statistics",
+  standings: "Standings",
+  h2h: "H2H",
+}
 
 interface MatchTabsProps {
   fixture: FixtureDetail
@@ -17,6 +29,9 @@ interface MatchTabsProps {
 }
 
 export function MatchTabs({ fixture, standings, h2h }: MatchTabsProps) {
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
+
   const hasEvents = fixture.events.length > 0
   const hasStatistics = fixture.statistics.length > 0
   const hasLineups = fixture.homeLineup || fixture.awayLineup
@@ -24,7 +39,7 @@ export function MatchTabs({ fixture, standings, h2h }: MatchTabsProps) {
   const hasH2H = h2h.length > 0
 
   // Determine default tab based on available data
-  const getDefaultTab = () => {
+  const getDefaultTab = (): MatchTab => {
     // For live/finished matches, prioritize events
     if (hasEvents) return "events"
     if (hasLineups) return "lineups"
@@ -34,31 +49,61 @@ export function MatchTabs({ fixture, standings, h2h }: MatchTabsProps) {
     return "lineups"
   }
 
-  const [activeTab, setActiveTab] = useState(getDefaultTab)
+  // Get initial tab from URL or use smart default
+  const getInitialTab = (): MatchTab => {
+    const tabParam = searchParams.get("tab")
+    if (tabParam && VALID_TABS.includes(tabParam as MatchTab)) {
+      return tabParam as MatchTab
+    }
+    return getDefaultTab()
+  }
+
+  const [activeTab, setActiveTab] = useState<MatchTab>(getInitialTab)
+
+  // Sync with URL on mount and when searchParams change
+  useEffect(() => {
+    const tabParam = searchParams.get("tab")
+    if (tabParam && VALID_TABS.includes(tabParam as MatchTab)) {
+      setActiveTab(tabParam as MatchTab)
+    } else if (!tabParam) {
+      setActiveTab(getDefaultTab())
+    }
+  }, [searchParams, hasEvents, hasLineups, hasStatistics, hasStandings, hasH2H])
+
+  // Update URL without triggering navigation (pure client-side)
+  const handleTabChange = useCallback(
+    (value: string) => {
+      const newTab = value as MatchTab
+      setActiveTab(newTab)
+
+      // Build new URL
+      const params = new URLSearchParams(searchParams.toString())
+      const defaultTab = getDefaultTab()
+
+      if (newTab === defaultTab) {
+        // Remove param if it's the default tab (cleaner URL)
+        params.delete("tab")
+      } else {
+        params.set("tab", newTab)
+      }
+
+      const queryString = params.toString()
+      const newUrl = queryString ? `${pathname}?${queryString}` : pathname
+
+      // Update URL without navigation (no page reload, no router)
+      window.history.replaceState(null, "", newUrl)
+    },
+    [pathname, searchParams, hasEvents, hasLineups, hasStatistics, hasStandings, hasH2H]
+  )
 
   return (
-    <Tabs
-      defaultValue={getDefaultTab()}
-      value={activeTab}
-      onValueChange={setActiveTab}
-      className="w-full"
-    >
+    <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
       <TabsList className="w-full inline-flex md:grid md:grid-cols-5 min-w-max md:min-w-0">
-        <TabsTrigger value="events" className="text-sm w-full">
-          Events
-        </TabsTrigger>
-        <TabsTrigger value="lineups" className="text-sm w-full">
-          Lineups
-        </TabsTrigger>
-        <TabsTrigger value="statistics" className="text-sm w-full">
-          Statistics
-        </TabsTrigger>
-        <TabsTrigger value="standings" className="text-sm w-full">
-          Standings
-        </TabsTrigger>
-        <TabsTrigger value="h2h" className="text-sm w-full">
-          H2H
-        </TabsTrigger>
+        {VALID_TABS.map((tab) => (
+          <TabsTrigger key={tab} value={tab} className="text-sm w-full">
+            {TAB_LABELS[tab]}
+          </TabsTrigger>
+        ))}
       </TabsList>
 
       <TabsContent value="events">

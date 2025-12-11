@@ -1,83 +1,40 @@
-import type { Metadata } from "next";
-import { notFound } from "next/navigation";
-import { getTeamById, getFixturesByTeam } from "@/lib/api/cached-football-api";
-import { extractTeamId, getFixtureUrl } from "@/lib/utils";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import Image from "next/image";
-import Link from "next/link";
-import { format } from "date-fns";
-import { cn } from "@/lib/utils";
-import type { Fixture } from "@/types/football";
-import { SITE, SEO } from "@/lib/constants";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import Image from "next/image"
+import Link from "next/link"
+import { format } from "date-fns"
+import { cn, getFixtureUrl } from "@/lib/utils"
+import type { Fixture } from "@/types/football"
 
-interface TeamMatchesPageProps {
-  params: Promise<{ slug: string }>;
+interface TeamMatchesContentProps {
+  fixtures: {
+    recent: Fixture[]
+    upcoming: Fixture[]
+  }
+  teamId: number
 }
 
-export async function generateMetadata({
-  params,
-}: TeamMatchesPageProps): Promise<Metadata> {
-  const { slug } = await params;
-  const teamId = extractTeamId(slug);
-
-  if (!teamId) {
-    return { title: "Team Not Found" };
-  }
-
-  try {
-    const team = await getTeamById(teamId);
-    return {
-      title: SEO.teamMatches.titleTemplate(team.name),
-      description: SEO.teamMatches.descriptionTemplate(team.name),
-      alternates: {
-        canonical: `${SITE.url}/teams/${slug}/matches`,
-      },
-    };
-  } catch {
-    return { title: "Team Not Found" };
-  }
-}
-
-export default async function TeamMatchesPage({
-  params,
-}: TeamMatchesPageProps) {
-  const { slug } = await params;
-  const teamId = extractTeamId(slug);
-
-  if (!teamId) {
-    notFound();
-  }
-
-  let team;
-  let fixtures;
-
-  try {
-    [team, fixtures] = await Promise.all([
-      getTeamById(teamId),
-      getFixturesByTeam(teamId, { past: 30, future: 30 }),
-    ]);
-  } catch {
-    notFound();
-  }
-
+export function TeamMatchesContent({
+  fixtures,
+  teamId,
+}: TeamMatchesContentProps) {
   const allFixtures = [
     ...fixtures.recent.map((f) => ({ ...f, isPast: true })),
     ...fixtures.upcoming.map((f) => ({ ...f, isPast: false })),
-  ].sort((a, b) => b.timestamp - a.timestamp);
+  ].sort((a, b) => b.timestamp - a.timestamp)
 
   // Group fixtures by month
   const fixturesByMonth = allFixtures.reduce(
     (acc, fixture) => {
-      const monthKey = format(new Date(fixture.startTime), "MMMM yyyy");
+      const monthKey = format(new Date(fixture.startTime), "MMMM yyyy")
       if (!acc[monthKey]) {
-        acc[monthKey] = [];
+        acc[monthKey] = []
       }
-      acc[monthKey].push(fixture);
-      return acc;
+      acc[monthKey].push(fixture)
+      return acc
     },
-    {} as Record<string, (Fixture & { isPast: boolean })[]>,
-  );
+    {} as Record<string, (Fixture & { isPast: boolean })[]>
+  )
 
   return (
     <div className="space-y-6">
@@ -111,28 +68,28 @@ export default async function TeamMatchesPage({
         </Card>
       )}
     </div>
-  );
+  )
 }
 
 interface MatchRowProps {
-  fixture: Fixture;
-  teamId: number;
+  fixture: Fixture
+  teamId: number
 }
 
 function MatchRow({ fixture, teamId }: MatchRowProps) {
-  const isHome = fixture.homeTeam.id === teamId;
-  const isFinished = fixture.status === "finished";
-  const isLive = fixture.isLive;
+  const isHome = fixture.homeTeam.id === teamId
+  const isFinished = fixture.status === "finished"
+  const isLive = fixture.isLive
 
   // Determine result for this team
-  let result: "W" | "D" | "L" | null = null;
+  let result: "W" | "D" | "L" | null = null
   if (isFinished && fixture.score) {
-    const teamScore = isHome ? fixture.score.home : fixture.score.away;
-    const opponentScore = isHome ? fixture.score.away : fixture.score.home;
+    const teamScore = isHome ? fixture.score.home : fixture.score.away
+    const opponentScore = isHome ? fixture.score.away : fixture.score.home
 
-    if (teamScore > opponentScore) result = "W";
-    else if (teamScore < opponentScore) result = "L";
-    else result = "D";
+    if (teamScore > opponentScore) result = "W"
+    else if (teamScore < opponentScore) result = "L"
+    else result = "D"
   }
 
   return (
@@ -178,7 +135,7 @@ function MatchRow({ fixture, teamId }: MatchRowProps) {
           <span
             className={cn(
               "text-sm truncate",
-              fixture.homeTeam.id === teamId && "font-medium",
+              fixture.homeTeam.id === teamId && "font-medium"
             )}
           >
             {fixture.homeTeam.name}
@@ -196,7 +153,7 @@ function MatchRow({ fixture, teamId }: MatchRowProps) {
           <span
             className={cn(
               "text-sm truncate",
-              fixture.awayTeam.id === teamId && "font-medium",
+              fixture.awayTeam.id === teamId && "font-medium"
             )}
           >
             {fixture.awayTeam.name}
@@ -222,7 +179,7 @@ function MatchRow({ fixture, teamId }: MatchRowProps) {
                   result === "D" &&
                     "bg-yellow-500/10 text-yellow-600 border-yellow-500/30",
                   result === "L" &&
-                    "bg-red-500/10 text-red-600 border-red-500/30",
+                    "bg-red-500/10 text-red-600 border-red-500/30"
                 )}
               >
                 {result}
@@ -240,5 +197,5 @@ function MatchRow({ fixture, teamId }: MatchRowProps) {
         )}
       </div>
     </Link>
-  );
+  )
 }
