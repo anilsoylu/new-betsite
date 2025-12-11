@@ -19,7 +19,7 @@ export async function GET() {
     const sitemapEntries = Array.from({ length: pageCount }, (_, i) => {
       const pageNum = i + 1
       return `  <sitemap>
-    <loc>${SITE.url}/sitemaps/matches/${pageNum}</loc>
+    <loc>${SITE.url}/sitemaps/matches/${pageNum}.xml</loc>
   </sitemap>`
     }).join("\n")
 

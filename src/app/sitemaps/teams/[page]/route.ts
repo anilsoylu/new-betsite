@@ -22,7 +22,13 @@ export async function GET(
   { params }: { params: Promise<{ page: string }> }
 ) {
   const { page: pageParam } = await params
-  const page = Number.parseInt(pageParam, 10)
+
+  // Require .xml extension
+  if (!pageParam.endsWith(".xml")) {
+    notFound()
+  }
+
+  const page = Number.parseInt(pageParam.replace(".xml", ""), 10)
 
   if (Number.isNaN(page) || page < 1) {
     notFound()
