@@ -1,4 +1,4 @@
-import { Home, Trophy, Users, Globe, Star, Shirt, Radio } from "lucide-react";
+import { Home, Trophy, Users, Globe, Star, Shirt, Radio, UsersRound } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 /**
@@ -93,6 +93,14 @@ export const NAV_ITEMS: NavItem[] = [
     showOnMobile: false,
     showInMobileSheet: true, // In hamburger menu
     showFavoritesCount: true,
+  },
+  {
+    href: "/build-xi",
+    label: "Build XI",
+    icon: UsersRound,
+    showOnDesktop: false, // Only in mobile sheet menu
+    showOnMobile: false,
+    showInMobileSheet: true,
   },
 ];
 

@@ -132,6 +132,19 @@ export const SEO = {
     title: `Terms of Service | ${SITE.name}`,
     description: `${SITE.name} terms of service and conditions of use.`,
   },
+  buildXI: {
+    title: `Build Your XI | Create Your Dream Football Lineup | ${SITE.name}`,
+    description:
+      "Create your dream football starting XI. Choose formations, search players from any team or country, and build the perfect lineup. Save, share, and export your custom formations.",
+    keywords: [
+      "football lineup builder",
+      "build your XI",
+      "dream team creator",
+      "football formation maker",
+      "starting XI builder",
+      "custom football lineup",
+    ],
+  },
 } as const;
 
 // Page titles and headings
