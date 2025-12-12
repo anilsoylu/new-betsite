@@ -348,13 +348,15 @@ async function syncMatches(maxPages: number): Promise<void> {
   const formatDate = (d: Date) => d.toISOString().split("T")[0];
 
   for (let page = 1; page <= maxPages; page++) {
-    const result = await fetchFromApi("matches", "/fixtures/between", {
-      page,
-      per_page: 50,
-      startDate: formatDate(startDate),
-      endDate: formatDate(endDate),
-      include: "participants,league",
-    });
+    const result = await fetchFromApi(
+      "matches",
+      `/fixtures/between/${formatDate(startDate)}/${formatDate(endDate)}`,
+      {
+        page,
+        per_page: 50,
+        include: "participants;league",
+      },
+    );
 
     if (!result) break;
 
