@@ -1,9 +1,9 @@
-"use client";
+"use client"
 
-import { useState, useEffect } from "react";
-import Image from "next/image";
-import Link from "next/link";
-import { format } from "date-fns";
+import { useState, useEffect } from "react"
+import Image from "next/image"
+import Link from "next/link"
+import { format } from "date-fns"
 import {
   ArrowLeft,
   MapPin,
@@ -12,34 +12,35 @@ import {
   Star,
   Bell,
   Share2,
-} from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
-import { cn, getTeamUrl } from "@/lib/utils";
-import { useLiveFixtureContext } from "./live-fixture-provider";
-import { useFavoritesStore } from "@/stores/favorites-store";
-import { FormStrip, getFormFromFixtures } from "@/components/teams/form-strip";
-import type { FixtureDetail, FormFixtureData } from "@/types/football";
+} from "lucide-react"
+import { Badge } from "@/components/ui/badge"
+import { Card, CardContent } from "@/components/ui/card"
+import { cn, getTeamUrl } from "@/lib/utils"
+import { useLiveFixtureContext } from "./live-fixture-provider"
+import { useFavoritesStore } from "@/stores/favorites-store"
+import { FormStrip, getFormFromFixtures } from "@/components/teams/form-strip"
+import type { FixtureDetail, FormFixtureData } from "@/types/football"
+import { SharePopover } from "../ui/share-popover"
 
 interface MatchHeaderProps {
-  fixture: FixtureDetail;
-  homeForm?: Array<FormFixtureData>;
-  awayForm?: Array<FormFixtureData>;
+  fixture: FixtureDetail
+  homeForm?: Array<FormFixtureData>
+  awayForm?: Array<FormFixtureData>
 }
 
 export function MatchHeader({ fixture, homeForm, awayForm }: MatchHeaderProps) {
-  const matches = useFavoritesStore((state) => state.matches);
-  const toggleFavorite = useFavoritesStore((state) => state.toggleFavorite);
-  const [isFollowing, setIsFollowing] = useState(false);
+  const matches = useFavoritesStore((state) => state.matches)
+  const toggleFavorite = useFavoritesStore((state) => state.toggleFavorite)
+  const [isFollowing, setIsFollowing] = useState(false)
 
   useEffect(() => {
-    setIsFollowing(matches.includes(fixture.id));
-  }, [matches, fixture.id]);
+    setIsFollowing(matches.includes(fixture.id))
+  }, [matches, fixture.id])
 
   const handleFollowClick = () => {
-    toggleFavorite("matches", fixture.id);
-    setIsFollowing(!isFollowing);
-  };
+    toggleFavorite("matches", fixture.id)
+    setIsFollowing(!isFollowing)
+  }
 
   const {
     homeTeam,
@@ -50,17 +51,17 @@ export function MatchHeader({ fixture, homeForm, awayForm }: MatchHeaderProps) {
     venue,
     startTime,
     referee,
-  } = fixture;
+  } = fixture
 
   // Convert form data to FormStrip format
-  const homeFormResults = homeForm ? getFormFromFixtures(homeForm) : [];
-  const awayFormResults = awayForm ? getFormFromFixtures(awayForm) : [];
-  const formattedDate = format(new Date(startTime), "dd MMM yyyy");
-  const formattedTime = format(new Date(startTime), "HH:mm");
+  const homeFormResults = homeForm ? getFormFromFixtures(homeForm) : []
+  const awayFormResults = awayForm ? getFormFromFixtures(awayForm) : []
+  const formattedDate = format(new Date(startTime), "dd MMM yyyy")
+  const formattedTime = format(new Date(startTime), "HH:mm")
 
   // Get live fixture data from context (polling handled by provider)
   const { status, displayMinute, homeScore, awayScore, isLive } =
-    useLiveFixtureContext();
+    useLiveFixtureContext()
 
   return (
     <div className="space-y-4">
@@ -105,7 +106,7 @@ export function MatchHeader({ fixture, homeForm, awayForm }: MatchHeaderProps) {
               "flex items-center gap-2 px-4 py-2 rounded-full font-medium text-sm transition-all",
               isFollowing
                 ? "bg-yellow-500 text-white hover:bg-yellow-600"
-                : "bg-muted hover:bg-muted/80 text-foreground",
+                : "bg-muted hover:bg-muted/80 text-foreground"
             )}
           >
             <Star className={cn("h-4 w-4", isFollowing && "fill-current")} />
@@ -119,12 +120,7 @@ export function MatchHeader({ fixture, homeForm, awayForm }: MatchHeaderProps) {
           >
             <Bell className="h-4 w-4" />
           </button>
-          <button
-            className="p-2 rounded-full bg-muted hover:bg-muted/80 transition-colors"
-            aria-label="Share"
-          >
-            <Share2 className="h-4 w-4" />
-          </button>
+          <SharePopover title={`${homeTeam.name} vs ${awayTeam.name}`} />
         </div>
       </div>
 
@@ -305,5 +301,5 @@ export function MatchHeader({ fixture, homeForm, awayForm }: MatchHeaderProps) {
         </CardContent>
       </Card>
     </div>
-  );
+  )
 }

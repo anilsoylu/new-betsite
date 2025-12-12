@@ -3,7 +3,8 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { MapPin, Calendar, Trophy, Star, Bell, Share2 } from "lucide-react";
+import { MapPin, Calendar, Trophy, Star, Bell } from "lucide-react";
+import { SharePopover } from "@/components/ui/share-popover";
 import { Badge } from "@/components/ui/badge";
 import { cn, getCoachUrl } from "@/lib/utils";
 import { useFavoritesStore } from "@/stores/favorites-store";
@@ -54,12 +55,7 @@ export function TeamHeader({ team }: TeamHeaderProps) {
           >
             <Bell className="h-4 w-4" />
           </button>
-          <button
-            className="p-2 rounded-full bg-muted/80 backdrop-blur-sm hover:bg-muted transition-colors"
-            aria-label="Share"
-          >
-            <Share2 className="h-4 w-4" />
-          </button>
+          <SharePopover title={team.name} />
         </div>
 
         {/* Mobile: Centered stack, Desktop: Horizontal */}
@@ -200,12 +196,7 @@ export function TeamHeader({ team }: TeamHeaderProps) {
             >
               <Bell className="h-4 w-4" />
             </button>
-            <button
-              className="p-2 rounded-full bg-muted hover:bg-muted/80 transition-colors"
-              aria-label="Share"
-            >
-              <Share2 className="h-4 w-4" />
-            </button>
+            <SharePopover title={team.name} />
           </div>
         </div>
       </div>

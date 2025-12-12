@@ -4,7 +4,8 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { format, parseISO, isValid } from "date-fns";
-import { Star, Bell, Share2, Trophy, Briefcase } from "lucide-react";
+import { Star, Bell, Trophy, Briefcase } from "lucide-react";
+import { SharePopover } from "@/components/ui/share-popover";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn, getTeamUrl } from "@/lib/utils";
 import { useFavoritesStore } from "@/stores/favorites-store";
@@ -138,12 +139,7 @@ export function CoachHeader({ coach }: CoachHeaderProps) {
               >
                 <Bell className="h-4 w-4" />
               </button>
-              <button
-                className="p-2 rounded-full bg-slate-700 hover:bg-slate-600 transition-colors text-white"
-                aria-label="Share"
-              >
-                <Share2 className="h-4 w-4" />
-              </button>
+              <SharePopover title={displayName} variant="dark" />
             </div>
           </div>
         </CardContent>

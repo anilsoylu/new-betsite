@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import { Star, Bell, Share2 } from "lucide-react";
+import { Star, Bell } from "lucide-react";
+import { SharePopover } from "@/components/ui/share-popover";
 import { cn } from "@/lib/utils";
 import { useFavoritesStore } from "@/stores/favorites-store";
 import type { League } from "@/types/football";
@@ -103,12 +104,7 @@ export function LeagueHeader({ league, seasonName }: LeagueHeaderProps) {
             >
               <Bell className="h-4 w-4" />
             </button>
-            <button
-              className="p-2 rounded-full bg-muted hover:bg-muted/80 transition-colors"
-              aria-label="Share"
-            >
-              <Share2 className="h-4 w-4" />
-            </button>
+            <SharePopover title={league.name} />
           </div>
         </div>
       </div>
