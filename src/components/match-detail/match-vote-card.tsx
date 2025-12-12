@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import type { Team, MatchStatus } from "@/types/football";
 import type { VoteTotals, VoteChoice, UserVoteResponse } from "@/lib/vote-db/types";
+import { getFingerprint } from "@/lib/vote-fingerprint";
 
 interface MatchVoteCardProps {
   fixtureId: number;
@@ -147,9 +148,15 @@ export function MatchVoteCard({
       setIsSubmitting(true);
 
       try {
+        // Include fingerprint for rate limiting
+        const fingerprint = getFingerprint();
+
         const res = await fetch(`/api/fixtures/${fixtureId}/votes`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            "X-Vote-FP": fingerprint,
+          },
           body: JSON.stringify({ choice }),
         });
 

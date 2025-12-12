@@ -48,6 +48,7 @@ export interface VoteRow {
 
 export interface RateLimitRow {
   ip: string;
+  fingerprint: string;
   bucket: string;
   count: number;
   updated_at: number;

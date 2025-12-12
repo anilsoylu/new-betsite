@@ -21,6 +21,26 @@ import {
 } from "@/lib/vote-cookie";
 import type { VoteTotalsResponse, SubmitVoteResponse } from "@/lib/vote-db/types";
 
+/**
+ * Get client IP from request headers
+ * Priority: X-Real-IP (Nginx) > X-Forwarded-For (proxy chain) > "unknown"
+ */
+function getClientIp(request: NextRequest): string {
+  return (
+    request.headers.get("x-real-ip") ||
+    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+    "unknown"
+  );
+}
+
+/**
+ * Get fingerprint from request header
+ * Returns empty string if not provided
+ */
+function getFingerprint(request: NextRequest): string {
+  return request.headers.get("x-vote-fp") || "";
+}
+
 interface RouteParams {
   params: Promise<{ id: string }>;
 }
@@ -71,14 +91,12 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     const body = await request.json();
     const { choice } = submitVoteSchema.parse(body);
 
-    // Get client IP for rate limiting
-    const ip =
-      request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
-      request.headers.get("x-real-ip") ||
-      "unknown";
+    // Get client IP and fingerprint for rate limiting
+    const ip = getClientIp(request);
+    const fingerprint = getFingerprint(request);
 
-    // Check rate limit
-    const rateLimitResult = checkRateLimit(ip);
+    // Check rate limit (IP + fingerprint combination)
+    const rateLimitResult = checkRateLimit(ip, fingerprint);
     if (!rateLimitResult.allowed) {
       throw new RateLimitError(rateLimitResult.retryAfter);
     }
@@ -104,8 +122,8 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     // Submit vote (transactional)
     const result = submitVote(fixtureId, voterId, choice);
 
-    // Increment rate limit counter
-    incrementRateLimit(ip);
+    // Increment rate limit counter (IP + fingerprint)
+    incrementRateLimit(ip, fingerprint);
 
     const responseData: SubmitVoteResponse = {
       success: true,

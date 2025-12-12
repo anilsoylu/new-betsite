@@ -82,16 +82,17 @@ function initializeSchema(database: Database.Database): void {
     )
     .run();
 
-  // IP-based rate limiting table
+  // IP + Fingerprint based rate limiting table
   database
     .prepare(
       `
     CREATE TABLE IF NOT EXISTS vote_rate_limits (
       ip TEXT NOT NULL,
+      fingerprint TEXT NOT NULL DEFAULT '',
       bucket TEXT NOT NULL,
       count INTEGER NOT NULL DEFAULT 1,
       updated_at INTEGER NOT NULL,
-      PRIMARY KEY (ip, bucket)
+      PRIMARY KEY (ip, fingerprint, bucket)
     )
   `,
     )
@@ -106,6 +107,63 @@ function initializeSchema(database: Database.Database): void {
   `,
     )
     .run();
+
+  // Migration: Add fingerprint column if missing (for existing databases)
+  migrateRateLimitsTable(database);
+}
+
+/**
+ * Migrate vote_rate_limits table to include fingerprint column
+ * This handles existing databases that don't have the fingerprint column
+ */
+function migrateRateLimitsTable(database: Database.Database): void {
+  // Check if fingerprint column exists
+  const tableInfo = database
+    .prepare("PRAGMA table_info(vote_rate_limits)")
+    .all() as { name: string }[];
+
+  const hasFingerprint = tableInfo.some((col) => col.name === "fingerprint");
+
+  if (!hasFingerprint) {
+    // SQLite doesn't support adding columns to primary key directly
+    // So we need to recreate the table with the new schema
+    database
+      .prepare(
+        `CREATE TABLE IF NOT EXISTS vote_rate_limits_new (
+          ip TEXT NOT NULL,
+          fingerprint TEXT NOT NULL DEFAULT '',
+          bucket TEXT NOT NULL,
+          count INTEGER NOT NULL DEFAULT 1,
+          updated_at INTEGER NOT NULL,
+          PRIMARY KEY (ip, fingerprint, bucket)
+        )`,
+      )
+      .run();
+
+    // Copy existing data (fingerprint will be empty string for old records)
+    database
+      .prepare(
+        `INSERT OR IGNORE INTO vote_rate_limits_new (ip, fingerprint, bucket, count, updated_at)
+         SELECT ip, '', bucket, count, updated_at FROM vote_rate_limits`,
+      )
+      .run();
+
+    // Drop old table
+    database.prepare("DROP TABLE vote_rate_limits").run();
+
+    // Rename new table
+    database
+      .prepare("ALTER TABLE vote_rate_limits_new RENAME TO vote_rate_limits")
+      .run();
+
+    // Recreate index
+    database
+      .prepare(
+        `CREATE INDEX IF NOT EXISTS idx_rate_limits_updated
+         ON vote_rate_limits(updated_at)`,
+      )
+      .run();
+  }
 }
 
 /**

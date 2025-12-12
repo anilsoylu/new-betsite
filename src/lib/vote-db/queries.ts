@@ -19,8 +19,12 @@ import type {
 
 // Rate limit configuration
 const RATE_LIMITS = {
+  // Normal limits (when IP is known)
   fiveMinute: { max: 30, windowMs: 5 * 60 * 1000 },
   daily: { max: 200, windowMs: 24 * 60 * 60 * 1000 },
+  // Strict limits for unknown IP (prevents incognito abuse)
+  unknownFiveMinute: { max: 3, windowMs: 5 * 60 * 1000 },
+  unknownDaily: { max: 10, windowMs: 24 * 60 * 60 * 1000 },
 } as const;
 
 // 10-second cooldown between vote changes
@@ -219,20 +223,31 @@ function getBucketKeys(now: number): { fiveMin: string; day: string } {
 }
 
 /**
- * Check rate limits for an IP
+ * Check rate limits for an IP + fingerprint combination
+ * Uses stricter limits for unknown IPs to prevent incognito abuse
  */
-export function checkRateLimit(ip: string): RateLimitResult {
+export function checkRateLimit(ip: string, fingerprint = ""): RateLimitResult {
   const db = getVoteDatabase();
   const now = Date.now();
   const buckets = getBucketKeys(now);
 
-  const stmt = db.prepare<[string, string], RateLimitRow>(
-    `SELECT * FROM vote_rate_limits WHERE ip = ? AND bucket = ?`,
+  // Use stricter limits for unknown IP
+  const isUnknownIp = ip === "unknown";
+  const fiveMinLimit = isUnknownIp
+    ? RATE_LIMITS.unknownFiveMinute.max
+    : RATE_LIMITS.fiveMinute.max;
+  const dailyLimit = isUnknownIp
+    ? RATE_LIMITS.unknownDaily.max
+    : RATE_LIMITS.daily.max;
+
+  // Query by IP + fingerprint combination
+  const stmt = db.prepare<[string, string, string], RateLimitRow>(
+    `SELECT * FROM vote_rate_limits WHERE ip = ? AND fingerprint = ? AND bucket = ?`,
   );
 
   // Check 5-minute limit
-  const fiveMinRow = stmt.get(ip, buckets.fiveMin);
-  if (fiveMinRow && fiveMinRow.count >= RATE_LIMITS.fiveMinute.max) {
+  const fiveMinRow = stmt.get(ip, fingerprint, buckets.fiveMin);
+  if (fiveMinRow && fiveMinRow.count >= fiveMinLimit) {
     // Calculate retry after (time until next 5-min window)
     const date = new Date(now);
     const currentMinute = date.getMinutes();
@@ -242,8 +257,8 @@ export function checkRateLimit(ip: string): RateLimitResult {
   }
 
   // Check daily limit
-  const dayRow = stmt.get(ip, buckets.day);
-  if (dayRow && dayRow.count >= RATE_LIMITS.daily.max) {
+  const dayRow = stmt.get(ip, fingerprint, buckets.day);
+  if (dayRow && dayRow.count >= dailyLimit) {
     // Calculate retry after (time until midnight)
     const date = new Date(now);
     const midnight = new Date(date);
@@ -256,23 +271,23 @@ export function checkRateLimit(ip: string): RateLimitResult {
 }
 
 /**
- * Increment rate limit counters for an IP
+ * Increment rate limit counters for an IP + fingerprint combination
  */
-export function incrementRateLimit(ip: string): void {
+export function incrementRateLimit(ip: string, fingerprint = ""): void {
   const db = getVoteDatabase();
   const now = Date.now();
   const buckets = getBucketKeys(now);
 
   const upsertStmt = db.prepare(
-    `INSERT INTO vote_rate_limits (ip, bucket, count, updated_at)
-     VALUES (?, ?, 1, ?)
-     ON CONFLICT(ip, bucket) DO UPDATE SET
+    `INSERT INTO vote_rate_limits (ip, fingerprint, bucket, count, updated_at)
+     VALUES (?, ?, ?, 1, ?)
+     ON CONFLICT(ip, fingerprint, bucket) DO UPDATE SET
        count = count + 1,
        updated_at = ?`,
   );
 
-  upsertStmt.run(ip, buckets.fiveMin, now, now);
-  upsertStmt.run(ip, buckets.day, now, now);
+  upsertStmt.run(ip, fingerprint, buckets.fiveMin, now, now);
+  upsertStmt.run(ip, fingerprint, buckets.day, now, now);
 }
 
 /**
