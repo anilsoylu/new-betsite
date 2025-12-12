@@ -6,6 +6,9 @@ import { SITE } from "@/lib/constants";
 import { extractFixtureId } from "@/lib/utils";
 import type { FixtureDetail } from "@/types/football";
 
+// Revalidate every 60 seconds for live score updates
+export const revalidate = 60;
+
 export const alt = "Match Preview";
 export const size = {
   width: 1200,
