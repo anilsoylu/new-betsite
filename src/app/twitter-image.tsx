@@ -1,8 +1,6 @@
 import { ImageResponse } from "next/og";
 import { SITE } from "@/lib/constants";
 
-export const runtime = "edge";
-
 export const alt = SITE.name;
 export const size = {
   width: 1200,
