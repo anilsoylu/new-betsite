@@ -147,7 +147,10 @@ export function LiveContent({ initialFixtures }: LiveContentProps) {
       )}
 
       {/* League Sections */}
-      <section className="flex flex-col gap-3" aria-label="Live matches by league">
+      <section
+        className="flex flex-col gap-3"
+        aria-label="Live matches by league"
+      >
         {sortedLeagues.length === 0 ? (
           <div className="text-center py-16">
             <Radio className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />

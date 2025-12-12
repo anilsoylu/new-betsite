@@ -23,6 +23,8 @@ export type {
   MatchSitemapEntry,
   PlayerCacheInput,
   PlayerRow,
+  CoachCacheInput,
+  CoachRow,
   SitemapEntry,
   SyncStatus,
   TeamCacheInput,
@@ -45,6 +47,9 @@ export {
 
 // Query operations
 export {
+  getCoachCount,
+  getCoachesForSitemap,
+  getCoachPageCount,
   getLeagueCount,
   getLeaguePageCount,
   getLeaguesForSitemap,
@@ -67,6 +72,7 @@ export {
   cacheLeague,
   cacheLeagues,
   cachePlayerDetail,
+  cacheCoachDetail,
   cacheSquadPlayer,
   cacheTeamDetail,
   cacheTeamFromFixture,

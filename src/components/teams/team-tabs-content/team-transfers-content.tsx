@@ -1,16 +1,16 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
-import { ArrowRight, ArrowLeft, Calendar } from "lucide-react"
-import { format } from "date-fns"
-import Link from "next/link"
-import { getPlayerUrl } from "@/lib/utils"
-import type { TeamTransfer } from "@/types/football"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { ArrowRight, ArrowLeft, Calendar } from "lucide-react";
+import { format } from "date-fns";
+import Link from "next/link";
+import { getPlayerUrl } from "@/lib/utils";
+import type { TeamTransfer } from "@/types/football";
 
 interface TeamTransfersContentProps {
-  teamName: string
-  arrivals: TeamTransfer[]
-  departures: TeamTransfer[]
+  teamName: string;
+  arrivals: TeamTransfer[];
+  departures: TeamTransfer[];
 }
 
 export function TeamTransfersContent({
@@ -19,10 +19,10 @@ export function TeamTransfersContent({
   departures,
 }: TeamTransfersContentProps) {
   // Group transfers by year
-  const arrivalsByYear = groupTransfersByYear(arrivals)
-  const departuresByYear = groupTransfersByYear(departures)
+  const arrivalsByYear = groupTransfersByYear(arrivals);
+  const departuresByYear = groupTransfersByYear(departures);
 
-  const hasTransfers = arrivals.length > 0 || departures.length > 0
+  const hasTransfers = arrivals.length > 0 || departures.length > 0;
 
   return (
     <div className="space-y-6">
@@ -122,22 +122,22 @@ export function TeamTransfersContent({
         </div>
       )}
     </div>
-  )
+  );
 }
 
 function TransferRow({
   transfer,
   type,
 }: {
-  transfer: TeamTransfer
-  type: "arrival" | "departure"
+  transfer: TeamTransfer;
+  type: "arrival" | "departure";
 }) {
   const otherTeam =
     type === "arrival"
       ? { name: transfer.fromTeamName, logo: transfer.fromTeamLogo }
-      : { name: transfer.toTeamName, logo: transfer.toTeamLogo }
+      : { name: transfer.toTeamName, logo: transfer.toTeamLogo };
 
-  const playerUrl = getPlayerUrl(transfer.playerName, transfer.playerId)
+  const playerUrl = getPlayerUrl(transfer.playerName, transfer.playerId);
 
   return (
     <div className="flex items-center gap-3 py-2 px-2 rounded-lg hover:bg-muted/50 transition-colors">
@@ -189,7 +189,7 @@ function TransferRow({
         </span>
       </div>
     </div>
-  )
+  );
 }
 
 function TransferTypeBadge({ type }: { type: TeamTransfer["type"] }) {
@@ -222,9 +222,9 @@ function TransferTypeBadge({ type }: { type: TeamTransfer["type"] }) {
       className:
         "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400",
     },
-  }
+  };
 
-  const variant = variants[type]
+  const variant = variants[type];
 
   return (
     <Badge
@@ -233,38 +233,38 @@ function TransferTypeBadge({ type }: { type: TeamTransfer["type"] }) {
     >
       {variant.label}
     </Badge>
-  )
+  );
 }
 
 function groupTransfersByYear(
-  transfers: TeamTransfer[]
+  transfers: TeamTransfer[],
 ): Record<string, TeamTransfer[]> {
   return transfers.reduce(
     (acc, transfer) => {
-      const year = new Date(transfer.date).getFullYear().toString()
+      const year = new Date(transfer.date).getFullYear().toString();
       if (!acc[year]) {
-        acc[year] = []
+        acc[year] = [];
       }
-      acc[year].push(transfer)
-      return acc
+      acc[year].push(transfer);
+      return acc;
     },
-    {} as Record<string, TeamTransfer[]>
-  )
+    {} as Record<string, TeamTransfer[]>,
+  );
 }
 
 function formatTransferFee(amount: number): string {
   if (amount >= 1000000) {
-    return `€${(amount / 1000000).toFixed(1)}M`
+    return `€${(amount / 1000000).toFixed(1)}M`;
   }
   if (amount >= 1000) {
-    return `€${(amount / 1000).toFixed(0)}K`
+    return `€${(amount / 1000).toFixed(0)}K`;
   }
-  return `€${amount}`
+  return `€${amount}`;
 }
 
 function getInitials(name: string): string {
-  const parts = name.split(" ").filter(Boolean)
-  if (parts.length === 0) return "?"
-  if (parts.length === 1) return parts[0].charAt(0).toUpperCase()
-  return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase()
+  const parts = name.split(" ").filter(Boolean);
+  if (parts.length === 0) return "?";
+  if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
+  return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
 }

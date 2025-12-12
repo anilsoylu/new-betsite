@@ -1,4 +1,8 @@
-import type { FormationConfig, PositionSlot, LineupSlotPlayer } from "@/types/build-xi";
+import type {
+  FormationConfig,
+  PositionSlot,
+  LineupSlotPlayer,
+} from "@/types/build-xi";
 
 /**
  * Formation configurations for the lineup builder
@@ -21,7 +25,7 @@ const def = (
   id: string,
   label: string,
   col: number,
-  row = 2
+  row = 2,
 ): PositionSlot => ({
   id,
   label,
@@ -34,7 +38,7 @@ const mid = (
   id: string,
   label: string,
   col: number,
-  row = 3
+  row = 3,
 ): PositionSlot => ({
   id,
   label,
@@ -47,7 +51,7 @@ const att = (
   id: string,
   label: string,
   col: number,
-  row = 4
+  row = 4,
 ): PositionSlot => ({
   id,
   label,
@@ -213,13 +217,13 @@ export function getDefaultFormation(): FormationConfig {
  * Create empty players record for a formation
  */
 export function createEmptyPlayersRecord(
-  formation: FormationConfig
+  formation: FormationConfig,
 ): Record<string, LineupSlotPlayer | null> {
   return formation.positions.reduce(
     (acc, pos) => {
       acc[pos.id] = null;
       return acc;
     },
-    {} as Record<string, LineupSlotPlayer | null>
+    {} as Record<string, LineupSlotPlayer | null>,
   );
 }

@@ -87,6 +87,31 @@ export function initializeSchema(): void {
     ON players(team_id)
   `).run();
 
+  // Coaches table
+  db.prepare(`
+    CREATE TABLE IF NOT EXISTS coaches (
+      id INTEGER PRIMARY KEY,
+      name TEXT NOT NULL,
+      slug TEXT NOT NULL,
+      team_id INTEGER,
+      country TEXT,
+      last_modified TEXT,
+      updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+      include_in_sitemap INTEGER NOT NULL DEFAULT 1
+    )
+  `).run();
+
+  db.prepare(`
+    CREATE INDEX IF NOT EXISTS idx_coaches_sitemap
+    ON coaches(include_in_sitemap)
+    WHERE include_in_sitemap = 1
+  `).run();
+
+  db.prepare(`
+    CREATE INDEX IF NOT EXISTS idx_coaches_team
+    ON coaches(team_id)
+  `).run();
+
   // Matches table
   db.prepare(`
     CREATE TABLE IF NOT EXISTS matches (
@@ -140,6 +165,7 @@ export function getCacheStats(): {
   leagues: number;
   teams: number;
   players: number;
+  coaches: number;
   matches: number;
   totalSize: string;
 } {
@@ -158,6 +184,12 @@ export function getCacheStats(): {
   const playerCount = db
     .prepare(
       "SELECT COUNT(*) as count FROM players WHERE include_in_sitemap = 1",
+    )
+    .get() as { count: number };
+
+  const coachCount = db
+    .prepare(
+      "SELECT COUNT(*) as count FROM coaches WHERE include_in_sitemap = 1",
     )
     .get() as { count: number };
 
@@ -180,6 +212,7 @@ export function getCacheStats(): {
     leagues: leagueCount.count,
     teams: teamCount.count,
     players: playerCount.count,
+    coaches: coachCount.count,
     matches: matchCount.count,
     totalSize,
   };

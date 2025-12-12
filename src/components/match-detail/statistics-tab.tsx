@@ -49,9 +49,15 @@ export function StatisticsTab({
       <CardContent className="p-6">
         {/* Team names header */}
         <div className="flex justify-between items-center gap-2 mb-6 pb-4 border-b">
-          <span className="font-semibold text-xs sm:text-sm md:text-base truncate max-w-[80px] sm:max-w-[120px] md:max-w-none">{homeTeam.name}</span>
-          <span className="text-xs sm:text-sm text-muted-foreground whitespace-nowrap flex-shrink-0">Statistics</span>
-          <span className="font-semibold text-xs sm:text-sm md:text-base truncate max-w-[80px] sm:max-w-[120px] md:max-w-none text-right">{awayTeam.name}</span>
+          <span className="font-semibold text-xs sm:text-sm md:text-base truncate max-w-[80px] sm:max-w-[120px] md:max-w-none">
+            {homeTeam.name}
+          </span>
+          <span className="text-xs sm:text-sm text-muted-foreground whitespace-nowrap flex-shrink-0">
+            Statistics
+          </span>
+          <span className="font-semibold text-xs sm:text-sm md:text-base truncate max-w-[80px] sm:max-w-[120px] md:max-w-none text-right">
+            {awayTeam.name}
+          </span>
         </div>
 
         {/* Statistics list */}
@@ -99,7 +105,9 @@ function StatBar({ stat }: StatBarProps) {
         >
           {homeDisplay}
         </span>
-        <span className="text-muted-foreground text-center truncate max-w-[100px] sm:max-w-none">{stat.type}</span>
+        <span className="text-muted-foreground text-center truncate max-w-[100px] sm:max-w-none">
+          {stat.type}
+        </span>
         <span
           className={`font-medium tabular-nums flex-shrink-0 ${awayWins ? "text-foreground" : "text-muted-foreground"}`}
         >

@@ -1,9 +1,9 @@
-"use client"
+"use client";
 
-import { useCallback, useEffect, useState } from "react"
-import { useSearchParams, usePathname } from "next/navigation"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { cn } from "@/lib/utils"
+import { useCallback, useEffect, useState } from "react";
+import { useSearchParams, usePathname } from "next/navigation";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { cn } from "@/lib/utils";
 
 export type TeamTab =
   | "overview"
@@ -11,7 +11,7 @@ export type TeamTab =
   | "squad"
   | "stats"
   | "transfers"
-  | "history"
+  | "history";
 
 const VALID_TABS: TeamTab[] = [
   "overview",
@@ -20,7 +20,7 @@ const VALID_TABS: TeamTab[] = [
   "stats",
   "transfers",
   "history",
-]
+];
 
 const TAB_LABELS: Record<TeamTab, string> = {
   overview: "Overview",
@@ -29,19 +29,19 @@ const TAB_LABELS: Record<TeamTab, string> = {
   stats: "Statistics",
   transfers: "Transfers",
   history: "History",
-}
+};
 
 interface TeamTabsProps {
-  defaultTab?: TeamTab
-  overviewContent: React.ReactNode
-  matchesContent: React.ReactNode
-  squadContent: React.ReactNode
-  statsContent: React.ReactNode
-  transfersContent: React.ReactNode
-  historyContent: React.ReactNode
-  hasStats?: boolean
-  hasTransfers?: boolean
-  hasHistory?: boolean
+  defaultTab?: TeamTab;
+  overviewContent: React.ReactNode;
+  matchesContent: React.ReactNode;
+  squadContent: React.ReactNode;
+  statsContent: React.ReactNode;
+  transfersContent: React.ReactNode;
+  historyContent: React.ReactNode;
+  hasStats?: boolean;
+  hasTransfers?: boolean;
+  hasHistory?: boolean;
 }
 
 export function TeamTabs({
@@ -56,60 +56,60 @@ export function TeamTabs({
   hasTransfers = true,
   hasHistory = true,
 }: TeamTabsProps) {
-  const pathname = usePathname()
-  const searchParams = useSearchParams()
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
 
   // Get initial tab from URL or use default
   const getInitialTab = (): TeamTab => {
-    const tabParam = searchParams.get("tab")
+    const tabParam = searchParams.get("tab");
     if (tabParam && VALID_TABS.includes(tabParam as TeamTab)) {
-      return tabParam as TeamTab
+      return tabParam as TeamTab;
     }
-    return defaultTab
-  }
+    return defaultTab;
+  };
 
-  const [activeTab, setActiveTab] = useState<TeamTab>(getInitialTab)
+  const [activeTab, setActiveTab] = useState<TeamTab>(getInitialTab);
 
   // Sync with URL on mount and when searchParams change
   useEffect(() => {
-    const tabParam = searchParams.get("tab")
+    const tabParam = searchParams.get("tab");
     if (tabParam && VALID_TABS.includes(tabParam as TeamTab)) {
-      setActiveTab(tabParam as TeamTab)
+      setActiveTab(tabParam as TeamTab);
     } else if (!tabParam) {
-      setActiveTab("overview")
+      setActiveTab("overview");
     }
-  }, [searchParams])
+  }, [searchParams]);
 
   // Update URL without triggering navigation (pure client-side)
   const handleTabChange = useCallback(
     (value: string) => {
-      const newTab = value as TeamTab
-      setActiveTab(newTab)
+      const newTab = value as TeamTab;
+      setActiveTab(newTab);
 
       // Build new URL
-      const params = new URLSearchParams(searchParams.toString())
+      const params = new URLSearchParams(searchParams.toString());
       if (newTab === "overview") {
-        params.delete("tab")
+        params.delete("tab");
       } else {
-        params.set("tab", newTab)
+        params.set("tab", newTab);
       }
 
-      const queryString = params.toString()
-      const newUrl = queryString ? `${pathname}?${queryString}` : pathname
+      const queryString = params.toString();
+      const newUrl = queryString ? `${pathname}?${queryString}` : pathname;
 
       // Update URL without navigation (no page reload, no router)
-      window.history.replaceState(null, "", newUrl)
+      window.history.replaceState(null, "", newUrl);
     },
-    [pathname, searchParams]
-  )
+    [pathname, searchParams],
+  );
 
   // Filter visible tabs
   const visibleTabs = VALID_TABS.filter((tab) => {
-    if (tab === "stats" && !hasStats) return false
-    if (tab === "transfers" && !hasTransfers) return false
-    if (tab === "history" && !hasHistory) return false
-    return true
-  })
+    if (tab === "stats" && !hasStats) return false;
+    if (tab === "transfers" && !hasTransfers) return false;
+    if (tab === "history" && !hasHistory) return false;
+    return true;
+  });
 
   return (
     <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
@@ -122,7 +122,7 @@ export function TeamTabs({
               className={cn(
                 "flex-shrink-0 px-4 py-3 text-sm font-medium rounded-none border-b-2 transition-colors whitespace-nowrap data-[state=inactive]:border-transparent",
                 "data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none",
-                "data-[state=inactive]:text-muted-foreground hover:text-foreground hover:border-border"
+                "data-[state=inactive]:text-muted-foreground hover:text-foreground hover:border-border",
               )}
             >
               {TAB_LABELS[tab]}
@@ -152,5 +152,5 @@ export function TeamTabs({
         </TabsContent>
       </div>
     </Tabs>
-  )
+  );
 }

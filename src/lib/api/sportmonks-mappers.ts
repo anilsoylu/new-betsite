@@ -21,6 +21,9 @@ import type {
   SportmonksTransferRaw,
   SportmonksParticipantTrophyRaw,
   SportmonksPlayerFixtureRaw,
+  SportmonksCoachDetailRaw,
+  SportmonksCoachTeamRelationRaw,
+  SportmonksCoachRaw,
 } from "@/types/sportmonks/raw";
 import type {
   Fixture,
@@ -45,6 +48,10 @@ import type {
   TeamSearchResult,
   SquadPlayer,
   Coach,
+  CoachDetail,
+  CoachTeam,
+  CoachTrophy,
+  CoachSearchResult,
   PlayerDetail,
   PlayerTeam,
   PlayerSearchResult,
@@ -739,12 +746,51 @@ export function mapFixtureDetail(raw: SportmonksFixtureRaw): FixtureDetail {
       }
     : null;
 
+  // Map coaches
+  const coachesPivots = raw.coaches || [];
+  const homeCoachPivot = coachesPivots.find(
+    (c) => c.meta?.location === "home" && c.coach,
+  );
+  const awayCoachPivot = coachesPivots.find(
+    (c) => c.meta?.location === "away" && c.coach,
+  );
+
+  const homeCoach = homeCoachPivot?.coach
+    ? {
+        id: homeCoachPivot.coach.id,
+        name: homeCoachPivot.coach.name,
+        displayName:
+          homeCoachPivot.coach.display_name ||
+          homeCoachPivot.coach.common_name ||
+          homeCoachPivot.coach.name,
+        image: homeCoachPivot.coach.image_path,
+        countryId: homeCoachPivot.coach.country_id,
+        dateOfBirth: homeCoachPivot.coach.date_of_birth,
+      }
+    : null;
+
+  const awayCoach = awayCoachPivot?.coach
+    ? {
+        id: awayCoachPivot.coach.id,
+        name: awayCoachPivot.coach.name,
+        displayName:
+          awayCoachPivot.coach.display_name ||
+          awayCoachPivot.coach.common_name ||
+          awayCoachPivot.coach.name,
+        image: awayCoachPivot.coach.image_path,
+        countryId: awayCoachPivot.coach.country_id,
+        dateOfBirth: awayCoachPivot.coach.date_of_birth,
+      }
+    : null;
+
   return {
     ...base,
     events,
     statistics,
     homeLineup,
     awayLineup,
+    homeCoach,
+    awayCoach,
     referee,
   };
 }
@@ -1198,5 +1244,104 @@ export function mapTeamTransfer(
     toTeamLogo: raw.toteam?.image_path || null,
     amount: raw.amount,
     completed: raw.completed,
+  };
+}
+
+// ============================================
+// COACH MAPPERS
+// ============================================
+
+// Map coach's team relation (career history)
+export function mapCoachTeam(raw: SportmonksCoachTeamRelationRaw): CoachTeam {
+  const team = raw.team;
+
+  // Map position ID to position name
+  // Position IDs: 1 = Head Coach, 2 = Assistant Coach, 3 = Goalkeeping Coach, etc.
+  const positionMap: Record<number, string> = {
+    1: "Head Coach",
+    2: "Assistant Coach",
+    3: "Goalkeeping Coach",
+    4: "Fitness Coach",
+    5: "Technical Director",
+  };
+
+  return {
+    id: raw.id,
+    teamId: raw.team_id,
+    teamName: team?.name || "",
+    teamLogo: team?.image_path || "",
+    teamType: team?.type || "club",
+    position: positionMap[raw.position_id] || "Coach",
+    startDate: raw.start,
+    endDate: raw.end,
+    isCurrent: raw.active && raw.end === null,
+    isTemporary: raw.temporary,
+  };
+}
+
+// Map coach trophy
+function mapCoachTrophy(raw: SportmonksParticipantTrophyRaw): CoachTrophy {
+  return {
+    id: raw.id,
+    name: raw.trophy?.name || "Trophy",
+    position: raw.trophy?.position || 1,
+    leagueId: raw.league_id,
+    leagueName: raw.league?.name || "",
+    leagueLogo: raw.league?.image_path || "",
+    seasonId: raw.season_id,
+    seasonName: raw.season?.name || "",
+    teamId: raw.team_id,
+  };
+}
+
+// Map full coach detail
+export function mapCoachDetail(raw: SportmonksCoachDetailRaw): CoachDetail {
+  // Map teams (career history)
+  const teams = (raw.teams || []).map(mapCoachTeam);
+
+  // Find current team
+  const currentTeam = teams.find((t) => t.isCurrent) || null;
+
+  // Map trophies
+  const trophies = (raw.trophies || [])
+    .map(mapCoachTrophy)
+    .sort((a, b) => b.seasonId - a.seasonId); // Most recent first
+
+  return {
+    id: raw.id,
+    name: raw.name,
+    displayName: raw.display_name || raw.common_name,
+    commonName: raw.common_name,
+    firstName: raw.firstname,
+    lastName: raw.lastname,
+    image: raw.image_path,
+    dateOfBirth: raw.date_of_birth,
+    age: calculateAge(raw.date_of_birth),
+    height: raw.height,
+    weight: raw.weight,
+    country: raw.country ? mapCountry(raw.country) : null,
+    nationality: raw.nationality ? mapCountry(raw.nationality) : null,
+    currentTeam,
+    teams,
+    trophies,
+    formerPlayerId: raw.player_id,
+  };
+}
+
+// Map coach search result
+export function mapCoachSearchResult(
+  raw: SportmonksCoachRaw,
+  currentTeam?: { id: number; name: string; logo: string },
+): CoachSearchResult {
+  return {
+    id: raw.id,
+    name: raw.name,
+    displayName: raw.display_name || raw.common_name,
+    commonName: raw.common_name,
+    image: raw.image_path,
+    country: null, // Would need country include
+    currentTeamId: currentTeam?.id || null,
+    currentTeamName: currentTeam?.name || null,
+    currentTeamLogo: currentTeam?.logo || null,
   };
 }

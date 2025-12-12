@@ -17,6 +17,8 @@ import {
   mapPlayerSearchResult,
   mapTopScorer,
   mapTeamTransfer,
+  mapCoachDetail,
+  mapCoachSearchResult,
 } from "./sportmonks-mappers";
 import type {
   SportmonksFixtureRaw,
@@ -28,6 +30,8 @@ import type {
   SportmonksPlayerRaw,
   SportmonksTopScorerRaw,
   SportmonksTransferRaw,
+  SportmonksCoachDetailRaw,
+  SportmonksCoachRaw,
 } from "@/types/sportmonks/raw";
 import type {
   Fixture,
@@ -44,6 +48,8 @@ import type {
   TopScorer,
   LeaguePageData,
   TeamTransfer,
+  CoachDetail,
+  CoachSearchResult,
 } from "@/types/football";
 import { API, UI } from "@/lib/constants";
 
@@ -75,6 +81,7 @@ const FIXTURE_DETAIL_INCLUDES = [
   "periods",
   "formations",
   "referees.referee",
+  "coaches",
 ];
 
 // H2H includes
@@ -843,4 +850,62 @@ export async function getTeamTransfers(
     departures,
     hasMore: paginatedResponse.pagination?.has_more ?? false,
   };
+}
+
+// ============================================
+// COACH API FUNCTIONS
+// ============================================
+
+// Coach includes
+const COACH_DETAIL_INCLUDES = [
+  "country",
+  "nationality",
+  "teams.team",
+  "teams.team.country",
+  "trophies.trophy",
+  "trophies.league",
+  "trophies.season",
+];
+
+const COACH_SEARCH_INCLUDES = ["country"];
+
+/**
+ * Get coach by ID with full details
+ * Endpoint: GET /coaches/{id}
+ * Cache: long (6hr) - coach profile rarely changes
+ */
+export async function getCoachById(coachId: number): Promise<CoachDetail> {
+  idSchema.parse(coachId);
+
+  const response = await sportmonksRequest<SportmonksCoachDetailRaw>({
+    endpoint: `/coaches/${coachId}`,
+    include: COACH_DETAIL_INCLUDES,
+    cache: "long",
+  });
+
+  return mapCoachDetail(response.data);
+}
+
+/**
+ * Search coaches by name
+ * Endpoint: GET /coaches/search/{name}
+ * Cache: medium (1hr) - search results relatively stable
+ */
+export async function searchCoaches(
+  query: string,
+): Promise<Array<CoachSearchResult>> {
+  if (!query || query.length < 2) return [];
+
+  try {
+    const response = await sportmonksPaginatedRequest<SportmonksCoachRaw>({
+      endpoint: `/coaches/search/${encodeURIComponent(query)}`,
+      include: COACH_SEARCH_INCLUDES,
+      perPage: 25,
+      cache: "medium",
+    });
+
+    return response.data.map((raw) => mapCoachSearchResult(raw));
+  } catch {
+    return [];
+  }
 }

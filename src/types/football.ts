@@ -253,6 +253,8 @@ export interface FixtureDetail extends Fixture {
   statistics: Array<MatchStatistic>;
   homeLineup: TeamLineup | null;
   awayLineup: TeamLineup | null;
+  homeCoach: Coach | null;
+  awayCoach: Coach | null;
   referee: Referee | null;
 }
 
@@ -296,7 +298,7 @@ export interface TeamDetail {
   trophies: Array<TeamTrophy>;
 }
 
-// Coach info
+// Coach info (basic - used in team detail)
 export interface Coach {
   id: number;
   name: string;
@@ -304,6 +306,67 @@ export interface Coach {
   image: string | null;
   countryId: number | null;
   dateOfBirth: string | null;
+}
+
+// Coach detail (full - for coach profile page)
+export interface CoachDetail {
+  id: number;
+  name: string;
+  displayName: string;
+  commonName: string;
+  firstName: string;
+  lastName: string;
+  image: string | null;
+  dateOfBirth: string | null;
+  age: number | null;
+  height: number | null;
+  weight: number | null;
+  country: Country | null;
+  nationality: Country | null;
+  currentTeam: CoachTeam | null;
+  teams: Array<CoachTeam>;
+  trophies: Array<CoachTrophy>;
+  formerPlayerId: number | null;
+}
+
+// Coach's team history entry
+export interface CoachTeam {
+  id: number;
+  teamId: number;
+  teamName: string;
+  teamLogo: string;
+  teamType: string;
+  position: string; // Head Coach, Assistant, etc.
+  startDate: string | null;
+  endDate: string | null;
+  isCurrent: boolean;
+  isTemporary: boolean;
+}
+
+// Coach trophy/achievement
+export interface CoachTrophy {
+  id: number;
+  name: string;
+  position: number;
+  leagueId: number;
+  leagueName: string;
+  leagueLogo: string;
+  seasonId: number;
+  seasonName: string;
+  teamId: number | null;
+}
+
+// Coach search result (for listing/search)
+export interface CoachSearchResult {
+  id: number;
+  name: string;
+  displayName: string;
+  commonName: string;
+  image: string | null;
+  country: Country | null;
+  currentTeamId: number | null;
+  currentTeamName: string | null;
+  currentTeamLogo: string | null;
 }
 
 // Squad player

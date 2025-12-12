@@ -13,6 +13,7 @@ import type {
   MatchCacheInput,
   PlayerCacheInput,
   TeamCacheInput,
+  CoachCacheInput,
 } from "./types";
 
 /**
@@ -97,6 +98,33 @@ export function upsertPlayer(player: PlayerCacheInput): void {
     player.teamId ?? null,
     player.country ?? null,
     player.position ?? null,
+  );
+}
+
+/**
+ * Upsert a single coach into the cache.
+ */
+export function upsertCoach(coach: CoachCacheInput): void {
+  const db = getDatabase();
+  const stmt = db.prepare(`
+    INSERT INTO coaches (id, name, slug, team_id, country, last_modified, updated_at, include_in_sitemap)
+    VALUES (?, ?, ?, ?, ?, datetime('now'), datetime('now'), 1)
+    ON CONFLICT(id) DO UPDATE SET
+      name = excluded.name,
+      slug = excluded.slug,
+      team_id = COALESCE(excluded.team_id, coaches.team_id),
+      country = excluded.country,
+      last_modified = datetime('now'),
+      updated_at = datetime('now'),
+      include_in_sitemap = 1
+  `);
+
+  stmt.run(
+    coach.id,
+    coach.name,
+    slugify(coach.name),
+    coach.teamId ?? null,
+    coach.country ?? null,
   );
 }
 
@@ -244,6 +272,41 @@ export function upsertPlayersBatch(players: PlayerCacheInput[]): void {
 }
 
 /**
+ * Batch upsert coaches for efficiency during sync operations.
+ */
+export function upsertCoachesBatch(coaches: CoachCacheInput[]): void {
+  if (coaches.length === 0) return;
+
+  const db = getDatabase();
+  const stmt = db.prepare(`
+    INSERT INTO coaches (id, name, slug, team_id, country, last_modified, updated_at, include_in_sitemap)
+    VALUES (?, ?, ?, ?, ?, datetime('now'), datetime('now'), 1)
+    ON CONFLICT(id) DO UPDATE SET
+      name = excluded.name,
+      slug = excluded.slug,
+      team_id = COALESCE(excluded.team_id, coaches.team_id),
+      country = excluded.country,
+      last_modified = datetime('now'),
+      updated_at = datetime('now'),
+      include_in_sitemap = 1
+  `);
+
+  const insertMany = db.transaction((items: CoachCacheInput[]) => {
+    for (const coach of items) {
+      stmt.run(
+        coach.id,
+        coach.name,
+        slugify(coach.name),
+        coach.teamId ?? null,
+        coach.country ?? null,
+      );
+    }
+  });
+
+  insertMany(coaches);
+}
+
+/**
  * Batch upsert matches for efficiency during sync operations.
  */
 export function upsertMatchesBatch(matches: MatchCacheInput[]): void {
@@ -288,7 +351,7 @@ export function upsertMatchesBatch(matches: MatchCacheInput[]): void {
  * Sets include_in_sitemap = 0 instead of deleting.
  */
 export function excludeFromSitemap(
-  table: "leagues" | "teams" | "players" | "matches",
+  table: "leagues" | "teams" | "players" | "coaches" | "matches",
   id: number,
 ): void {
   const db = getDatabase();
@@ -300,7 +363,7 @@ export function excludeFromSitemap(
  * Sets include_in_sitemap = 1.
  */
 export function includeInSitemap(
-  table: "leagues" | "teams" | "players" | "matches",
+  table: "leagues" | "teams" | "players" | "coaches" | "matches",
   id: number,
 ): void {
   const db = getDatabase();

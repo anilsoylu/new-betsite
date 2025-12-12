@@ -67,6 +67,58 @@ export interface SportmonksCoachRaw {
   gender: string;
 }
 
+// Coach in fixture context (from fixture.coaches include)
+export interface SportmonksFixtureCoachRaw {
+  id: number;
+  fixture_id: number;
+  coach_id: number;
+  participant_id: number; // team_id
+  meta: {
+    location: "home" | "away";
+  } | null;
+  // Nested coach data when using coaches.coach include
+  coach?: SportmonksCoachRaw;
+}
+
+// Extended coach data (from GET /coaches/{id} with includes)
+export interface SportmonksCoachDetailRaw extends SportmonksCoachRaw {
+  // Included relations from coaches endpoint
+  country?: SportmonksCountryRaw;
+  nationality?: SportmonksCountryRaw;
+  teams?: Array<SportmonksCoachTeamRelationRaw>;
+  trophies?: Array<SportmonksParticipantTrophyRaw>;
+  sidelined?: Array<SportmonksCoachSidelinedRaw>;
+}
+
+// Coach's team relation (from coach endpoint - career history)
+export interface SportmonksCoachTeamRelationRaw {
+  id: number;
+  team_id: number;
+  coach_id: number;
+  position_id: number;
+  active: boolean;
+  start: string | null;
+  end: string | null;
+  temporary: boolean;
+  team?: {
+    id: number;
+    name: string;
+    short_code: string | null;
+    image_path: string;
+    type: string;
+    country?: SportmonksCountryRaw;
+  };
+}
+
+// Coach sidelined/injury info
+export interface SportmonksCoachSidelinedRaw {
+  id: number;
+  coach_id: number;
+  start_date: string;
+  end_date: string | null;
+  category: string;
+}
+
 // Squad player relation
 export interface SportmonksSquadPlayerRaw {
   id: number;

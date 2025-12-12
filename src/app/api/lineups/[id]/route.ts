@@ -15,19 +15,13 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
     // Validate ID format (8 char nanoid)
     if (!id || id.length !== 8) {
-      return NextResponse.json(
-        { error: "Invalid lineup ID" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Invalid lineup ID" }, { status: 400 });
     }
 
     const lineup = getLineupById(id);
 
     if (!lineup) {
-      return NextResponse.json(
-        { error: "Lineup not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Lineup not found" }, { status: 404 });
     }
 
     // Increment view count (fire and forget)
@@ -42,7 +36,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     console.error("Failed to get lineup:", error);
     return NextResponse.json(
       { error: "Failed to retrieve lineup" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

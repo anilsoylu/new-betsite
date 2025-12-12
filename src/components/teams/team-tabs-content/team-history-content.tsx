@@ -1,11 +1,11 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
-import { Trophy } from "lucide-react"
-import type { TeamDetail, TeamTrophy } from "@/types/football"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Trophy } from "lucide-react";
+import type { TeamDetail, TeamTrophy } from "@/types/football";
 
 interface TeamHistoryContentProps {
-  team: TeamDetail
+  team: TeamDetail;
 }
 
 export function TeamHistoryContent({ team }: TeamHistoryContentProps) {
@@ -15,13 +15,13 @@ export function TeamHistoryContent({ team }: TeamHistoryContentProps) {
       t.position === 1 &&
       t.leagueName &&
       t.leagueName !== "Competition" &&
-      t.leagueName.trim() !== ""
-  )
+      t.leagueName.trim() !== "",
+  );
 
   // Group trophies by league
-  const trophiesByLeague = groupTrophiesByLeague(winningTrophies)
+  const trophiesByLeague = groupTrophiesByLeague(winningTrophies);
 
-  const hasTrophies = winningTrophies.length > 0
+  const hasTrophies = winningTrophies.length > 0;
 
   return (
     <div className="space-y-6">
@@ -185,7 +185,7 @@ export function TeamHistoryContent({ team }: TeamHistoryContentProps) {
         </Card>
       )}
     </div>
-  )
+  );
 }
 
 function TrophyCard({ trophy }: { trophy: TeamTrophy }) {
@@ -196,21 +196,21 @@ function TrophyCard({ trophy }: { trophy: TeamTrophy }) {
         {trophy.seasonName}
       </span>
     </div>
-  )
+  );
 }
 
 function groupTrophiesByLeague(
-  trophies: TeamTrophy[]
+  trophies: TeamTrophy[],
 ): Record<string, TeamTrophy[]> {
   return trophies.reduce(
     (acc, trophy) => {
-      const league = trophy.leagueName
+      const league = trophy.leagueName;
       if (!acc[league]) {
-        acc[league] = []
+        acc[league] = [];
       }
-      acc[league].push(trophy)
-      return acc
+      acc[league].push(trophy);
+      return acc;
     },
-    {} as Record<string, TeamTrophy[]>
-  )
+    {} as Record<string, TeamTrophy[]>,
+  );
 }

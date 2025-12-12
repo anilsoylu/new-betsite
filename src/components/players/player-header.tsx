@@ -187,10 +187,12 @@ export function PlayerHeader({ player }: PlayerHeaderProps) {
                   "flex items-center gap-2 px-4 py-2 rounded-full font-medium text-sm transition-all",
                   isFollowing
                     ? "bg-yellow-500 text-white hover:bg-yellow-600"
-                    : "bg-slate-700 hover:bg-slate-600 text-white"
+                    : "bg-slate-700 hover:bg-slate-600 text-white",
                 )}
               >
-                <Star className={cn("h-4 w-4", isFollowing && "fill-current")} />
+                <Star
+                  className={cn("h-4 w-4", isFollowing && "fill-current")}
+                />
                 <span className="hidden sm:inline">
                   {isFollowing ? "Following" : "Follow"}
                 </span>

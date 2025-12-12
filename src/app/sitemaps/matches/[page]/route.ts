@@ -5,44 +5,44 @@
  * Route: GET /sitemaps/matches/[page].xml
  */
 
-import { NextResponse } from "next/server"
-import { notFound } from "next/navigation"
-import { SITE } from "@/lib/constants"
+import { NextResponse } from "next/server";
+import { notFound } from "next/navigation";
+import { SITE } from "@/lib/constants";
 import {
   getMatchesForSitemap,
   getMatchPageCount,
   initializeSchema,
-} from "@/lib/sitemap-cache"
-import { getFixtureUrl } from "@/lib/utils"
+} from "@/lib/sitemap-cache";
+import { getFixtureUrl } from "@/lib/utils";
 
-export const revalidate = 3600 // 1 hour
+export const revalidate = 3600; // 1 hour
 
 export async function GET(
   _request: Request,
-  { params }: { params: Promise<{ page: string }> }
+  { params }: { params: Promise<{ page: string }> },
 ) {
-  const { page: pageParam } = await params
+  const { page: pageParam } = await params;
 
   // Require .xml extension
   if (!pageParam.endsWith(".xml")) {
-    notFound()
+    notFound();
   }
 
-  const page = Number.parseInt(pageParam.replace(".xml", ""), 10)
+  const page = Number.parseInt(pageParam.replace(".xml", ""), 10);
 
   if (Number.isNaN(page) || page < 1) {
-    notFound()
+    notFound();
   }
 
   try {
-    initializeSchema()
+    initializeSchema();
 
-    const pageCount = getMatchPageCount()
+    const pageCount = getMatchPageCount();
     if (page > pageCount) {
-      notFound()
+      notFound();
     }
 
-    const matches = getMatchesForSitemap(page)
+    const matches = getMatchesForSitemap(page);
 
     const urlEntries = matches
       .map((match) => {
@@ -51,34 +51,34 @@ export async function GET(
           id: match.id,
           homeTeam: { id: 0, name: match.homeTeamName, logo: "" },
           awayTeam: { id: 0, name: match.awayTeamName, logo: "" },
-        } as Parameters<typeof getFixtureUrl>[0])
+        } as Parameters<typeof getFixtureUrl>[0]);
 
         const lastmod = match.lastModified
           ? new Date(match.lastModified).toISOString()
-          : new Date().toISOString()
+          : new Date().toISOString();
 
         return `  <url>
     <loc>${SITE.url}${url}</loc>
     <lastmod>${lastmod}</lastmod>
     <changefreq>hourly</changefreq>
     <priority>0.7</priority>
-  </url>`
+  </url>`;
       })
-      .join("\n")
+      .join("\n");
 
     const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${urlEntries}
-</urlset>`
+</urlset>`;
 
     return new NextResponse(xml, {
       headers: {
         "Content-Type": "application/xml",
         "Cache-Control": "public, max-age=3600, s-maxage=3600",
       },
-    })
+    });
   } catch (error) {
-    console.error("[Sitemap] Failed to generate matches page:", page, error)
-    notFound()
+    console.error("[Sitemap] Failed to generate matches page:", page, error);
+    notFound();
   }
 }

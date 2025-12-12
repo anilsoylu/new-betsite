@@ -6,7 +6,11 @@
 
 import { nanoid } from "nanoid";
 import { getLineupDatabase } from "./connection";
-import type { BuildXILineup, LineupSlotPlayer, LineupMode } from "@/types/build-xi";
+import type {
+  BuildXILineup,
+  LineupSlotPlayer,
+  LineupMode,
+} from "@/types/build-xi";
 
 /**
  * Database row type for shared_lineups table
@@ -43,7 +47,7 @@ export function saveLineup(lineup: BuildXILineup): string {
     lineup.mode,
     playersJson,
     lineup.name || null,
-    Date.now()
+    Date.now(),
   );
 
   return id;
@@ -66,7 +70,10 @@ export function getLineupById(id: string): BuildXILineup | null {
   }
 
   // Parse players JSON
-  const players = JSON.parse(row.players) as Record<string, LineupSlotPlayer | null>;
+  const players = JSON.parse(row.players) as Record<
+    string,
+    LineupSlotPlayer | null
+  >;
 
   return {
     id: row.id,

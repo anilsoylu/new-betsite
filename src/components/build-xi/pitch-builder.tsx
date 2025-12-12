@@ -13,11 +13,11 @@ import { SITE } from "@/lib/constants";
  * - Pure center (3) is at 50%
  */
 const COL_TO_PERCENT: Record<number, number> = {
-  1: 12,  // Left edge (LB, LW, LWB)
-  2: 35,  // Left-center (CB, CM, ST pair)
-  3: 50,  // Center (GK, CAM, lone ST)
-  4: 65,  // Right-center (CB, CM, ST pair)
-  5: 88,  // Right edge (RB, RW, RWB)
+  1: 12, // Left edge (LB, LW, LWB)
+  2: 35, // Left-center (CB, CM, ST pair)
+  3: 50, // Center (GK, CAM, lone ST)
+  4: 65, // Right-center (CB, CM, ST pair)
+  5: 88, // Right edge (RB, RW, RWB)
 };
 
 /**
@@ -25,11 +25,11 @@ const COL_TO_PERCENT: Record<number, number> = {
  * Row 1 (GK) at bottom, Row 5 (strikers) at top
  */
 const ROW_TO_PERCENT: Record<number, number> = {
-  1: 88,  // GK
-  2: 68,  // Defenders
-  3: 48,  // Defensive midfielders
-  4: 28,  // Attacking midfielders / Secondary strikers
-  5: 10,  // Strikers
+  1: 88, // GK
+  2: 68, // Defenders
+  3: 48, // Defensive midfielders
+  4: 28, // Attacking midfielders / Secondary strikers
+  5: 10, // Strikers
 };
 
 /**
@@ -63,7 +63,7 @@ export function PitchBuilder() {
       className={cn(
         "relative rounded-xl overflow-hidden",
         "bg-linear-to-b from-green-600 to-green-700",
-        "aspect-3/4 sm:aspect-4/5 w-full max-w-md mx-auto"
+        "aspect-3/4 sm:aspect-4/5 w-full max-w-md mx-auto",
       )}
     >
       {/* Pitch Markings */}

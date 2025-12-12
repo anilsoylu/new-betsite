@@ -47,7 +47,10 @@ export function OtherLeaguesClient({
       </div>
       <div className="max-h-[400px] overflow-y-auto">
         {groupedLeagues.map((group) => (
-          <div key={group.countryName} className="border-b border-border/50 last:border-b-0">
+          <div
+            key={group.countryName}
+            className="border-b border-border/50 last:border-b-0"
+          >
             {/* Country Header - Clickable */}
             <button
               onClick={() => toggleCountry(group.countryName)}

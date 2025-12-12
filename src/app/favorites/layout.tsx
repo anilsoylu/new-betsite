@@ -1,5 +1,5 @@
-import type { Metadata } from "next"
-import { SEO, SITE } from "@/lib/constants"
+import type { Metadata } from "next";
+import { SEO, SITE } from "@/lib/constants";
 
 export const metadata: Metadata = {
   title: SEO.favorites.title,
@@ -11,12 +11,12 @@ export const metadata: Metadata = {
   alternates: {
     canonical: `${SITE.url}/favorites`,
   },
-}
+};
 
 export default function FavoritesLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
-  return <>{children}</>
+  return <>{children}</>;
 }

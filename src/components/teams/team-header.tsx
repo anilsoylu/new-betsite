@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { MapPin, Calendar, Trophy, Star, Bell, Share2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
+import { cn, getCoachUrl } from "@/lib/utils";
 import { useFavoritesStore } from "@/stores/favorites-store";
 import type { TeamDetail } from "@/types/football";
 
@@ -42,7 +43,7 @@ export function TeamHeader({ team }: TeamHeaderProps) {
               "p-2 rounded-full transition-all",
               isFollowing
                 ? "bg-yellow-500 text-white hover:bg-yellow-600"
-                : "bg-muted/80 backdrop-blur-sm hover:bg-muted text-foreground"
+                : "bg-muted/80 backdrop-blur-sm hover:bg-muted text-foreground",
             )}
           >
             <Star className={cn("h-4 w-4", isFollowing && "fill-current")} />
@@ -110,14 +111,18 @@ export function TeamHeader({ team }: TeamHeaderProps) {
             {/* Short Code Badge - Always visible */}
             {team.shortCode && (
               <div className="flex justify-center sm:justify-start mb-3 sm:mb-0 sm:hidden">
-                <Badge variant="outline" className="text-xs">{team.shortCode}</Badge>
+                <Badge variant="outline" className="text-xs">
+                  {team.shortCode}
+                </Badge>
               </div>
             )}
 
             {/* Meta Info - Hidden on mobile, shown on tablet+ */}
             <div className="hidden sm:flex flex-wrap items-center gap-2 mt-1">
               {team.shortCode && (
-                <Badge variant="outline" className="text-xs">{team.shortCode}</Badge>
+                <Badge variant="outline" className="text-xs">
+                  {team.shortCode}
+                </Badge>
               )}
               {team.founded && (
                 <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-muted text-muted-foreground text-xs">
@@ -132,9 +137,12 @@ export function TeamHeader({ team }: TeamHeaderProps) {
                 </span>
               )}
               {team.coach && (
-                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-muted text-muted-foreground text-xs">
+                <Link
+                  href={getCoachUrl(team.coach.displayName, team.coach.id)}
+                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-muted text-muted-foreground text-xs hover:bg-primary/10 hover:text-primary transition-colors"
+                >
                   Manager: {team.coach.displayName}
-                </span>
+                </Link>
               )}
             </div>
 
@@ -144,13 +152,21 @@ export function TeamHeader({ team }: TeamHeaderProps) {
                 <Trophy className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
                 {/* Mobile: Text only, no badges */}
                 <span className="sm:hidden text-xs text-muted-foreground">
-                  {team.activeSeasons.slice(0, 3).map(s => s.league?.name || s.name).join(" • ")}
-                  {team.activeSeasons.length > 3 && ` +${team.activeSeasons.length - 3}`}
+                  {team.activeSeasons
+                    .slice(0, 3)
+                    .map((s) => s.league?.name || s.name)
+                    .join(" • ")}
+                  {team.activeSeasons.length > 3 &&
+                    ` +${team.activeSeasons.length - 3}`}
                 </span>
                 {/* Desktop: Badges */}
                 <div className="hidden sm:flex flex-wrap gap-1.5">
                   {team.activeSeasons.slice(0, 4).map((season) => (
-                    <Badge key={season.id} variant="secondary" className="text-xs">
+                    <Badge
+                      key={season.id}
+                      variant="secondary"
+                      className="text-xs"
+                    >
                       {season.league?.name || season.name}
                     </Badge>
                   ))}
@@ -172,7 +188,7 @@ export function TeamHeader({ team }: TeamHeaderProps) {
                 "flex items-center gap-2 px-4 py-2 rounded-full font-medium text-sm transition-all",
                 isFollowing
                   ? "bg-yellow-500 text-white hover:bg-yellow-600"
-                  : "bg-muted hover:bg-muted/80 text-foreground"
+                  : "bg-muted hover:bg-muted/80 text-foreground",
               )}
             >
               <Star className={cn("h-4 w-4", isFollowing && "fill-current")} />

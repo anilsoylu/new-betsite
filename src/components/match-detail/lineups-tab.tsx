@@ -9,14 +9,16 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { cn, getPlayerUrl } from "@/lib/utils";
-import type { TeamLineup, Team, LineupPlayer } from "@/types/football";
+import { cn, getPlayerUrl, getCoachUrl } from "@/lib/utils";
+import type { TeamLineup, Team, LineupPlayer, Coach } from "@/types/football";
 
 interface LineupsTabProps {
   homeLineup: TeamLineup | null;
   awayLineup: TeamLineup | null;
   homeTeam: Team;
   awayTeam: Team;
+  homeCoach: Coach | null;
+  awayCoach: Coach | null;
 }
 
 export function LineupsTab({
@@ -24,6 +26,8 @@ export function LineupsTab({
   awayLineup,
   homeTeam,
   awayTeam,
+  homeCoach,
+  awayCoach,
 }: LineupsTabProps) {
   const [viewMode, setViewMode] = useState<"pitch" | "list">("pitch");
 
@@ -70,6 +74,8 @@ export function LineupsTab({
           awayLineup={awayLineup}
           homeTeam={homeTeam}
           awayTeam={awayTeam}
+          homeCoach={homeCoach}
+          awayCoach={awayCoach}
         />
       ) : (
         <ListView
@@ -77,6 +83,8 @@ export function LineupsTab({
           awayLineup={awayLineup}
           homeTeam={homeTeam}
           awayTeam={awayTeam}
+          homeCoach={homeCoach}
+          awayCoach={awayCoach}
           hasAnySubstitutes={!!hasAnySubstitutes}
         />
       )}
@@ -90,6 +98,8 @@ interface PitchViewProps {
   awayLineup: TeamLineup | null;
   homeTeam: Team;
   awayTeam: Team;
+  homeCoach: Coach | null;
+  awayCoach: Coach | null;
 }
 
 function PitchView({
@@ -97,6 +107,8 @@ function PitchView({
   awayLineup,
   homeTeam,
   awayTeam,
+  homeCoach,
+  awayCoach,
 }: PitchViewProps) {
   return (
     <Card className="overflow-hidden py-0">
@@ -148,6 +160,71 @@ function PitchView({
             )}
           </div>
         </div>
+
+        {/* Coaches Row */}
+        {(homeCoach || awayCoach) && (
+          <div className="flex justify-between items-center px-2 sm:px-4 py-2 bg-muted/30 border-b">
+            <div className="flex items-center gap-2 min-w-0">
+              {homeCoach ? (
+                <Link
+                  href={getCoachUrl(homeCoach.displayName, homeCoach.id)}
+                  className="flex items-center gap-2 hover:text-primary transition-colors"
+                >
+                  <Avatar className="h-6 w-6 sm:h-7 sm:w-7">
+                    <AvatarImage
+                      src={homeCoach.image || undefined}
+                      alt={homeCoach.displayName}
+                    />
+                    <AvatarFallback className="text-[10px] bg-blue-600 text-white">
+                      {homeCoach.displayName
+                        .split(" ")
+                        .map((n) => n[0])
+                        .join("")
+                        .slice(0, 2)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className="text-[10px] sm:text-xs text-muted-foreground truncate max-w-[80px] sm:max-w-[120px]">
+                    {homeCoach.displayName}
+                  </span>
+                </Link>
+              ) : (
+                <span className="text-[10px] sm:text-xs text-muted-foreground">
+                  -
+                </span>
+              )}
+            </div>
+            <span className="text-[10px] text-muted-foreground">Managers</span>
+            <div className="flex items-center gap-2 min-w-0 justify-end">
+              {awayCoach ? (
+                <Link
+                  href={getCoachUrl(awayCoach.displayName, awayCoach.id)}
+                  className="flex items-center gap-2 hover:text-primary transition-colors"
+                >
+                  <span className="text-[10px] sm:text-xs text-muted-foreground truncate max-w-[80px] sm:max-w-[120px]">
+                    {awayCoach.displayName}
+                  </span>
+                  <Avatar className="h-6 w-6 sm:h-7 sm:w-7">
+                    <AvatarImage
+                      src={awayCoach.image || undefined}
+                      alt={awayCoach.displayName}
+                    />
+                    <AvatarFallback className="text-[10px] bg-red-600 text-white">
+                      {awayCoach.displayName
+                        .split(" ")
+                        .map((n) => n[0])
+                        .join("")
+                        .slice(0, 2)}
+                    </AvatarFallback>
+                  </Avatar>
+                </Link>
+              ) : (
+                <span className="text-[10px] sm:text-xs text-muted-foreground">
+                  -
+                </span>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Football Pitch - Vertical on mobile, Horizontal on desktop */}
         <div className="relative bg-gradient-to-b sm:bg-gradient-to-r from-green-700 via-green-600 to-green-700 dark:from-green-900 dark:via-green-800 dark:to-green-900">
@@ -376,6 +453,8 @@ interface ListViewProps {
   awayLineup: TeamLineup | null;
   homeTeam: Team;
   awayTeam: Team;
+  homeCoach: Coach | null;
+  awayCoach: Coach | null;
   hasAnySubstitutes: boolean;
 }
 
@@ -384,6 +463,8 @@ function ListView({
   awayLineup,
   homeTeam,
   awayTeam,
+  homeCoach,
+  awayCoach,
   hasAnySubstitutes,
 }: ListViewProps) {
   return (
@@ -415,6 +496,76 @@ function ListView({
           </div>
         </div>
       </div>
+
+      {/* Managers */}
+      {(homeCoach || awayCoach) && (
+        <div className="grid grid-cols-2 gap-2 sm:gap-4">
+          <Card className="p-3">
+            <div className="flex items-center gap-2">
+              {homeCoach ? (
+                <Link
+                  href={getCoachUrl(homeCoach.displayName, homeCoach.id)}
+                  className="flex items-center gap-2 hover:text-primary transition-colors"
+                >
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage
+                      src={homeCoach.image || undefined}
+                      alt={homeCoach.displayName}
+                    />
+                    <AvatarFallback className="text-xs bg-blue-600 text-white">
+                      {homeCoach.displayName
+                        .split(" ")
+                        .map((n) => n[0])
+                        .join("")
+                        .slice(0, 2)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="min-w-0">
+                    <p className="text-[10px] text-muted-foreground">Manager</p>
+                    <p className="text-xs sm:text-sm font-medium truncate">
+                      {homeCoach.displayName}
+                    </p>
+                  </div>
+                </Link>
+              ) : (
+                <p className="text-sm text-muted-foreground">-</p>
+              )}
+            </div>
+          </Card>
+          <Card className="p-3">
+            <div className="flex items-center gap-2 justify-end">
+              {awayCoach ? (
+                <Link
+                  href={getCoachUrl(awayCoach.displayName, awayCoach.id)}
+                  className="flex items-center gap-2 hover:text-primary transition-colors"
+                >
+                  <div className="min-w-0 text-right">
+                    <p className="text-[10px] text-muted-foreground">Manager</p>
+                    <p className="text-xs sm:text-sm font-medium truncate">
+                      {awayCoach.displayName}
+                    </p>
+                  </div>
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage
+                      src={awayCoach.image || undefined}
+                      alt={awayCoach.displayName}
+                    />
+                    <AvatarFallback className="text-xs bg-red-600 text-white">
+                      {awayCoach.displayName
+                        .split(" ")
+                        .map((n) => n[0])
+                        .join("")
+                        .slice(0, 2)}
+                    </AvatarFallback>
+                  </Avatar>
+                </Link>
+              ) : (
+                <p className="text-sm text-muted-foreground">-</p>
+              )}
+            </div>
+          </Card>
+        </div>
+      )}
 
       {/* Starting XI - responsive grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">

@@ -2,7 +2,12 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { toast } from "sonner";
 
-export type FavoriteType = "teams" | "leagues" | "players" | "matches";
+export type FavoriteType =
+  | "teams"
+  | "leagues"
+  | "players"
+  | "coaches"
+  | "matches";
 
 const typeLabels: Record<
   FavoriteType,
@@ -11,6 +16,7 @@ const typeLabels: Record<
   teams: { singular: "Team", plural: "teams", icon: "⚽" },
   leagues: { singular: "League", plural: "leagues", icon: "🏆" },
   players: { singular: "Player", plural: "players", icon: "👤" },
+  coaches: { singular: "Coach", plural: "coaches", icon: "📋" },
   matches: { singular: "Match", plural: "matches", icon: "📅" },
 };
 
@@ -18,6 +24,7 @@ interface FavoritesState {
   teams: number[];
   leagues: number[];
   players: number[];
+  coaches: number[];
   matches: number[];
   addFavorite: (type: FavoriteType, id: number) => void;
   removeFavorite: (type: FavoriteType, id: number) => void;
@@ -33,6 +40,7 @@ export const useFavoritesStore = create<FavoritesState>()(
       teams: [],
       leagues: [],
       players: [],
+      coaches: [],
       matches: [],
 
       addFavorite: (type, id) =>
@@ -76,7 +84,7 @@ export const useFavoritesStore = create<FavoritesState>()(
         set(
           type
             ? { [type]: [] }
-            : { teams: [], leagues: [], players: [], matches: [] },
+            : { teams: [], leagues: [], players: [], coaches: [], matches: [] },
         ),
 
       getTotalCount: () => {
@@ -85,6 +93,7 @@ export const useFavoritesStore = create<FavoritesState>()(
           state.teams.length +
           state.leagues.length +
           state.players.length +
+          state.coaches.length +
           state.matches.length
         );
       },

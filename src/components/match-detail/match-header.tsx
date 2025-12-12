@@ -4,7 +4,15 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { format } from "date-fns";
-import { ArrowLeft, MapPin, Calendar, User, Star, Bell, Share2 } from "lucide-react";
+import {
+  ArrowLeft,
+  MapPin,
+  Calendar,
+  User,
+  Star,
+  Bell,
+  Share2,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn, getTeamUrl } from "@/lib/utils";
@@ -97,7 +105,7 @@ export function MatchHeader({ fixture, homeForm, awayForm }: MatchHeaderProps) {
               "flex items-center gap-2 px-4 py-2 rounded-full font-medium text-sm transition-all",
               isFollowing
                 ? "bg-yellow-500 text-white hover:bg-yellow-600"
-                : "bg-muted hover:bg-muted/80 text-foreground"
+                : "bg-muted hover:bg-muted/80 text-foreground",
             )}
           >
             <Star className={cn("h-4 w-4", isFollowing && "fill-current")} />
@@ -177,7 +185,10 @@ export function MatchHeader({ fixture, homeForm, awayForm }: MatchHeaderProps) {
                       ? "text-foreground"
                       : "text-muted-foreground"
                   }`}
-                  style={{ wordBreak: 'break-word', overflowWrap: 'break-word' }}
+                  style={{
+                    wordBreak: "break-word",
+                    overflowWrap: "break-word",
+                  }}
                 >
                   {homeTeam.name}
                 </p>
@@ -251,7 +262,10 @@ export function MatchHeader({ fixture, homeForm, awayForm }: MatchHeaderProps) {
                       ? "text-foreground"
                       : "text-muted-foreground"
                   }`}
-                  style={{ wordBreak: 'break-word', overflowWrap: 'break-word' }}
+                  style={{
+                    wordBreak: "break-word",
+                    overflowWrap: "break-word",
+                  }}
                 >
                   {awayTeam.name}
                 </p>

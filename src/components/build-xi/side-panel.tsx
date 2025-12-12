@@ -1,32 +1,32 @@
-"use client"
+"use client";
 
-import { useBuildXIStore } from "@/stores/build-xi-store"
-import { Card, CardContent, CardHeader } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Trash2, Upload, Info } from "lucide-react"
-import { toast } from "sonner"
+import { useBuildXIStore } from "@/stores/build-xi-store";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Trash2, Upload, Info } from "lucide-react";
+import { toast } from "sonner";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@/components/ui/accordion"
+} from "@/components/ui/accordion";
 
 export function SidePanel() {
-  const savedLineups = useBuildXIStore((state) => state.savedLineups)
-  const loadLineup = useBuildXIStore((state) => state.loadLineup)
-  const deleteLineup = useBuildXIStore((state) => state.deleteLineup)
+  const savedLineups = useBuildXIStore((state) => state.savedLineups);
+  const loadLineup = useBuildXIStore((state) => state.loadLineup);
+  const deleteLineup = useBuildXIStore((state) => state.deleteLineup);
 
   const handleLoad = (id: string, name: string) => {
-    loadLineup(id)
-    toast.success(`Loaded "${name}"`)
-  }
+    loadLineup(id);
+    toast.success(`Loaded "${name}"`);
+  };
 
   const handleDelete = (id: string, name: string) => {
-    deleteLineup(id)
-    toast(`Deleted "${name}"`)
-  }
+    deleteLineup(id);
+    toast(`Deleted "${name}"`);
+  };
 
   return (
     <div className="space-y-4">
@@ -65,8 +65,8 @@ export function SidePanel() {
               <div className="space-y-2">
                 {savedLineups.map((lineup) => {
                   const filledCount = Object.values(lineup.players).filter(
-                    Boolean
-                  ).length
+                    Boolean,
+                  ).length;
 
                   return (
                     <div
@@ -100,7 +100,7 @@ export function SidePanel() {
                         </Button>
                       </div>
                     </div>
-                  )
+                  );
                 })}
               </div>
             </ScrollArea>
@@ -125,5 +125,5 @@ export function SidePanel() {
         </Accordion>
       </Card>
     </div>
-  )
+  );
 }

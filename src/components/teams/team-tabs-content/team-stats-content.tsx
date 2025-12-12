@@ -1,5 +1,5 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { FormStrip } from "@/components/teams/form-strip"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { FormStrip } from "@/components/teams/form-strip";
 import {
   Target,
   Shield,
@@ -7,64 +7,64 @@ import {
   Home,
   Plane,
   BarChart3,
-} from "lucide-react"
-import type { Fixture, Standing } from "@/types/football"
+} from "lucide-react";
+import type { Fixture, Standing } from "@/types/football";
 
 interface TeamStatsContentProps {
-  fixtures: Fixture[]
-  teamId: number
-  standings: Standing[]
+  fixtures: Fixture[];
+  teamId: number;
+  standings: Standing[];
 }
 
 // Calculate team stats from fixtures
 function calculateTeamStats(fixtures: Fixture[], teamId: number) {
   const finishedMatches = fixtures.filter(
-    (f) => f.status === "finished" && f.score
-  )
+    (f) => f.status === "finished" && f.score,
+  );
 
   let wins = 0,
     draws = 0,
-    losses = 0
+    losses = 0;
   let goalsScored = 0,
-    goalsConceded = 0
+    goalsConceded = 0;
   let homeWins = 0,
     homeDraws = 0,
-    homeLosses = 0
+    homeLosses = 0;
   let awayWins = 0,
     awayDraws = 0,
-    awayLosses = 0
-  let cleanSheets = 0
+    awayLosses = 0;
+  let cleanSheets = 0;
 
   for (const match of finishedMatches) {
-    const isHome = match.homeTeam.id === teamId
-    const teamScore = isHome ? match.score!.home : match.score!.away
-    const opponentScore = isHome ? match.score!.away : match.score!.home
+    const isHome = match.homeTeam.id === teamId;
+    const teamScore = isHome ? match.score!.home : match.score!.away;
+    const opponentScore = isHome ? match.score!.away : match.score!.home;
 
-    goalsScored += teamScore
-    goalsConceded += opponentScore
+    goalsScored += teamScore;
+    goalsConceded += opponentScore;
 
-    if (opponentScore === 0) cleanSheets++
+    if (opponentScore === 0) cleanSheets++;
 
     if (teamScore > opponentScore) {
-      wins++
-      if (isHome) homeWins++
-      else awayWins++
+      wins++;
+      if (isHome) homeWins++;
+      else awayWins++;
     } else if (teamScore < opponentScore) {
-      losses++
-      if (isHome) homeLosses++
-      else awayLosses++
+      losses++;
+      if (isHome) homeLosses++;
+      else awayLosses++;
     } else {
-      draws++
-      if (isHome) homeDraws++
-      else awayDraws++
+      draws++;
+      if (isHome) homeDraws++;
+      else awayDraws++;
     }
   }
 
-  const played = finishedMatches.length
+  const played = finishedMatches.length;
   const homePlayed = finishedMatches.filter(
-    (f) => f.homeTeam.id === teamId
-  ).length
-  const awayPlayed = played - homePlayed
+    (f) => f.homeTeam.id === teamId,
+  ).length;
+  const awayPlayed = played - homePlayed;
 
   return {
     played,
@@ -90,26 +90,26 @@ function calculateTeamStats(fixtures: Fixture[], teamId: number) {
       draws: awayDraws,
       losses: awayLosses,
     },
-  }
+  };
 }
 
 // Get form from fixtures
 function getFormFromFixtures(
   fixtures: Fixture[],
-  teamId: number
+  teamId: number,
 ): Array<"W" | "D" | "L"> {
   return fixtures
     .filter((f) => f.status === "finished" && f.score)
     .slice(0, 10)
     .map((f) => {
-      const isHome = f.homeTeam.id === teamId
-      const teamScore = isHome ? f.score!.home : f.score!.away
-      const opponentScore = isHome ? f.score!.away : f.score!.home
+      const isHome = f.homeTeam.id === teamId;
+      const teamScore = isHome ? f.score!.home : f.score!.away;
+      const opponentScore = isHome ? f.score!.away : f.score!.home;
 
-      if (teamScore > opponentScore) return "W"
-      if (teamScore < opponentScore) return "L"
-      return "D"
-    })
+      if (teamScore > opponentScore) return "W";
+      if (teamScore < opponentScore) return "L";
+      return "D";
+    });
 }
 
 export function TeamStatsContent({
@@ -117,9 +117,9 @@ export function TeamStatsContent({
   teamId,
   standings,
 }: TeamStatsContentProps) {
-  const stats = calculateTeamStats(fixtures, teamId)
-  const form = getFormFromFixtures(fixtures, teamId)
-  const teamStanding = standings.find((s) => s.teamId === teamId)
+  const stats = calculateTeamStats(fixtures, teamId);
+  const form = getFormFromFixtures(fixtures, teamId);
+  const teamStanding = standings.find((s) => s.teamId === teamId);
 
   return (
     <div className="space-y-6">
@@ -363,5 +363,5 @@ export function TeamStatsContent({
         </Card>
       )}
     </div>
-  )
+  );
 }

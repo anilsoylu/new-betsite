@@ -12,7 +12,7 @@ export interface ExportOptions {
  */
 export async function exportElementAsImage(
   element: HTMLElement,
-  options: ExportOptions = {}
+  options: ExportOptions = {},
 ): Promise<Blob> {
   const {
     format = "png",
@@ -43,7 +43,7 @@ export async function exportElementAsImage(
  */
 export async function exportElementById(
   elementId: string,
-  options: ExportOptions = {}
+  options: ExportOptions = {},
 ): Promise<Blob> {
   const element = document.getElementById(elementId);
   if (!element) {
@@ -58,7 +58,7 @@ export async function exportElementById(
 export async function downloadElementAsImage(
   elementId: string,
   fileName: string,
-  options: ExportOptions = {}
+  options: ExportOptions = {},
 ): Promise<void> {
   const blob = await exportElementById(elementId, options);
   const format = options.format || "png";
@@ -82,7 +82,7 @@ export async function downloadElementAsImage(
  * Export the lineup pitch as an image
  */
 export async function exportLineupImage(
-  lineupName: string = "lineup"
+  lineupName: string = "lineup",
 ): Promise<void> {
   const sanitizedName = lineupName
     .toLowerCase()

@@ -8,7 +8,11 @@
 /**
  * Position type categories for filtering and assignment
  */
-export type PositionType = "goalkeeper" | "defender" | "midfielder" | "attacker";
+export type PositionType =
+  | "goalkeeper"
+  | "defender"
+  | "midfielder"
+  | "attacker";
 
 /**
  * Mode for lineup building (club teams vs national teams)

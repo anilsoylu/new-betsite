@@ -21,7 +21,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
         headers: {
           "Cache-Control": `public, s-maxage=${CACHE_PROFILES.medium}, stale-while-revalidate=${CACHE_PROFILES.long}`,
         },
-      }
+      },
     );
   } catch (error) {
     logError("api/players/[id]", error, {

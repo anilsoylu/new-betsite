@@ -1,18 +1,33 @@
-"use client"
+"use client";
 
-import { useCallback, useEffect, useState } from "react"
-import { useSearchParams, usePathname } from "next/navigation"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { EventsTab } from "./events-tab"
-import { StatisticsTab } from "./statistics-tab"
-import { LineupsTab } from "./lineups-tab"
-import { StandingsTab } from "./standings-tab"
-import { H2HTab } from "./h2h-tab"
-import type { FixtureDetail, StandingTable, H2HFixture } from "@/types/football"
+import { useCallback, useEffect, useState } from "react";
+import { useSearchParams, usePathname } from "next/navigation";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { EventsTab } from "./events-tab";
+import { StatisticsTab } from "./statistics-tab";
+import { LineupsTab } from "./lineups-tab";
+import { StandingsTab } from "./standings-tab";
+import { H2HTab } from "./h2h-tab";
+import type {
+  FixtureDetail,
+  StandingTable,
+  H2HFixture,
+} from "@/types/football";
 
-export type MatchTab = "events" | "lineups" | "statistics" | "standings" | "h2h"
+export type MatchTab =
+  | "events"
+  | "lineups"
+  | "statistics"
+  | "standings"
+  | "h2h";
 
-const VALID_TABS: MatchTab[] = ["events", "lineups", "statistics", "standings", "h2h"]
+const VALID_TABS: MatchTab[] = [
+  "events",
+  "lineups",
+  "statistics",
+  "standings",
+  "h2h",
+];
 
 const TAB_LABELS: Record<MatchTab, string> = {
   events: "Events",
@@ -20,81 +35,96 @@ const TAB_LABELS: Record<MatchTab, string> = {
   statistics: "Statistics",
   standings: "Standings",
   h2h: "H2H",
-}
+};
 
 interface MatchTabsProps {
-  fixture: FixtureDetail
-  standings: Array<StandingTable>
-  h2h: Array<H2HFixture>
+  fixture: FixtureDetail;
+  standings: Array<StandingTable>;
+  h2h: Array<H2HFixture>;
 }
 
 export function MatchTabs({ fixture, standings, h2h }: MatchTabsProps) {
-  const pathname = usePathname()
-  const searchParams = useSearchParams()
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
 
-  const hasEvents = fixture.events.length > 0
-  const hasStatistics = fixture.statistics.length > 0
-  const hasLineups = fixture.homeLineup || fixture.awayLineup
-  const hasStandings = standings.length > 0
-  const hasH2H = h2h.length > 0
+  const hasEvents = fixture.events.length > 0;
+  const hasStatistics = fixture.statistics.length > 0;
+  const hasLineups = fixture.homeLineup || fixture.awayLineup;
+  const hasStandings = standings.length > 0;
+  const hasH2H = h2h.length > 0;
 
   // Determine default tab based on available data
   const getDefaultTab = (): MatchTab => {
     // For live/finished matches, prioritize events
-    if (hasEvents) return "events"
-    if (hasLineups) return "lineups"
-    if (hasStatistics) return "statistics"
-    if (hasStandings) return "standings"
-    if (hasH2H) return "h2h"
-    return "lineups"
-  }
+    if (hasEvents) return "events";
+    if (hasLineups) return "lineups";
+    if (hasStatistics) return "statistics";
+    if (hasStandings) return "standings";
+    if (hasH2H) return "h2h";
+    return "lineups";
+  };
 
   // Get initial tab from URL or use smart default
   const getInitialTab = (): MatchTab => {
-    const tabParam = searchParams.get("tab")
+    const tabParam = searchParams.get("tab");
     if (tabParam && VALID_TABS.includes(tabParam as MatchTab)) {
-      return tabParam as MatchTab
+      return tabParam as MatchTab;
     }
-    return getDefaultTab()
-  }
+    return getDefaultTab();
+  };
 
-  const [activeTab, setActiveTab] = useState<MatchTab>(getInitialTab)
+  const [activeTab, setActiveTab] = useState<MatchTab>(getInitialTab);
 
   // Sync with URL on mount and when searchParams change
   useEffect(() => {
-    const tabParam = searchParams.get("tab")
+    const tabParam = searchParams.get("tab");
     if (tabParam && VALID_TABS.includes(tabParam as MatchTab)) {
-      setActiveTab(tabParam as MatchTab)
+      setActiveTab(tabParam as MatchTab);
     } else if (!tabParam) {
-      setActiveTab(getDefaultTab())
+      setActiveTab(getDefaultTab());
     }
-  }, [searchParams, hasEvents, hasLineups, hasStatistics, hasStandings, hasH2H])
+  }, [
+    searchParams,
+    hasEvents,
+    hasLineups,
+    hasStatistics,
+    hasStandings,
+    hasH2H,
+  ]);
 
   // Update URL without triggering navigation (pure client-side)
   const handleTabChange = useCallback(
     (value: string) => {
-      const newTab = value as MatchTab
-      setActiveTab(newTab)
+      const newTab = value as MatchTab;
+      setActiveTab(newTab);
 
       // Build new URL
-      const params = new URLSearchParams(searchParams.toString())
-      const defaultTab = getDefaultTab()
+      const params = new URLSearchParams(searchParams.toString());
+      const defaultTab = getDefaultTab();
 
       if (newTab === defaultTab) {
         // Remove param if it's the default tab (cleaner URL)
-        params.delete("tab")
+        params.delete("tab");
       } else {
-        params.set("tab", newTab)
+        params.set("tab", newTab);
       }
 
-      const queryString = params.toString()
-      const newUrl = queryString ? `${pathname}?${queryString}` : pathname
+      const queryString = params.toString();
+      const newUrl = queryString ? `${pathname}?${queryString}` : pathname;
 
       // Update URL without navigation (no page reload, no router)
-      window.history.replaceState(null, "", newUrl)
+      window.history.replaceState(null, "", newUrl);
     },
-    [pathname, searchParams, hasEvents, hasLineups, hasStatistics, hasStandings, hasH2H]
-  )
+    [
+      pathname,
+      searchParams,
+      hasEvents,
+      hasLineups,
+      hasStatistics,
+      hasStandings,
+      hasH2H,
+    ],
+  );
 
   return (
     <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
@@ -121,6 +151,8 @@ export function MatchTabs({ fixture, standings, h2h }: MatchTabsProps) {
             awayLineup={fixture.awayLineup}
             homeTeam={fixture.homeTeam}
             awayTeam={fixture.awayTeam}
+            homeCoach={fixture.homeCoach}
+            awayCoach={fixture.awayCoach}
           />
         ) : (
           <EmptyState message="Lineups not announced yet" />
@@ -163,7 +195,7 @@ export function MatchTabs({ fixture, standings, h2h }: MatchTabsProps) {
         )}
       </TabsContent>
     </Tabs>
-  )
+  );
 }
 
 function EmptyState({ message }: { message: string }) {
@@ -171,5 +203,5 @@ function EmptyState({ message }: { message: string }) {
     <div className="py-12 text-center text-muted-foreground">
       <p>{message}</p>
     </div>
-  )
+  );
 }

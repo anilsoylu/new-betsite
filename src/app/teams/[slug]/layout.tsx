@@ -1,30 +1,30 @@
-import { notFound } from "next/navigation"
-import { getTeamById } from "@/lib/api/cached-football-api"
-import { extractTeamId } from "@/lib/utils"
-import { TeamHeader } from "@/components/teams"
+import { notFound } from "next/navigation";
+import { getTeamById } from "@/lib/api/cached-football-api";
+import { extractTeamId } from "@/lib/utils";
+import { TeamHeader } from "@/components/teams";
 
 interface TeamLayoutProps {
-  children: React.ReactNode
-  params: Promise<{ slug: string }>
+  children: React.ReactNode;
+  params: Promise<{ slug: string }>;
 }
 
 export default async function TeamLayout({
   children,
   params,
 }: TeamLayoutProps) {
-  const { slug } = await params
-  const teamId = extractTeamId(slug)
+  const { slug } = await params;
+  const teamId = extractTeamId(slug);
 
   if (!teamId) {
-    notFound()
+    notFound();
   }
 
-  let team
+  let team;
 
   try {
-    team = await getTeamById(teamId)
+    team = await getTeamById(teamId);
   } catch {
-    notFound()
+    notFound();
   }
 
   return (
@@ -39,5 +39,5 @@ export default async function TeamLayout({
         {children}
       </div>
     </main>
-  )
+  );
 }

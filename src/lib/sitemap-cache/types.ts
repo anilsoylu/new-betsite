@@ -60,6 +60,16 @@ export interface PlayerCacheInput {
 }
 
 /**
+ * Input for upserting a coach into the cache.
+ */
+export interface CoachCacheInput {
+  id: number;
+  name: string;
+  teamId?: number | null;
+  country?: string | null;
+}
+
+/**
  * Input for upserting a match into the cache.
  */
 export interface MatchCacheInput {
@@ -116,6 +126,17 @@ export interface PlayerRow {
   team_id: number | null;
   country: string | null;
   position: string | null;
+  last_modified: string | null;
+  updated_at: string;
+  include_in_sitemap: number;
+}
+
+export interface CoachRow {
+  id: number;
+  name: string;
+  slug: string;
+  team_id: number | null;
+  country: string | null;
   last_modified: string | null;
   updated_at: string;
   include_in_sitemap: number;

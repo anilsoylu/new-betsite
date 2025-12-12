@@ -21,7 +21,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
         headers: {
           "Cache-Control": `public, s-maxage=${CACHE_PROFILES.short}, stale-while-revalidate=${CACHE_PROFILES.medium}`,
         },
-      }
+      },
     );
   } catch (error) {
     logError("api/fixtures/[id]", error, {

@@ -1,21 +1,21 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { Moon, Sun } from "lucide-react"
-import { useTheme } from "next-themes"
-import { Button } from "@/components/ui/button"
-import { cn } from "@/lib/utils"
-import { SITE } from "@/lib/constants"
-import { GlobalSearch } from "@/components/layout/global-search"
-import { useFavoritesStore } from "@/stores/favorites-store"
-import { getDesktopNavItems } from "@/config/navigation"
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { Moon, Sun } from "lucide-react";
+import { useTheme } from "next-themes";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { SITE } from "@/lib/constants";
+import { GlobalSearch } from "@/components/layout/global-search";
+import { useFavoritesStore } from "@/stores/favorites-store";
+import { getDesktopNavItems } from "@/config/navigation";
 
 export function Header() {
-  const pathname = usePathname()
-  const { setTheme, resolvedTheme } = useTheme()
-  const [hasMounted, setHasMounted] = useState(false)
+  const pathname = usePathname();
+  const { setTheme, resolvedTheme } = useTheme();
+  const [hasMounted, setHasMounted] = useState(false);
 
   // Use selector to subscribe to state changes
   const favoriteCount = useFavoritesStore(
@@ -23,20 +23,21 @@ export function Header() {
       state.teams.length +
       state.leagues.length +
       state.players.length +
-      state.matches.length
-  )
+      state.coaches.length +
+      state.matches.length,
+  );
 
   useEffect(() => {
-    setHasMounted(true)
-  }, [])
+    setHasMounted(true);
+  }, []);
 
   const toggleTheme = () => {
-    const newTheme = resolvedTheme === "dark" ? "light" : "dark"
-    setTheme(newTheme)
-  }
+    const newTheme = resolvedTheme === "dark" ? "light" : "dark";
+    setTheme(newTheme);
+  };
 
-  const displayCount = hasMounted ? favoriteCount : 0
-  const navItems = getDesktopNavItems()
+  const displayCount = hasMounted ? favoriteCount : 0;
+  const navItems = getDesktopNavItems();
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
@@ -51,9 +52,9 @@ export function Header() {
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center space-x-1 text-sm font-medium">
           {navItems.map((item) => {
-            const isActive = pathname === item.href
-            const isFavorites = item.showFavoritesCount
-            const isLiveItem = item.isLive
+            const isActive = pathname === item.href;
+            const isFavorites = item.showFavoritesCount;
+            const isLiveItem = item.isLive;
 
             return (
               <Link
@@ -64,7 +65,7 @@ export function Header() {
                   isActive
                     ? "text-foreground bg-muted"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
-                  isLiveItem && !isActive && "text-red-500 hover:text-red-400"
+                  isLiveItem && !isActive && "text-red-500 hover:text-red-400",
                 )}
               >
                 {/* Live indicator */}
@@ -78,7 +79,7 @@ export function Header() {
                   <item.icon
                     className={cn(
                       "h-4 w-4",
-                      isActive && "fill-yellow-500 text-yellow-500"
+                      isActive && "fill-yellow-500 text-yellow-500",
                     )}
                   />
                 )}
@@ -96,7 +97,7 @@ export function Header() {
                   <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-6 h-0.5 bg-primary rounded-full" />
                 )}
               </Link>
-            )
+            );
           })}
         </nav>
 
@@ -119,5 +120,5 @@ export function Header() {
         </div>
       </div>
     </header>
-  )
+  );
 }

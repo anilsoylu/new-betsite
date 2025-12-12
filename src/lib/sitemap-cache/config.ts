@@ -27,6 +27,7 @@ export const SITEMAP_CONFIG = {
     leagues: 10_000,
     teams: 25_000,
     players: 50_000,
+    coaches: 25_000,
     matches: 50_000,
   },
 
@@ -39,6 +40,7 @@ export const SITEMAP_CONFIG = {
     leagues: 2500,
     teams: 2500,
     players: 2500,
+    coaches: 2500,
     matches: 2500,
   },
 
@@ -67,4 +69,9 @@ export const SITEMAP_CONFIG = {
 } as const;
 
 export type SupportedLang = (typeof SITEMAP_CONFIG.SUPPORTED_LANGS)[number];
-export type EntityType = "leagues" | "teams" | "players" | "matches";
+export type EntityType =
+  | "leagues"
+  | "teams"
+  | "players"
+  | "coaches"
+  | "matches";

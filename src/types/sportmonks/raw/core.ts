@@ -119,4 +119,5 @@ export interface SportmonksFixtureRaw {
   periods?: Array<import("./match-data").SportmunksPeriodRaw>;
   formations?: Array<SportmonksFormationRaw>;
   referees?: Array<import("./match-data").SportmonksRefereeRaw>;
+  coaches?: Array<import("./team").SportmonksFixtureCoachRaw>;
 }

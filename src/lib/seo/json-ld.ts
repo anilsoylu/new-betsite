@@ -3,6 +3,7 @@ import type {
   FixtureDetail,
   TeamDetail,
   PlayerDetail,
+  CoachDetail,
   League,
   Standing,
 } from "@/types/football";
@@ -176,6 +177,63 @@ export function generatePersonSchema(player: PlayerDetail) {
       "@type": "SportsTeam",
       name: player.currentTeam.teamName,
     };
+  }
+
+  return schema;
+}
+
+// Person schema for coaches
+export function generateCoachSchema(coach: CoachDetail) {
+  const schema: Record<string, unknown> = {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    name: coach.displayName,
+    givenName: coach.firstName,
+    familyName: coach.lastName,
+    image: coach.image,
+    url: `${SITE.url}/coaches/${slugify(coach.displayName)}-${coach.id}`,
+    jobTitle: "Football Manager",
+  };
+
+  if (coach.dateOfBirth) {
+    schema.birthDate = coach.dateOfBirth;
+  }
+
+  if (coach.nationality?.name) {
+    schema.nationality = {
+      "@type": "Country",
+      name: coach.nationality.name,
+    };
+  }
+
+  if (coach.height) {
+    schema.height = {
+      "@type": "QuantitativeValue",
+      value: coach.height,
+      unitCode: "CMT",
+    };
+  }
+
+  if (coach.weight) {
+    schema.weight = {
+      "@type": "QuantitativeValue",
+      value: coach.weight,
+      unitCode: "KGM",
+    };
+  }
+
+  if (coach.currentTeam) {
+    schema.worksFor = {
+      "@type": "SportsTeam",
+      name: coach.currentTeam.teamName,
+      url: `${SITE.url}/teams/${slugify(coach.currentTeam.teamName)}-${coach.currentTeam.teamId}`,
+    };
+  }
+
+  // Add career highlights
+  const titlesWon = coach.trophies.filter((t) => t.position === 1).length;
+  if (titlesWon > 0) {
+    schema.award = `${titlesWon} titles won as manager`;
   }
 
   return schema;

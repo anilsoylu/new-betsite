@@ -1,4 +1,14 @@
-import { Home, Trophy, Users, Globe, Star, Shirt, Radio, UsersRound } from "lucide-react";
+import {
+  Home,
+  Trophy,
+  Users,
+  Globe,
+  Star,
+  Shirt,
+  Radio,
+  UsersRound,
+  ClipboardList,
+} from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 /**
@@ -68,6 +78,14 @@ export const NAV_ITEMS: NavItem[] = [
     showOnDesktop: true,
     showOnMobile: false,
     showInMobileSheet: true, // In hamburger menu (moved from bottom nav)
+  },
+  {
+    href: "/coaches",
+    label: "Coaches",
+    icon: ClipboardList,
+    showOnDesktop: true,
+    showOnMobile: false,
+    showInMobileSheet: true, // In hamburger menu
   },
   {
     href: "/leagues",

@@ -51,6 +51,19 @@ export function getPlayerCount(): number {
 }
 
 /**
+ * Get the total count of coaches included in sitemap.
+ */
+export function getCoachCount(): number {
+  const db = getDatabase();
+  const result = db
+    .prepare(
+      "SELECT COUNT(*) as count FROM coaches WHERE include_in_sitemap = 1",
+    )
+    .get() as { count: number };
+  return result.count;
+}
+
+/**
  * Get the total count of matches included in sitemap (within date window).
  */
 export function getMatchCount(): number {
@@ -167,6 +180,32 @@ export function getPlayersForSitemap(page: number): SitemapEntry[] {
 }
 
 /**
+ * Get paginated coach entries for sitemap generation.
+ * @param page - 1-based page number
+ */
+export function getCoachesForSitemap(page: number): SitemapEntry[] {
+  const db = getDatabase();
+  const pageSize = SITEMAP_CONFIG.PAGE_SIZE.coaches;
+  const offset = (page - 1) * pageSize;
+
+  return db
+    .prepare(
+      `
+      SELECT
+        id,
+        name,
+        slug,
+        COALESCE(last_modified, updated_at) as lastModified
+      FROM coaches
+      WHERE include_in_sitemap = 1
+      ORDER BY id
+      LIMIT ? OFFSET ?
+    `,
+    )
+    .all(pageSize, offset) as SitemapEntry[];
+}
+
+/**
  * Get paginated match entries for sitemap generation.
  * Only includes matches within the configured date window.
  * @param page - 1-based page number
@@ -228,6 +267,14 @@ export function getTeamPageCount(): number {
 export function getPlayerPageCount(): number {
   const total = getPlayerCount();
   return Math.max(1, Math.ceil(total / SITEMAP_CONFIG.PAGE_SIZE.players));
+}
+
+/**
+ * Calculate the number of sitemap pages needed for coaches.
+ */
+export function getCoachPageCount(): number {
+  const total = getCoachCount();
+  return Math.max(1, Math.ceil(total / SITEMAP_CONFIG.PAGE_SIZE.coaches));
 }
 
 /**

@@ -63,7 +63,9 @@ export function BuildXISkeleton() {
                 <div className="absolute inset-0 flex flex-col items-center justify-around py-8">
                   {[1, 2, 3, 4].map((row) => (
                     <div key={row} className="flex justify-around w-full px-8">
-                      {Array.from({ length: row === 1 ? 1 : row === 4 ? 3 : 4 }).map((_, i) => (
+                      {Array.from({
+                        length: row === 1 ? 1 : row === 4 ? 3 : 4,
+                      }).map((_, i) => (
                         <Skeleton
                           key={i}
                           className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-white/20"

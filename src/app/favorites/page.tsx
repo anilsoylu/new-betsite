@@ -14,6 +14,7 @@ import {
   Calendar,
   MapPin,
   Shirt,
+  ClipboardList,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -21,11 +22,12 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useFavoritesStore } from "@/stores/favorites-store";
-import { slugify } from "@/lib/utils";
 import {
+  slugify,
   generateTeamSlug,
   generatePlayerSlug,
   getFixtureUrl,
+  getCoachUrl,
 } from "@/lib/utils";
 import { format } from "date-fns";
 
@@ -72,6 +74,19 @@ interface MatchData {
   status: string;
   score?: { home: number; away: number };
   league?: { id: number; name: string; logo?: string };
+}
+
+interface CoachData {
+  id: number;
+  name: string;
+  displayName?: string;
+  image?: string;
+  nationality?: { name: string; flag?: string };
+  currentTeam?: {
+    id: number;
+    name: string;
+    logo?: string;
+  };
 }
 
 // Skeleton components for loading state
@@ -129,6 +144,7 @@ export default function FavoritesPage() {
   const teams = useFavoritesStore((state) => state.teams);
   const leagues = useFavoritesStore((state) => state.leagues);
   const players = useFavoritesStore((state) => state.players);
+  const coaches = useFavoritesStore((state) => state.coaches);
   const matches = useFavoritesStore((state) => state.matches);
   const removeFavorite = useFavoritesStore((state) => state.removeFavorite);
   const clearFavorites = useFavoritesStore((state) => state.clearFavorites);
@@ -136,6 +152,7 @@ export default function FavoritesPage() {
   const [teamData, setTeamData] = useState<Array<TeamData>>([]);
   const [playerData, setPlayerData] = useState<Array<PlayerData>>([]);
   const [leagueData, setLeagueData] = useState<Array<LeagueData>>([]);
+  const [coachData, setCoachData] = useState<Array<CoachData>>([]);
   const [matchData, setMatchData] = useState<Array<MatchData>>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [hasMounted, setHasMounted] = useState(false);
@@ -146,7 +163,11 @@ export default function FavoritesPage() {
   }, []);
 
   const totalFavorites = hasMounted
-    ? teams.length + leagues.length + players.length + matches.length
+    ? teams.length +
+      leagues.length +
+      players.length +
+      coaches.length +
+      matches.length
     : 0;
 
   // Fetch detailed data for favorites
@@ -158,88 +179,110 @@ export default function FavoritesPage() {
 
       try {
         // Fetch all data in parallel
-        const [teamsResult, playersResult, leaguesResult, matchesResult] =
-          await Promise.all([
-            // Teams
-            teams.length > 0
-              ? Promise.all(
-                  teams.map(async (id) => {
-                    try {
-                      const res = await fetch(`/api/teams/${id}`);
-                      if (res.ok) {
-                        const data = await res.json();
-                        return data.team as TeamData;
-                      }
-                    } catch {}
-                    return { id, name: `Team ${id}` } as TeamData;
-                  })
-                )
-              : Promise.resolve([]),
+        const [
+          teamsResult,
+          playersResult,
+          leaguesResult,
+          coachesResult,
+          matchesResult,
+        ] = await Promise.all([
+          // Teams
+          teams.length > 0
+            ? Promise.all(
+                teams.map(async (id) => {
+                  try {
+                    const res = await fetch(`/api/teams/${id}`);
+                    if (res.ok) {
+                      const data = await res.json();
+                      return data.team as TeamData;
+                    }
+                  } catch {}
+                  return { id, name: `Team ${id}` } as TeamData;
+                }),
+              )
+            : Promise.resolve([]),
 
-            // Players
-            players.length > 0
-              ? Promise.all(
-                  players.map(async (id) => {
-                    try {
-                      const res = await fetch(`/api/players/${id}`);
-                      if (res.ok) {
-                        const data = await res.json();
-                        return data.player as PlayerData;
-                      }
-                    } catch {}
-                    return { id, name: `Player ${id}` } as PlayerData;
-                  })
-                )
-              : Promise.resolve([]),
+          // Players
+          players.length > 0
+            ? Promise.all(
+                players.map(async (id) => {
+                  try {
+                    const res = await fetch(`/api/players/${id}`);
+                    if (res.ok) {
+                      const data = await res.json();
+                      return data.player as PlayerData;
+                    }
+                  } catch {}
+                  return { id, name: `Player ${id}` } as PlayerData;
+                }),
+              )
+            : Promise.resolve([]),
 
-            // Leagues
-            leagues.length > 0
-              ? Promise.all(
-                  leagues.map(async (id) => {
-                    try {
-                      const res = await fetch(`/api/leagues/${id}`);
-                      if (res.ok) {
-                        const data = await res.json();
-                        return data.league as LeagueData;
-                      }
-                    } catch {}
-                    return { id, name: `League ${id}` } as LeagueData;
-                  })
-                )
-              : Promise.resolve([]),
+          // Leagues
+          leagues.length > 0
+            ? Promise.all(
+                leagues.map(async (id) => {
+                  try {
+                    const res = await fetch(`/api/leagues/${id}`);
+                    if (res.ok) {
+                      const data = await res.json();
+                      return data.league as LeagueData;
+                    }
+                  } catch {}
+                  return { id, name: `League ${id}` } as LeagueData;
+                }),
+              )
+            : Promise.resolve([]),
 
-            // Matches
-            matches.length > 0
-              ? Promise.all(
-                  matches.map(async (id) => {
-                    try {
-                      const res = await fetch(`/api/fixtures/${id}`);
-                      if (res.ok) {
-                        const data = await res.json();
-                        const f = data.fixture;
-                        return {
-                          id: f.id,
-                          homeTeam: f.homeTeam,
-                          awayTeam: f.awayTeam,
-                          startTime: f.startTime,
-                          status: f.status,
-                          score:
-                            f.homeScore !== undefined && f.awayScore !== undefined
-                              ? { home: f.homeScore, away: f.awayScore }
-                              : undefined,
-                          league: f.league,
-                        } as MatchData;
-                      }
-                    } catch {}
-                    return null;
-                  })
-                ).then((results) => results.filter(Boolean) as Array<MatchData>)
-              : Promise.resolve([]),
-          ]);
+          // Coaches
+          coaches.length > 0
+            ? Promise.all(
+                coaches.map(async (id) => {
+                  try {
+                    const res = await fetch(`/api/coaches/${id}`);
+                    if (res.ok) {
+                      const data = await res.json();
+                      return data.coach as CoachData;
+                    }
+                  } catch {}
+                  return { id, name: `Coach ${id}` } as CoachData;
+                }),
+              )
+            : Promise.resolve([]),
+
+          // Matches
+          matches.length > 0
+            ? Promise.all(
+                matches.map(async (id) => {
+                  try {
+                    const res = await fetch(`/api/fixtures/${id}`);
+                    if (res.ok) {
+                      const data = await res.json();
+                      const f = data.fixture;
+                      return {
+                        id: f.id,
+                        homeTeam: f.homeTeam,
+                        awayTeam: f.awayTeam,
+                        startTime: f.startTime,
+                        status: f.status,
+                        score:
+                          f.homeScore !== undefined && f.awayScore !== undefined
+                            ? { home: f.homeScore, away: f.awayScore }
+                            : undefined,
+                        league: f.league,
+                      } as MatchData;
+                    }
+                  } catch {}
+                  return null;
+                }),
+              ).then((results) => results.filter(Boolean) as Array<MatchData>)
+            : Promise.resolve([]),
+        ]);
 
         setTeamData(teamsResult.filter(Boolean));
         setPlayerData(playersResult.filter(Boolean));
         setLeagueData(leaguesResult.filter(Boolean));
+        setCoachData(coachesResult.filter(Boolean));
         setMatchData(matchesResult);
       } finally {
         setIsLoading(false);
@@ -247,7 +290,7 @@ export default function FavoritesPage() {
     }
 
     fetchFavoriteData();
-  }, [hasMounted, teams, players, leagues, matches]);
+  }, [hasMounted, teams, players, leagues, coaches, matches]);
 
   return (
     <main className="flex-1 overflow-auto">
@@ -323,39 +366,78 @@ export default function FavoritesPage() {
         {/* Favorites Tabs */}
         {totalFavorites > 0 && (
           <Tabs defaultValue="teams" className="w-full">
-            <TabsList className="grid w-full grid-cols-4 h-12">
-              <TabsTrigger value="teams" className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+            <TabsList className="grid w-full grid-cols-5 h-12">
+              <TabsTrigger
+                value="teams"
+                className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+              >
                 <Shield className="h-4 w-4" />
                 <span className="hidden sm:inline">Teams</span>
                 {hasMounted && teams.length > 0 && (
-                  <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs">
+                  <Badge
+                    variant="secondary"
+                    className="ml-1 h-5 px-1.5 text-xs"
+                  >
                     {teams.length}
                   </Badge>
                 )}
               </TabsTrigger>
-              <TabsTrigger value="players" className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <TabsTrigger
+                value="players"
+                className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+              >
                 <User className="h-4 w-4" />
                 <span className="hidden sm:inline">Players</span>
                 {hasMounted && players.length > 0 && (
-                  <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs">
+                  <Badge
+                    variant="secondary"
+                    className="ml-1 h-5 px-1.5 text-xs"
+                  >
                     {players.length}
                   </Badge>
                 )}
               </TabsTrigger>
-              <TabsTrigger value="matches" className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <TabsTrigger
+                value="coaches"
+                className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+              >
+                <ClipboardList className="h-4 w-4" />
+                <span className="hidden sm:inline">Coaches</span>
+                {hasMounted && coaches.length > 0 && (
+                  <Badge
+                    variant="secondary"
+                    className="ml-1 h-5 px-1.5 text-xs"
+                  >
+                    {coaches.length}
+                  </Badge>
+                )}
+              </TabsTrigger>
+              <TabsTrigger
+                value="matches"
+                className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+              >
                 <Calendar className="h-4 w-4" />
                 <span className="hidden sm:inline">Matches</span>
                 {hasMounted && matches.length > 0 && (
-                  <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs">
+                  <Badge
+                    variant="secondary"
+                    className="ml-1 h-5 px-1.5 text-xs"
+                  >
                     {matches.length}
                   </Badge>
                 )}
               </TabsTrigger>
-              <TabsTrigger value="leagues" className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <TabsTrigger
+                value="leagues"
+                className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+              >
                 <Trophy className="h-4 w-4" />
                 <span className="hidden sm:inline">Leagues</span>
                 {hasMounted && leagues.length > 0 && (
-                  <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs">
+                  <Badge
+                    variant="secondary"
+                    className="ml-1 h-5 px-1.5 text-xs"
+                  >
                     {leagues.length}
                   </Badge>
                 )}
@@ -375,7 +457,9 @@ export default function FavoritesPage() {
                   <CardContent className="py-12 text-center text-muted-foreground">
                     <Shield className="h-12 w-12 mx-auto mb-3 opacity-30" />
                     <p className="font-medium">No favorite teams yet</p>
-                    <p className="text-sm mt-1">Follow teams to see them here</p>
+                    <p className="text-sm mt-1">
+                      Follow teams to see them here
+                    </p>
                     <Button asChild variant="link" className="mt-3">
                       <Link href="/teams">Browse Teams</Link>
                     </Button>
@@ -412,7 +496,10 @@ export default function FavoritesPage() {
                                 {team.name}
                               </p>
                               {team.shortCode && (
-                                <Badge variant="outline" className="text-[10px] shrink-0">
+                                <Badge
+                                  variant="outline"
+                                  className="text-[10px] shrink-0"
+                                >
                                   {team.shortCode}
                                 </Badge>
                               )}
@@ -469,7 +556,9 @@ export default function FavoritesPage() {
                   <CardContent className="py-12 text-center text-muted-foreground">
                     <User className="h-12 w-12 mx-auto mb-3 opacity-30" />
                     <p className="font-medium">No favorite players yet</p>
-                    <p className="text-sm mt-1">Follow players to see them here</p>
+                    <p className="text-sm mt-1">
+                      Follow players to see them here
+                    </p>
                     <Button asChild variant="link" className="mt-3">
                       <Link href="/players">Browse Players</Link>
                     </Button>
@@ -524,7 +613,10 @@ export default function FavoritesPage() {
                             </div>
                             <div className="flex items-center gap-2 mt-1">
                               {(player.detailedPosition || player.position) && (
-                                <Badge variant="secondary" className="text-[10px] h-5 px-1.5">
+                                <Badge
+                                  variant="secondary"
+                                  className="text-[10px] h-5 px-1.5"
+                                >
                                   {player.detailedPosition || player.position}
                                 </Badge>
                               )}
@@ -562,6 +654,104 @@ export default function FavoritesPage() {
               )}
             </TabsContent>
 
+            {/* Coaches Tab */}
+            <TabsContent value="coaches" className="mt-4">
+              {isLoading ? (
+                <div className="grid gap-3">
+                  {Array.from({ length: 3 }).map((_, i) => (
+                    <PlayerCardSkeleton key={i} />
+                  ))}
+                </div>
+              ) : coaches.length === 0 ? (
+                <Card className="border-dashed">
+                  <CardContent className="py-12 text-center text-muted-foreground">
+                    <ClipboardList className="h-12 w-12 mx-auto mb-3 opacity-30" />
+                    <p className="font-medium">No favorite coaches yet</p>
+                    <p className="text-sm mt-1">
+                      Follow coaches to see them here
+                    </p>
+                    <Button asChild variant="link" className="mt-3">
+                      <Link href="/coaches">Browse Coaches</Link>
+                    </Button>
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="grid gap-3">
+                  {coachData.map((coach) => (
+                    <Card
+                      key={coach.id}
+                      className="group hover:shadow-md transition-shadow"
+                    >
+                      <CardContent className="flex items-center gap-4 p-4">
+                        <Link
+                          href={getCoachUrl(
+                            coach.displayName || coach.name,
+                            coach.id,
+                          )}
+                          className="flex items-center gap-4 flex-1 min-w-0"
+                        >
+                          <div className="relative h-14 w-14 shrink-0">
+                            {coach.image ? (
+                              <Image
+                                src={coach.image}
+                                alt={coach.displayName || coach.name}
+                                fill
+                                className="object-cover rounded-full ring-2 ring-border"
+                              />
+                            ) : (
+                              <div className="h-full w-full bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-700 rounded-full flex items-center justify-center ring-2 ring-border">
+                                <ClipboardList className="h-7 w-7 text-muted-foreground" />
+                              </div>
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <p className="font-semibold truncate text-base">
+                                {coach.displayName || coach.name}
+                              </p>
+                              {coach.nationality?.flag && (
+                                <Image
+                                  src={coach.nationality.flag}
+                                  alt={coach.nationality.name}
+                                  width={18}
+                                  height={14}
+                                  className="object-contain rounded-sm shrink-0"
+                                />
+                              )}
+                            </div>
+                            {coach.currentTeam && (
+                              <div className="flex items-center gap-1.5 mt-1 text-sm text-muted-foreground">
+                                {coach.currentTeam.logo && (
+                                  <Image
+                                    src={coach.currentTeam.logo}
+                                    alt={coach.currentTeam.name}
+                                    width={16}
+                                    height={16}
+                                    className="object-contain"
+                                  />
+                                )}
+                                <span className="truncate">
+                                  {coach.currentTeam.name}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        </Link>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-9 w-9 opacity-0 group-hover:opacity-100 transition-opacity text-destructive hover:text-destructive hover:bg-destructive/10"
+                          onClick={() => removeFavorite("coaches", coach.id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </TabsContent>
+
             {/* Matches Tab */}
             <TabsContent value="matches" className="mt-4">
               {isLoading ? (
@@ -575,7 +765,9 @@ export default function FavoritesPage() {
                   <CardContent className="py-12 text-center text-muted-foreground">
                     <Calendar className="h-12 w-12 mx-auto mb-3 opacity-30" />
                     <p className="font-medium">No favorite matches yet</p>
-                    <p className="text-sm mt-1">Follow matches to see them here</p>
+                    <p className="text-sm mt-1">
+                      Follow matches to see them here
+                    </p>
                     <Button asChild variant="link" className="mt-3">
                       <Link href="/">Browse Matches</Link>
                     </Button>
@@ -613,7 +805,10 @@ export default function FavoritesPage() {
                                 {match.league.name}
                               </span>
                               <span className="text-xs text-muted-foreground ml-auto">
-                                {format(new Date(match.startTime), "dd MMM yyyy")}
+                                {format(
+                                  new Date(match.startTime),
+                                  "dd MMM yyyy",
+                                )}
                               </span>
                             </div>
                           )}
@@ -645,7 +840,9 @@ export default function FavoritesPage() {
                               {match.score ? (
                                 <div className="flex items-center gap-2 text-xl font-bold tabular-nums">
                                   <span>{match.score.home}</span>
-                                  <span className="text-muted-foreground">-</span>
+                                  <span className="text-muted-foreground">
+                                    -
+                                  </span>
                                   <span>{match.score.away}</span>
                                 </div>
                               ) : (
@@ -709,7 +906,9 @@ export default function FavoritesPage() {
                   <CardContent className="py-12 text-center text-muted-foreground">
                     <Trophy className="h-12 w-12 mx-auto mb-3 opacity-30" />
                     <p className="font-medium">No favorite leagues yet</p>
-                    <p className="text-sm mt-1">Follow leagues to see them here</p>
+                    <p className="text-sm mt-1">
+                      Follow leagues to see them here
+                    </p>
                     <Button asChild variant="link" className="mt-3">
                       <Link href="/leagues">Browse Leagues</Link>
                     </Button>
@@ -760,8 +959,13 @@ export default function FavoritesPage() {
                                 </span>
                               )}
                               {league.type && (
-                                <Badge variant="outline" className="text-[10px]">
-                                  {league.type === "league" ? "League" : league.type}
+                                <Badge
+                                  variant="outline"
+                                  className="text-[10px]"
+                                >
+                                  {league.type === "league"
+                                    ? "League"
+                                    : league.type}
                                 </Badge>
                               )}
                             </div>

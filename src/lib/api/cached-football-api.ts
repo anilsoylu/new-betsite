@@ -14,6 +14,7 @@ import {
   cacheLeague,
   cacheLeagues,
   cachePlayerDetail,
+  cacheCoachDetail,
   cacheTeamDetail,
   cacheTeamSearchResult,
   initializeSchema,
@@ -33,6 +34,7 @@ import {
   getLeaguePageData as _getLeaguePageData,
   getLiveFixtures as _getLiveFixtures,
   getPlayerById as _getPlayerById,
+  getCoachById as _getCoachById,
   getTeamById as _getTeamById,
   searchPlayers as _searchPlayers,
   searchTeams as _searchTeams,
@@ -44,6 +46,7 @@ import type {
   League,
   LeaguePageData,
   PlayerDetail,
+  CoachDetail,
   PlayerSearchResult,
   TeamDetail,
   TeamSearchResult,
@@ -201,6 +204,19 @@ export async function getPlayerById(playerId: number): Promise<PlayerDetail> {
   cachePlayerDetail(player);
 
   return player;
+}
+
+/**
+ * Get coach by ID with cache population.
+ */
+export async function getCoachById(coachId: number): Promise<CoachDetail> {
+  const coach = await _getCoachById(coachId);
+
+  // Cache in background
+  ensureSchema();
+  cacheCoachDetail(coach);
+
+  return coach;
 }
 
 /**

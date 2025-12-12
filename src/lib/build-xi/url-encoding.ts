@@ -63,7 +63,9 @@ export function decodeLineupFromUrl(encoded: string): CompactLineup | null {
  * Reconstruct a BuildXILineup from compact format
  * Note: This creates a partial lineup - player images may need to be fetched separately
  */
-export function reconstructLineup(compact: CompactLineup): BuildXILineup | null {
+export function reconstructLineup(
+  compact: CompactLineup,
+): BuildXILineup | null {
   const formationId = compact.f;
   const formation = getFormationById(formationId);
 
@@ -121,7 +123,10 @@ export function generateShareUrl(lineup: BuildXILineup): string {
 /**
  * Generate full shareable URL with origin
  */
-export function generateFullShareUrl(lineup: BuildXILineup, origin: string): string {
+export function generateFullShareUrl(
+  lineup: BuildXILineup,
+  origin: string,
+): string {
   const encoded = encodeLineupToUrl(lineup);
   return `${origin}/build-xi?l=${encoded}`;
 }
@@ -148,7 +153,7 @@ export function hasLineupInUrl(searchParams: URLSearchParams): boolean {
  * Extract and decode lineup from URL params
  */
 export function getLineupFromUrl(
-  searchParams: URLSearchParams
+  searchParams: URLSearchParams,
 ): BuildXILineup | null {
   const encoded = searchParams.get("l");
   if (!encoded) return null;

@@ -1,58 +1,58 @@
-import { TeamFixtures } from "@/components/teams/team-fixtures"
-import { FormStrip } from "@/components/teams/form-strip"
-import { TeamPitchView } from "@/components/teams/team-pitch-view"
-import { TeamAbout } from "@/components/teams/team-about"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Calendar, TrendingUp, Users } from "lucide-react"
-import Image from "next/image"
-import Link from "next/link"
-import { getFixtureUrl, getTeamUrl, slugify } from "@/lib/utils"
+import { TeamFixtures } from "@/components/teams/team-fixtures";
+import { FormStrip } from "@/components/teams/form-strip";
+import { TeamPitchView } from "@/components/teams/team-pitch-view";
+import { TeamAbout } from "@/components/teams/team-about";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Calendar, TrendingUp, Users } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { getFixtureUrl, getTeamUrl, getCoachUrl, slugify } from "@/lib/utils";
 import type {
   TeamDetail,
   Fixture,
   Standing,
   StandingTable,
   TeamLineup,
-} from "@/types/football"
+} from "@/types/football";
 
 interface TeamOverviewContentProps {
-  team: TeamDetail
-  slug: string
+  team: TeamDetail;
+  slug: string;
   fixtures: {
-    recent: Fixture[]
-    upcoming: Fixture[]
-  }
-  allStandingsTables: StandingTable[]
-  lastLineup: TeamLineup | null
+    recent: Fixture[];
+    upcoming: Fixture[];
+  };
+  allStandingsTables: StandingTable[];
+  lastLineup: TeamLineup | null;
 }
 
 // Helper to get team form from fixtures
 function getFormFromFixtures(
   fixtures: Fixture[],
-  teamId: number
+  teamId: number,
 ): Array<"W" | "D" | "L"> {
   return fixtures
     .filter((f) => f.status === "finished" && f.score)
     .slice(0, 5)
     .map((f) => {
-      const isHome = f.homeTeam.id === teamId
-      const teamScore = isHome ? f.score!.home : f.score!.away
-      const opponentScore = isHome ? f.score!.away : f.score!.home
+      const isHome = f.homeTeam.id === teamId;
+      const teamScore = isHome ? f.score!.home : f.score!.away;
+      const opponentScore = isHome ? f.score!.away : f.score!.home;
 
-      if (teamScore > opponentScore) return "W"
-      if (teamScore < opponentScore) return "L"
-      return "D"
-    })
+      if (teamScore > opponentScore) return "W";
+      if (teamScore < opponentScore) return "L";
+      return "D";
+    });
 }
 
 // Helper to find team standing
 function findTeamStanding(
   standings: Standing[],
-  teamId: number
+  teamId: number,
 ): Standing | null {
-  return standings.find((s) => s.teamId === teamId) || null
+  return standings.find((s) => s.teamId === teamId) || null;
 }
 
 export function TeamOverviewContent({
@@ -62,11 +62,11 @@ export function TeamOverviewContent({
   allStandingsTables,
   lastLineup,
 }: TeamOverviewContentProps) {
-  const teamId = team.id
-  const form = getFormFromFixtures(fixtures.recent, teamId)
-  const nextMatch = fixtures.upcoming[0]
-  const lastMatch = fixtures.recent[0]
-  const secondUpcomingMatch = fixtures.upcoming[1]
+  const teamId = team.id;
+  const form = getFormFromFixtures(fixtures.recent, teamId);
+  const nextMatch = fixtures.upcoming[0];
+  const lastMatch = fixtures.recent[0];
+  const secondUpcomingMatch = fixtures.upcoming[1];
 
   return (
     <div className="grid gap-6 lg:grid-cols-3">
@@ -119,7 +119,7 @@ export function TeamOverviewContent({
                         {
                           hour: "2-digit",
                           minute: "2-digit",
-                        }
+                        },
                       )}
                     </span>
                     <span className="text-xs sm:text-sm text-muted-foreground whitespace-nowrap">
@@ -129,7 +129,7 @@ export function TeamOverviewContent({
                           weekday: "short",
                           day: "numeric",
                           month: "short",
-                        }
+                        },
                       )}
                     </span>
                   </div>
@@ -224,7 +224,7 @@ export function TeamOverviewContent({
                     <div className="text-right">
                       <p className="text-sm font-medium">
                         {new Date(
-                          secondUpcomingMatch.startTime
+                          secondUpcomingMatch.startTime,
                         ).toLocaleDateString("en-GB", {
                           day: "numeric",
                           month: "short",
@@ -232,7 +232,7 @@ export function TeamOverviewContent({
                       </p>
                       <p className="text-xs text-muted-foreground">
                         {new Date(
-                          secondUpcomingMatch.startTime
+                          secondUpcomingMatch.startTime,
                         ).toLocaleTimeString("en-GB", {
                           hour: "2-digit",
                           minute: "2-digit",
@@ -319,9 +319,12 @@ export function TeamOverviewContent({
                   <>
                     {" "}
                     · Manager:{" "}
-                    <span className="font-medium text-foreground">
+                    <Link
+                      href={getCoachUrl(team.coach.displayName, team.coach.id)}
+                      className="font-medium text-foreground hover:text-primary hover:underline transition-colors"
+                    >
                       {team.coach.displayName}
-                    </span>
+                    </Link>
                   </>
                 )}
               </p>
@@ -362,7 +365,7 @@ export function TeamOverviewContent({
       <div className="space-y-6">
         {/* Last Starting XI - Pitch View */}
         {lastLineup && lastLineup.starters.length > 0 && (
-          <Card className="overflow-hidden gap-0">
+          <Card className="overflow-hidden gap-0 pb-0">
             <CardHeader className="pb-2">
               <CardTitle className="text-base">Last Starting XI</CardTitle>
             </CardHeader>
@@ -374,8 +377,8 @@ export function TeamOverviewContent({
 
         {/* League Standings (Mini Tables for ALL leagues) */}
         {allStandingsTables.map((table) => {
-          const tableTeamStanding = findTeamStanding(table.standings, teamId)
-          if (!tableTeamStanding) return null
+          const tableTeamStanding = findTeamStanding(table.standings, teamId);
+          if (!tableTeamStanding) return null;
 
           return (
             <Card key={`${table.seasonId}-${table.groupName || "main"}`}>
@@ -425,9 +428,9 @@ export function TeamOverviewContent({
                         .filter((s) => {
                           // Show teams around the current team's position (±3)
                           const diff = Math.abs(
-                            s.position - tableTeamStanding.position
-                          )
-                          return diff <= 3
+                            s.position - tableTeamStanding.position,
+                          );
+                          return diff <= 3;
                         })
                         .sort((a, b) => a.position - b.position)
                         .map((standing) => (
@@ -446,7 +449,7 @@ export function TeamOverviewContent({
                               <Link
                                 href={getTeamUrl(
                                   standing.teamName,
-                                  standing.teamId
+                                  standing.teamId,
                                 )}
                                 className="flex items-center gap-1.5 sm:gap-2 hover:text-primary transition-colors"
                               >
@@ -476,7 +479,7 @@ export function TeamOverviewContent({
                 </div>
               </CardContent>
             </Card>
-          )
+          );
         })}
 
         {/* Active Competitions */}
@@ -510,5 +513,5 @@ export function TeamOverviewContent({
         )}
       </div>
     </div>
-  )
+  );
 }

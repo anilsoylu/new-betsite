@@ -49,7 +49,8 @@ export function getLineupDatabase(): Database.Database {
  */
 function initializeSchema(database: Database.Database): void {
   // Create table
-  database.prepare(`
+  database
+    .prepare(`
     CREATE TABLE IF NOT EXISTS shared_lineups (
       id TEXT PRIMARY KEY,
       formation_id TEXT NOT NULL,
@@ -60,13 +61,16 @@ function initializeSchema(database: Database.Database): void {
       view_count INTEGER DEFAULT 0,
       expires_at INTEGER
     )
-  `).run();
+  `)
+    .run();
 
   // Create index
-  database.prepare(`
+  database
+    .prepare(`
     CREATE INDEX IF NOT EXISTS idx_shared_lineups_created_at
     ON shared_lineups(created_at)
-  `).run();
+  `)
+    .run();
 }
 
 /**

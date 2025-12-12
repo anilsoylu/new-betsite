@@ -68,7 +68,7 @@ export function TeamPrefillPanel() {
     setIsSearching(true);
     try {
       const res = await fetch(
-        `/api/teams/search?q=${encodeURIComponent(searchQuery)}`
+        `/api/teams/search?q=${encodeURIComponent(searchQuery)}`,
       );
       const data = await res.json();
       setSearchResults(data.teams || []);
@@ -149,10 +149,9 @@ export function TeamPrefillPanel() {
           }
         });
 
-        toast.success(
-          `Filled ${teamName}'s last lineup (${formationId})`,
-          { description: `${sortedPlayers.length} players loaded` }
-        );
+        toast.success(`Filled ${teamName}'s last lineup (${formationId})`, {
+          description: `${sortedPlayers.length} players loaded`,
+        });
         return;
       }
 
@@ -223,7 +222,9 @@ export function TeamPrefillPanel() {
       <CardContent className="space-y-4">
         {/* Popular Teams */}
         <div className="space-y-2">
-          <p className="text-xs font-medium text-muted-foreground">Popular Teams</p>
+          <p className="text-xs font-medium text-muted-foreground">
+            Popular Teams
+          </p>
           <div className="grid grid-cols-2 gap-1.5">
             {POPULAR_TEAMS.map((team) => (
               <button
@@ -254,7 +255,9 @@ export function TeamPrefillPanel() {
             <span className="w-full border-t" />
           </div>
           <div className="relative flex justify-center text-xs">
-            <span className="bg-card px-2 text-muted-foreground">or search</span>
+            <span className="bg-card px-2 text-muted-foreground">
+              or search
+            </span>
           </div>
         </div>
 
@@ -302,8 +305,12 @@ export function TeamPrefillPanel() {
           </ScrollArea>
         ) : (
           <div className="text-center py-8 text-muted-foreground">
-            <p className="text-sm">Search for a team to auto-fill your lineup</p>
-            <p className="text-xs mt-1">e.g., "Real Madrid", "Barcelona", "Manchester"</p>
+            <p className="text-sm">
+              Search for a team to auto-fill your lineup
+            </p>
+            <p className="text-xs mt-1">
+              e.g., "Real Madrid", "Barcelona", "Manchester"
+            </p>
           </div>
         )}
       </CardContent>
@@ -347,7 +354,7 @@ function TeamButton({
 
 // Helper to group squad by position type
 function groupSquadByPosition(
-  squad: SquadPlayer[]
+  squad: SquadPlayer[],
 ): Record<PositionType, SquadPlayer[]> {
   const grouped: Record<PositionType, SquadPlayer[]> = {
     goalkeeper: [],
@@ -406,7 +413,7 @@ const FORMATION_TEMPLATES = [
  * Scores each formation by how well it matches available players
  */
 function detectBestFormation(
-  grouped: Record<PositionType, SquadPlayer[]>
+  grouped: Record<PositionType, SquadPlayer[]>,
 ): string {
   const d = grouped.defender.length;
   const m = grouped.midfielder.length;

@@ -7,7 +7,11 @@ import {
 import { getTopLeaguesStandings } from "@/lib/queries";
 import { DateNavigation } from "@/components/matches/date-navigation";
 import { MatchesContent } from "@/components/matches/matches-content";
-import { TopLeagues, OtherLeagues, StandingsWidget } from "@/components/sidebar";
+import {
+  TopLeagues,
+  OtherLeagues,
+  StandingsWidget,
+} from "@/components/sidebar";
 import { SITE, DATE_FORMATS } from "@/lib/constants";
 
 export const metadata: Metadata = {

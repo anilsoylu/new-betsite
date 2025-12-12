@@ -28,7 +28,7 @@ export function BuildXIHeader() {
   const clearAllPlayers = useBuildXIStore((state) => state.clearAllPlayers);
   const saveCurrentLineup = useBuildXIStore((state) => state.saveCurrentLineup);
   const getFilledSlotsCount = useBuildXIStore(
-    (state) => state.getFilledSlotsCount
+    (state) => state.getFilledSlotsCount,
   );
 
   const filledCount = getFilledSlotsCount();

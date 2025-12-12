@@ -133,8 +133,8 @@ export default async function LeaguesPage() {
           <header className="text-center mb-10">
             <h1 className="text-3xl font-bold mb-3">Football Leagues</h1>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              Explore {allLeagues.length}+ football leagues and competitions from
-              around the world. View standings, fixtures, top scorers and
+              Explore {allLeagues.length}+ football leagues and competitions
+              from around the world. View standings, fixtures, top scorers and
               statistics.
             </p>
           </header>

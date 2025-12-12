@@ -1,14 +1,14 @@
-import type { Metadata } from "next"
-import { Suspense } from "react"
-import { notFound } from "next/navigation"
+import type { Metadata } from "next";
+import { Suspense } from "react";
+import { notFound } from "next/navigation";
 import {
   getTeamById,
   getFixturesByTeam,
   getFixtureById,
   getStandingsBySeason,
   getTeamTransfers,
-} from "@/lib/api/cached-football-api"
-import { extractTeamId } from "@/lib/utils"
+} from "@/lib/api/cached-football-api";
+import { extractTeamId } from "@/lib/utils";
 import {
   TeamTabs,
   TeamOverviewContent,
@@ -17,18 +17,18 @@ import {
   TeamStatsContent,
   TeamTransfersContent,
   TeamHistoryContent,
-} from "@/components/teams"
-import { SITE, SEO } from "@/lib/constants"
-import type { StandingTable, TeamLineup, Standing } from "@/types/football"
-import { JsonLdScript } from "@/components/seo"
+} from "@/components/teams";
+import { SITE, SEO } from "@/lib/constants";
+import type { StandingTable, TeamLineup, Standing } from "@/types/football";
+import { JsonLdScript } from "@/components/seo";
 import {
   generateSportsTeamSchema,
   generateBreadcrumbSchema,
-} from "@/lib/seo/json-ld"
+} from "@/lib/seo/json-ld";
 
 interface TeamDetailPageProps {
-  params: Promise<{ slug: string }>
-  searchParams: Promise<{ tab?: string }>
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<{ tab?: string }>;
 }
 
 // Tab-specific SEO metadata
@@ -63,41 +63,43 @@ const TAB_SEO = {
     descriptionTemplate: (name: string) =>
       SEO.teamHistory.descriptionTemplate(name),
   },
-} as const
+} as const;
 
-type TabKey = keyof typeof TAB_SEO
+type TabKey = keyof typeof TAB_SEO;
 
 export async function generateMetadata({
   params,
   searchParams,
 }: TeamDetailPageProps): Promise<Metadata> {
-  const { slug } = await params
-  const { tab } = await searchParams
-  const teamId = extractTeamId(slug)
+  const { slug } = await params;
+  const { tab } = await searchParams;
+  const teamId = extractTeamId(slug);
 
   if (!teamId) {
-    return { title: "Team Not Found" }
+    return { title: "Team Not Found" };
   }
 
   try {
-    const team = await getTeamById(teamId)
-    const activeTab = (tab as TabKey) || "overview"
-    const seo = TAB_SEO[activeTab] || TAB_SEO.overview
+    const team = await getTeamById(teamId);
+    const activeTab = (tab as TabKey) || "overview";
+    const seo = TAB_SEO[activeTab] || TAB_SEO.overview;
 
-    const title = seo.titleTemplate(team.name)
+    const title = seo.titleTemplate(team.name);
     const description =
       activeTab === "overview"
         ? TAB_SEO.overview.descriptionTemplate(
             team.name,
-            team.country?.name || "International"
+            team.country?.name || "International",
           )
-        : (seo as { descriptionTemplate: (name: string) => string }).descriptionTemplate(team.name)
+        : (
+            seo as { descriptionTemplate: (name: string) => string }
+          ).descriptionTemplate(team.name);
 
     // Build canonical URL with tab parameter if not overview
     const canonicalUrl =
       activeTab === "overview"
         ? `${SITE.url}/teams/${slug}`
-        : `${SITE.url}/teams/${slug}?tab=${activeTab}`
+        : `${SITE.url}/teams/${slug}?tab=${activeTab}`;
 
     return {
       title,
@@ -110,85 +112,91 @@ export async function generateMetadata({
         description,
         images: team.logo ? [{ url: team.logo }] : undefined,
       },
-    }
+    };
   } catch {
-    return { title: "Team Not Found" }
+    return { title: "Team Not Found" };
   }
 }
 
-export default async function TeamDetailPage({
-  params,
-}: TeamDetailPageProps) {
-  const { slug } = await params
-  const teamId = extractTeamId(slug)
+export default async function TeamDetailPage({ params }: TeamDetailPageProps) {
+  const { slug } = await params;
+  const teamId = extractTeamId(slug);
 
   if (!teamId) {
-    notFound()
+    notFound();
   }
 
   // Fetch all data in parallel for all tabs
-  let team
-  let fixturesForOverview
-  let fixturesForMatches
-  let fixturesForStats
-  let allStandingsTables: StandingTable[] = []
-  let lastLineup: TeamLineup | null = null
-  let transfersData: { arrivals: Awaited<ReturnType<typeof getTeamTransfers>>["arrivals"]; departures: Awaited<ReturnType<typeof getTeamTransfers>>["departures"] } = {
+  let team;
+  let fixturesForOverview;
+  let fixturesForMatches;
+  let fixturesForStats;
+  let allStandingsTables: StandingTable[] = [];
+  let lastLineup: TeamLineup | null = null;
+  let transfersData: {
+    arrivals: Awaited<ReturnType<typeof getTeamTransfers>>["arrivals"];
+    departures: Awaited<ReturnType<typeof getTeamTransfers>>["departures"];
+  } = {
     arrivals: [],
     departures: [],
-  }
-  let statsStandings: Standing[] = []
+  };
+  let statsStandings: Standing[] = [];
 
   try {
     // Primary data fetch
-    const [teamData, overviewFixtures, matchesFixtures, statsFixtures, transfers] =
-      await Promise.all([
-        getTeamById(teamId),
-        getFixturesByTeam(teamId, { past: 10, future: 10 }),
-        getFixturesByTeam(teamId, { past: 30, future: 30 }),
-        getFixturesByTeam(teamId, { past: 50, future: 0 }),
-        getTeamTransfers(teamId),
-      ])
+    const [
+      teamData,
+      overviewFixtures,
+      matchesFixtures,
+      statsFixtures,
+      transfers,
+    ] = await Promise.all([
+      getTeamById(teamId),
+      getFixturesByTeam(teamId, { past: 10, future: 10 }),
+      getFixturesByTeam(teamId, { past: 30, future: 30 }),
+      getFixturesByTeam(teamId, { past: 50, future: 0 }),
+      getTeamTransfers(teamId),
+    ]);
 
-    team = teamData
-    fixturesForOverview = overviewFixtures
-    fixturesForMatches = matchesFixtures
-    fixturesForStats = statsFixtures
-    transfersData = transfers
+    team = teamData;
+    fixturesForOverview = overviewFixtures;
+    fixturesForMatches = matchesFixtures;
+    fixturesForStats = statsFixtures;
+    transfersData = transfers;
 
     // Secondary data fetch (standings, lineup)
     const allFixtures = [
       ...overviewFixtures.recent,
       ...overviewFixtures.upcoming,
-    ]
+    ];
     const uniqueSeasonIds = [
       ...new Set(allFixtures.map((f) => f.seasonId).filter(Boolean)),
-    ] as number[]
+    ] as number[];
 
     // Fetch standings for all seasons in parallel
     if (uniqueSeasonIds.length > 0) {
       const standingsPromises = uniqueSeasonIds.map(async (seasonId) => {
         try {
-          return await getStandingsBySeason(seasonId)
+          return await getStandingsBySeason(seasonId);
         } catch {
-          return []
+          return [];
         }
-      })
+      });
 
-      const allResults = await Promise.all(standingsPromises)
+      const allResults = await Promise.all(standingsPromises);
       allStandingsTables = allResults
         .flat()
-        .filter((table) => table.standings.some((s) => s.teamId === teamId))
+        .filter((table) => table.standings.some((s) => s.teamId === teamId));
     }
 
     // Get standings for stats tab
     if (team.activeSeasons.length > 0) {
       try {
         const standingsTables = await getStandingsBySeason(
-          team.activeSeasons[0].id
-        )
+          team.activeSeasons[0].id,
+        );
         if (standingsTables.length > 0) {
-          statsStandings = standingsTables[0].standings
+          statsStandings = standingsTables[0].standings;
         }
       } catch {
         // Standings not available
@@ -197,30 +205,30 @@ export default async function TeamDetailPage({
 
     // Fetch last lineup from most recent finished match
     const lastFinishedMatch = overviewFixtures.recent.find(
-      (f) => f.status === "finished"
-    )
+      (f) => f.status === "finished",
+    );
     if (lastFinishedMatch) {
       try {
-        const fixtureDetail = await getFixtureById(lastFinishedMatch.id)
-        const isHome = lastFinishedMatch.homeTeam.id === teamId
+        const fixtureDetail = await getFixtureById(lastFinishedMatch.id);
+        const isHome = lastFinishedMatch.homeTeam.id === teamId;
         lastLineup = isHome
           ? fixtureDetail.homeLineup
-          : fixtureDetail.awayLineup
+          : fixtureDetail.awayLineup;
       } catch {
         // Lineup not available
       }
     }
   } catch {
-    notFound()
+    notFound();
   }
 
   // Generate structured data
-  const sportsTeamSchema = generateSportsTeamSchema(team)
+  const sportsTeamSchema = generateSportsTeamSchema(team);
   const breadcrumbSchema = generateBreadcrumbSchema([
     { name: "Home", url: SITE.url },
     { name: "Teams", url: `${SITE.url}/teams` },
     { name: team.name, url: `${SITE.url}/teams/${slug}` },
-  ])
+  ]);
 
   return (
     <>
@@ -260,7 +268,7 @@ export default async function TeamDetailPage({
         />
       </Suspense>
     </>
-  )
+  );
 }
 
 function TabsSkeleton() {
@@ -278,5 +286,5 @@ function TabsSkeleton() {
       </div>
       <div className="h-96 bg-muted/30 rounded animate-pulse" />
     </div>
-  )
+  );
 }

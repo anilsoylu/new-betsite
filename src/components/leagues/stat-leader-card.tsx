@@ -215,8 +215,6 @@ export function StatLeaderCard({
           </Link>
         ))}
       </div>
-
-
     </div>
   );
 }

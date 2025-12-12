@@ -62,7 +62,7 @@ export function PlayerSearchDialog({
     setIsLoading(true);
     try {
       const res = await fetch(
-        `/api/players/search?q=${encodeURIComponent(searchQuery)}`
+        `/api/players/search?q=${encodeURIComponent(searchQuery)}`,
       );
       const data = await res.json();
       setResults(data.players || []);

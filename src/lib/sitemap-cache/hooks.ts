@@ -11,11 +11,19 @@ import type {
   FixtureDetail,
   League,
   PlayerDetail,
+  Coach,
+  CoachDetail,
   SquadPlayer,
   TeamDetail,
   TeamSearchResult,
 } from "@/types/football";
-import { upsertLeague, upsertMatch, upsertPlayer, upsertTeam } from "./upsert";
+import {
+  upsertLeague,
+  upsertMatch,
+  upsertPlayer,
+  upsertCoach,
+  upsertTeam,
+} from "./upsert";
 
 /**
  * Cache a league from domain object.
@@ -52,6 +60,10 @@ export function cacheTeamDetail(team: TeamDetail): void {
       for (const player of team.squad) {
         cacheSquadPlayer(player, team.id);
       }
+    }
+    // Also cache coach if available
+    if (team.coach) {
+      cacheCoachDetail(team.coach, team.id);
     }
   } catch (error) {
     console.warn("[SitemapCache] Failed to cache team detail:", team.id, error);
@@ -141,6 +153,41 @@ export function cachePlayerDetail(player: PlayerDetail): void {
     console.warn(
       "[SitemapCache] Failed to cache player detail:",
       player.id,
+      error,
+    );
+  }
+}
+
+/**
+ * Cache a coach from CoachDetail domain object.
+ * Safe to call - errors are logged but don't throw.
+ */
+export function cacheCoachDetail(
+  coach: Coach | CoachDetail,
+  teamId?: number,
+): void {
+  try {
+    let derivedTeamId = teamId;
+    let countryName: string | null = null;
+
+    if ("currentTeam" in coach && coach.currentTeam) {
+      derivedTeamId = derivedTeamId ?? coach.currentTeam.teamId;
+    }
+
+    if ("country" in coach && coach.country) {
+      countryName = coach.country.name;
+    }
+
+    upsertCoach({
+      id: coach.id,
+      name: coach.displayName || coach.name,
+      teamId: derivedTeamId ?? null,
+      country: countryName,
+    });
+  } catch (error) {
+    console.warn(
+      "[SitemapCache] Failed to cache coach detail:",
+      coach.id,
       error,
     );
   }

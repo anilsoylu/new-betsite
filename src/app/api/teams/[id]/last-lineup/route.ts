@@ -27,7 +27,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     if (recent.length === 0) {
       return NextResponse.json(
         { error: "No recent matches found for this team" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -46,7 +46,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     if (!teamLineup || teamLineup.starters.length === 0) {
       return NextResponse.json(
         { error: "No lineup data available for the last match" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -75,7 +75,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
         headers: {
           "Cache-Control": `public, s-maxage=${CACHE_PROFILES.short}, stale-while-revalidate=${CACHE_PROFILES.medium}`,
         },
-      }
+      },
     );
   } catch (error) {
     logError("api/teams/[id]/last-lineup", error, {

@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
     if (!lineup?.formationId || !lineup?.players) {
       return NextResponse.json(
         { error: "Invalid lineup data" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
     console.error("Failed to save lineup:", error);
     return NextResponse.json(
       { error: "Failed to save lineup" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

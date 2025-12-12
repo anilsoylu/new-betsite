@@ -40,14 +40,30 @@ export function StandingsTab({
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b bg-muted/50">
-                <th className="text-left p-2 sm:p-3 w-6 sm:w-8 text-xs sm:text-sm">#</th>
-                <th className="text-left p-2 sm:p-3 text-xs sm:text-sm">Team</th>
-                <th className="text-center p-2 sm:p-3 w-8 sm:w-10 text-xs sm:text-sm">P</th>
-                <th className="text-center p-2 sm:p-3 w-8 sm:w-10 text-xs sm:text-sm hidden md:table-cell">W</th>
-                <th className="text-center p-2 sm:p-3 w-8 sm:w-10 text-xs sm:text-sm hidden md:table-cell">D</th>
-                <th className="text-center p-2 sm:p-3 w-8 sm:w-10 text-xs sm:text-sm hidden md:table-cell">L</th>
-                <th className="text-center p-2 sm:p-3 w-10 sm:w-12 text-xs sm:text-sm">GD</th>
-                <th className="text-center p-2 sm:p-3 w-8 sm:w-10 font-semibold text-xs sm:text-sm">Pts</th>
+                <th className="text-left p-2 sm:p-3 w-6 sm:w-8 text-xs sm:text-sm">
+                  #
+                </th>
+                <th className="text-left p-2 sm:p-3 text-xs sm:text-sm">
+                  Team
+                </th>
+                <th className="text-center p-2 sm:p-3 w-8 sm:w-10 text-xs sm:text-sm">
+                  P
+                </th>
+                <th className="text-center p-2 sm:p-3 w-8 sm:w-10 text-xs sm:text-sm hidden md:table-cell">
+                  W
+                </th>
+                <th className="text-center p-2 sm:p-3 w-8 sm:w-10 text-xs sm:text-sm hidden md:table-cell">
+                  D
+                </th>
+                <th className="text-center p-2 sm:p-3 w-8 sm:w-10 text-xs sm:text-sm hidden md:table-cell">
+                  L
+                </th>
+                <th className="text-center p-2 sm:p-3 w-10 sm:w-12 text-xs sm:text-sm">
+                  GD
+                </th>
+                <th className="text-center p-2 sm:p-3 w-8 sm:w-10 font-semibold text-xs sm:text-sm">
+                  Pts
+                </th>
                 <th className="text-center p-2 sm:p-3 w-20 sm:w-24 text-xs sm:text-sm hidden lg:table-cell">
                   Form
                 </th>
@@ -85,7 +101,9 @@ function StandingRow({ standing, isHighlighted }: StandingRowProps) {
         isHighlighted && "bg-primary/5",
       )}
     >
-      <td className="p-2 sm:p-3 text-muted-foreground text-xs sm:text-sm">{standing.position}</td>
+      <td className="p-2 sm:p-3 text-muted-foreground text-xs sm:text-sm">
+        {standing.position}
+      </td>
       <td className="p-2 sm:p-3">
         <Link
           href={getTeamUrl(standing.teamName, standing.teamId)}
@@ -110,10 +128,18 @@ function StandingRow({ standing, isHighlighted }: StandingRowProps) {
           </span>
         </Link>
       </td>
-      <td className="p-2 sm:p-3 text-center tabular-nums text-xs sm:text-sm">{standing.played}</td>
-      <td className="p-2 sm:p-3 text-center tabular-nums text-xs sm:text-sm hidden md:table-cell">{standing.won}</td>
-      <td className="p-2 sm:p-3 text-center tabular-nums text-xs sm:text-sm hidden md:table-cell">{standing.drawn}</td>
-      <td className="p-2 sm:p-3 text-center tabular-nums text-xs sm:text-sm hidden md:table-cell">{standing.lost}</td>
+      <td className="p-2 sm:p-3 text-center tabular-nums text-xs sm:text-sm">
+        {standing.played}
+      </td>
+      <td className="p-2 sm:p-3 text-center tabular-nums text-xs sm:text-sm hidden md:table-cell">
+        {standing.won}
+      </td>
+      <td className="p-2 sm:p-3 text-center tabular-nums text-xs sm:text-sm hidden md:table-cell">
+        {standing.drawn}
+      </td>
+      <td className="p-2 sm:p-3 text-center tabular-nums text-xs sm:text-sm hidden md:table-cell">
+        {standing.lost}
+      </td>
       <td className="p-2 sm:p-3 text-center tabular-nums text-xs sm:text-sm">
         <span
           className={cn(

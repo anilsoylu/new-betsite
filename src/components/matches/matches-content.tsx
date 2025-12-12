@@ -36,7 +36,9 @@ export function MatchesContent({
   const favoriteTeams = useFavoritesStore((state) => state.teams);
   const favoriteMatches = useFavoritesStore((state) => state.matches);
   const isFavorite = (type: "teams" | "matches", id: number) =>
-    type === "teams" ? favoriteTeams.includes(id) : favoriteMatches.includes(id);
+    type === "teams"
+      ? favoriteTeams.includes(id)
+      : favoriteMatches.includes(id);
 
   useEffect(() => {
     setHasMounted(true);

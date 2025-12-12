@@ -82,6 +82,13 @@ export const teamSearchSchema = z.object({
 });
 
 /**
+ * Coach search route: /api/coaches/search?q=...
+ */
+export const coachSearchSchema = z.object({
+  q: searchQuerySchema,
+});
+
+/**
  * Fixtures by date route: /api/fixtures?date=...
  */
 export const fixturesQuerySchema = z.object({
@@ -162,6 +169,7 @@ export function safeExtractIdFromSlug(slug: string): number | null {
 
 export type PlayerSearchParams = z.infer<typeof playerSearchSchema>;
 export type TeamSearchParams = z.infer<typeof teamSearchSchema>;
+export type CoachSearchParams = z.infer<typeof coachSearchSchema>;
 export type FixturesQueryParams = z.infer<typeof fixturesQuerySchema>;
 export type FixtureIdParams = z.infer<typeof fixtureIdParamsSchema>;
 export type PaginationParams = z.infer<typeof paginationSchema>;

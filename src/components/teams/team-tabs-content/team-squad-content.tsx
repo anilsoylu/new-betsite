@@ -1,41 +1,41 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import Image from "next/image"
-import Link from "next/link"
-import { User } from "lucide-react"
-import { getPlayerUrl } from "@/lib/utils"
-import type { TeamDetail, SquadPlayer } from "@/types/football"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import Image from "next/image";
+import Link from "next/link";
+import { User } from "lucide-react";
+import { getPlayerUrl, getCoachUrl } from "@/lib/utils";
+import type { TeamDetail, SquadPlayer } from "@/types/football";
 
 // Position group order
-const POSITION_ORDER = ["Goalkeeper", "Defender", "Midfielder", "Attacker"]
+const POSITION_ORDER = ["Goalkeeper", "Defender", "Midfielder", "Attacker"];
 
 interface TeamSquadContentProps {
-  team: TeamDetail
+  team: TeamDetail;
 }
 
 export function TeamSquadContent({ team }: TeamSquadContentProps) {
   // Group players by position
   const squadByPosition = team.squad.reduce(
     (acc, player) => {
-      const group = player.positionGroup || "Unknown"
+      const group = player.positionGroup || "Unknown";
       if (!acc[group]) {
-        acc[group] = []
+        acc[group] = [];
       }
-      acc[group].push(player)
-      return acc
+      acc[group].push(player);
+      return acc;
     },
-    {} as Record<string, SquadPlayer[]>
-  )
+    {} as Record<string, SquadPlayer[]>,
+  );
 
   // Sort groups by position order
   const sortedGroups = Object.entries(squadByPosition).sort(([a], [b]) => {
-    const indexA = POSITION_ORDER.indexOf(a)
-    const indexB = POSITION_ORDER.indexOf(b)
-    if (indexA === -1 && indexB === -1) return 0
-    if (indexA === -1) return 1
-    if (indexB === -1) return -1
-    return indexA - indexB
-  })
+    const indexA = POSITION_ORDER.indexOf(a);
+    const indexB = POSITION_ORDER.indexOf(b);
+    if (indexA === -1 && indexB === -1) return 0;
+    if (indexA === -1) return 1;
+    if (indexB === -1) return -1;
+    return indexA - indexB;
+  });
 
   return (
     <div className="space-y-6">
@@ -48,44 +48,48 @@ export function TeamSquadContent({ team }: TeamSquadContentProps) {
 
       {/* Manager Card */}
       {team.coach && (
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base">Manager</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-4">
-              <div className="relative h-16 w-16 rounded-full overflow-hidden bg-muted">
-                {team.coach.image ? (
-                  <Image
-                    src={team.coach.image}
-                    alt={team.coach.displayName}
-                    fill
-                    className="object-cover"
-                  />
-                ) : (
-                  <div className="h-full w-full flex items-center justify-center">
-                    <User className="h-8 w-8 text-muted-foreground" />
-                  </div>
-                )}
-              </div>
-              <div>
-                <p className="font-semibold">{team.coach.displayName}</p>
-                {team.coach.dateOfBirth && (
-                  <p className="text-sm text-muted-foreground">
-                    Born{" "}
-                    {new Date(team.coach.dateOfBirth).toLocaleDateString(
-                      "en-GB",
-                      {
-                        day: "numeric",
-                        month: "long",
-                        year: "numeric",
-                      }
-                    )}
+        <Card className="group hover:bg-muted/30 transition-colors">
+          <Link href={getCoachUrl(team.coach.displayName, team.coach.id)}>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base">Manager</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center gap-4">
+                <div className="relative h-16 w-16 rounded-full overflow-hidden bg-muted">
+                  {team.coach.image ? (
+                    <Image
+                      src={team.coach.image}
+                      alt={team.coach.displayName}
+                      fill
+                      className="object-cover"
+                    />
+                  ) : (
+                    <div className="h-full w-full flex items-center justify-center">
+                      <User className="h-8 w-8 text-muted-foreground" />
+                    </div>
+                  )}
+                </div>
+                <div>
+                  <p className="font-semibold group-hover:text-primary transition-colors">
+                    {team.coach.displayName}
                   </p>
-                )}
+                  {team.coach.dateOfBirth && (
+                    <p className="text-sm text-muted-foreground">
+                      Born{" "}
+                      {new Date(team.coach.dateOfBirth).toLocaleDateString(
+                        "en-GB",
+                        {
+                          day: "numeric",
+                          month: "long",
+                          year: "numeric",
+                        },
+                      )}
+                    </p>
+                  )}
+                </div>
               </div>
-            </div>
-          </CardContent>
+            </CardContent>
+          </Link>
         </Card>
       )}
 
@@ -120,20 +124,20 @@ export function TeamSquadContent({ team }: TeamSquadContentProps) {
         </Card>
       )}
     </div>
-  )
+  );
 }
 
 interface PlayerRowProps {
-  player: SquadPlayer
+  player: SquadPlayer;
 }
 
 function PlayerRow({ player }: PlayerRowProps) {
   const age = player.dateOfBirth
     ? Math.floor(
         (Date.now() - new Date(player.dateOfBirth).getTime()) /
-          (365.25 * 24 * 60 * 60 * 1000)
+          (365.25 * 24 * 60 * 60 * 1000),
       )
-    : null
+    : null;
 
   return (
     <Link
@@ -185,5 +189,5 @@ function PlayerRow({ player }: PlayerRowProps) {
         </div>
       )}
     </Link>
-  )
+  );
 }

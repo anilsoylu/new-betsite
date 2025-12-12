@@ -115,6 +115,18 @@ export const SEO = {
     descriptionTemplate: (playerName: string, position: string, team: string) =>
       `${playerName} profile, statistics and career history. ${position} playing for ${team}.`,
   },
+  coaches: {
+    title: `Football Managers & Coaches | ${SITE.name}`,
+    description:
+      "Discover football managers and coaches worldwide. View career history, trophies and current teams from top leagues.",
+  },
+  coachDetail: {
+    titleTemplate: (coachName: string) => `${coachName} | Career & Trophies`,
+    descriptionTemplate: (coachName: string, teamName: string | null) =>
+      teamName
+        ? `${coachName} profile, career history and achievements. Currently managing ${teamName}.`
+        : `${coachName} profile, career history and managerial achievements.`,
+  },
   favorites: {
     title: `Your Favorites | ${SITE.name}`,
     description: "Your saved favorite teams, players and matches.",

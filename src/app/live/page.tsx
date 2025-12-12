@@ -2,7 +2,11 @@ import type { Metadata } from "next";
 import { getLiveFixtures } from "@/lib/api/cached-football-api";
 import { getTopLeaguesStandings } from "@/lib/queries";
 import { LiveContent } from "@/components/live/live-content";
-import { TopLeagues, OtherLeagues, StandingsWidget } from "@/components/sidebar";
+import {
+  TopLeagues,
+  OtherLeagues,
+  StandingsWidget,
+} from "@/components/sidebar";
 import { JsonLdScript } from "@/components/seo/json-ld-script";
 import { SITE, SEO, CACHE_PROFILES } from "@/lib/constants";
 

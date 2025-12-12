@@ -9,6 +9,7 @@ import {
   getLeagueUrl,
   getFixtureUrl,
   getPlayerUrl,
+  getCoachUrl,
 } from "@/lib/utils";
 
 interface TeamAboutProps {
@@ -105,8 +106,14 @@ export function TeamAbout({ team, nextMatch, lastMatch }: TeamAboutProps) {
 
         {team.coach && (
           <p>
-            {team.name} is managed by <strong>{team.coach.displayName}</strong>,
-            who oversees the team&apos;s tactics and player development.
+            {team.name} is managed by{" "}
+            <Link
+              href={getCoachUrl(team.coach.displayName, team.coach.id)}
+              className="font-bold hover:underline text-foreground"
+            >
+              {team.coach.displayName}
+            </Link>
+            , who oversees the team&apos;s tactics and player development.
           </p>
         )}
       </div>
@@ -300,7 +307,13 @@ export function TeamAbout({ team, nextMatch, lastMatch }: TeamAboutProps) {
           )}
           {team.coach && (
             <li>
-              <strong>Manager:</strong> {team.coach.displayName}
+              <strong>Manager:</strong>{" "}
+              <Link
+                href={getCoachUrl(team.coach.displayName, team.coach.id)}
+                className="hover:underline hover:text-foreground"
+              >
+                {team.coach.displayName}
+              </Link>
             </li>
           )}
           {squadCount > 0 && (
@@ -393,7 +406,13 @@ export function TeamAbout({ team, nextMatch, lastMatch }: TeamAboutProps) {
                   className="text-sm text-muted-foreground mt-1"
                 >
                   <strong>{team.name}</strong> is currently managed by{" "}
-                  <strong>{team.coach.displayName}</strong>.
+                  <Link
+                    href={getCoachUrl(team.coach.displayName, team.coach.id)}
+                    className="font-bold hover:underline text-foreground"
+                  >
+                    {team.coach.displayName}
+                  </Link>
+                  .
                 </p>
               </div>
             </div>

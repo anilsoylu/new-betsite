@@ -5,74 +5,74 @@
  * Route: GET /sitemaps/players/[page].xml
  */
 
-import { NextResponse } from "next/server"
-import { notFound } from "next/navigation"
-import { SITE } from "@/lib/constants"
+import { NextResponse } from "next/server";
+import { notFound } from "next/navigation";
+import { SITE } from "@/lib/constants";
 import {
   getPlayersForSitemap,
   getPlayerPageCount,
   initializeSchema,
-} from "@/lib/sitemap-cache"
-import { getPlayerUrl } from "@/lib/utils"
+} from "@/lib/sitemap-cache";
+import { getPlayerUrl } from "@/lib/utils";
 
-export const revalidate = 3600 // 1 hour
+export const revalidate = 3600; // 1 hour
 
 export async function GET(
   _request: Request,
-  { params }: { params: Promise<{ page: string }> }
+  { params }: { params: Promise<{ page: string }> },
 ) {
-  const { page: pageParam } = await params
+  const { page: pageParam } = await params;
 
   // Require .xml extension
   if (!pageParam.endsWith(".xml")) {
-    notFound()
+    notFound();
   }
 
-  const page = Number.parseInt(pageParam.replace(".xml", ""), 10)
+  const page = Number.parseInt(pageParam.replace(".xml", ""), 10);
 
   if (Number.isNaN(page) || page < 1) {
-    notFound()
+    notFound();
   }
 
   try {
-    initializeSchema()
+    initializeSchema();
 
-    const pageCount = getPlayerPageCount()
+    const pageCount = getPlayerPageCount();
     if (page > pageCount) {
-      notFound()
+      notFound();
     }
 
-    const players = getPlayersForSitemap(page)
+    const players = getPlayersForSitemap(page);
 
     const urlEntries = players
       .map((player) => {
-        const url = getPlayerUrl(player.name, player.id)
+        const url = getPlayerUrl(player.name, player.id);
         const lastmod = player.lastModified
           ? new Date(player.lastModified).toISOString()
-          : new Date().toISOString()
+          : new Date().toISOString();
 
         return `  <url>
     <loc>${SITE.url}${url}</loc>
     <lastmod>${lastmod}</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
-  </url>`
+  </url>`;
       })
-      .join("\n")
+      .join("\n");
 
     const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${urlEntries}
-</urlset>`
+</urlset>`;
 
     return new NextResponse(xml, {
       headers: {
         "Content-Type": "application/xml",
         "Cache-Control": "public, max-age=3600, s-maxage=3600",
       },
-    })
+    });
   } catch (error) {
-    console.error("[Sitemap] Failed to generate players page:", page, error)
-    notFound()
+    console.error("[Sitemap] Failed to generate players page:", page, error);
+    notFound();
   }
 }

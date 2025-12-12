@@ -117,3 +117,25 @@ export function getLeagueUrl(name: string, id: number): string {
 export function extractLeagueId(slug: string): number | null {
   return safeExtractIdFromSlug(slug);
 }
+
+/**
+ * Generate coach URL slug: coach-name-id
+ */
+export function generateCoachSlug(name: string, id: number): string {
+  return `${slugify(name)}-${id}`;
+}
+
+/**
+ * Generate coach URL path
+ */
+export function getCoachUrl(name: string, id: number): string {
+  return `/coaches/${generateCoachSlug(name, id)}`;
+}
+
+/**
+ * Extract coach ID from slug with validation
+ * @example extractCoachId("pep-guardiola-789") => 789
+ */
+export function extractCoachId(slug: string): number | null {
+  return safeExtractIdFromSlug(slug);
+}

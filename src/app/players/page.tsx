@@ -10,7 +10,11 @@ import {
 import { slugify } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { TopLeagues, OtherLeagues, StandingsWidget } from "@/components/sidebar";
+import {
+  TopLeagues,
+  OtherLeagues,
+  StandingsWidget,
+} from "@/components/sidebar";
 
 export const metadata: Metadata = {
   title: `Players | ${SITE.name}`,

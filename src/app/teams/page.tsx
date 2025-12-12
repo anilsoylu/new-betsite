@@ -9,7 +9,11 @@ import {
 } from "@/lib/queries";
 import { slugify } from "@/lib/utils";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { TopLeagues, OtherLeagues, StandingsWidget } from "@/components/sidebar";
+import {
+  TopLeagues,
+  OtherLeagues,
+  StandingsWidget,
+} from "@/components/sidebar";
 
 export const metadata: Metadata = {
   title: `Football Teams | ${SITE.name}`,

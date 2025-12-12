@@ -23,17 +23,83 @@ const TOP_LEAGUE_ORDER = [8, 564, 82, 384, 301, 600, 72, 462, 2, 5, 2286];
 
 // Legacy export for backward compatibility with other parts of the app
 export const TOP_LEAGUES = [
-  { id: 8, name: "Premier League", shortName: "EPL", country: "England", logo: "https://cdn.sportmonks.com/images/soccer/leagues/8/8.png" },
-  { id: 564, name: "La Liga", shortName: "La Liga", country: "Spain", logo: "https://cdn.sportmonks.com/images/soccer/leagues/564.png" },
-  { id: 82, name: "Bundesliga", shortName: "Bundesliga", country: "Germany", logo: "https://cdn.sportmonks.com/images/soccer/leagues/82.png" },
-  { id: 384, name: "Serie A", shortName: "Serie A", country: "Italy", logo: "https://cdn.sportmonks.com/images/soccer/leagues/384.png" },
-  { id: 301, name: "Ligue 1", shortName: "Ligue 1", country: "France", logo: "https://cdn.sportmonks.com/images/soccer/leagues/301.png" },
-  { id: 600, name: "Süper Lig", shortName: "Süper Lig", country: "Turkey", logo: "https://cdn.sportmonks.com/images/soccer/leagues/600.png" },
-  { id: 72, name: "Eredivisie", shortName: "Eredivisie", country: "Netherlands", logo: "https://cdn.sportmonks.com/images/soccer/leagues/72.png" },
-  { id: 462, name: "Liga Portugal", shortName: "Liga Portugal", country: "Portugal", logo: "https://cdn.sportmonks.com/images/soccer/leagues/462.png" },
-  { id: 2, name: "Champions League", shortName: "UCL", country: "Europe", logo: "https://cdn.sportmonks.com/images/soccer/leagues/2.png" },
-  { id: 5, name: "Europa League", shortName: "UEL", country: "Europe", logo: "https://cdn.sportmonks.com/images/soccer/leagues/5.png" },
-  { id: 2286, name: "Conference League", shortName: "UECL", country: "Europe", logo: "https://cdn.sportmonks.com/images/soccer/leagues/2286.png" },
+  {
+    id: 8,
+    name: "Premier League",
+    shortName: "EPL",
+    country: "England",
+    logo: "https://cdn.sportmonks.com/images/soccer/leagues/8/8.png",
+  },
+  {
+    id: 564,
+    name: "La Liga",
+    shortName: "La Liga",
+    country: "Spain",
+    logo: "https://cdn.sportmonks.com/images/soccer/leagues/564.png",
+  },
+  {
+    id: 82,
+    name: "Bundesliga",
+    shortName: "Bundesliga",
+    country: "Germany",
+    logo: "https://cdn.sportmonks.com/images/soccer/leagues/82.png",
+  },
+  {
+    id: 384,
+    name: "Serie A",
+    shortName: "Serie A",
+    country: "Italy",
+    logo: "https://cdn.sportmonks.com/images/soccer/leagues/384.png",
+  },
+  {
+    id: 301,
+    name: "Ligue 1",
+    shortName: "Ligue 1",
+    country: "France",
+    logo: "https://cdn.sportmonks.com/images/soccer/leagues/301.png",
+  },
+  {
+    id: 600,
+    name: "Süper Lig",
+    shortName: "Süper Lig",
+    country: "Turkey",
+    logo: "https://cdn.sportmonks.com/images/soccer/leagues/600.png",
+  },
+  {
+    id: 72,
+    name: "Eredivisie",
+    shortName: "Eredivisie",
+    country: "Netherlands",
+    logo: "https://cdn.sportmonks.com/images/soccer/leagues/72.png",
+  },
+  {
+    id: 462,
+    name: "Liga Portugal",
+    shortName: "Liga Portugal",
+    country: "Portugal",
+    logo: "https://cdn.sportmonks.com/images/soccer/leagues/462.png",
+  },
+  {
+    id: 2,
+    name: "Champions League",
+    shortName: "UCL",
+    country: "Europe",
+    logo: "https://cdn.sportmonks.com/images/soccer/leagues/2.png",
+  },
+  {
+    id: 5,
+    name: "Europa League",
+    shortName: "UEL",
+    country: "Europe",
+    logo: "https://cdn.sportmonks.com/images/soccer/leagues/5.png",
+  },
+  {
+    id: 2286,
+    name: "Conference League",
+    shortName: "UECL",
+    country: "Europe",
+    logo: "https://cdn.sportmonks.com/images/soccer/leagues/2286.png",
+  },
 ];
 
 interface TopLeaguesProps {
@@ -47,7 +113,9 @@ export async function TopLeagues({ className }: TopLeaguesProps) {
   // Get top leagues and sort by predefined order
   const topLeagues = allLeagues
     .filter((league) => TOP_LEAGUE_IDS.has(league.id))
-    .sort((a, b) => TOP_LEAGUE_ORDER.indexOf(a.id) - TOP_LEAGUE_ORDER.indexOf(b.id));
+    .sort(
+      (a, b) => TOP_LEAGUE_ORDER.indexOf(a.id) - TOP_LEAGUE_ORDER.indexOf(b.id),
+    );
 
   return (
     <div
@@ -77,7 +145,9 @@ export async function TopLeagues({ className }: TopLeaguesProps) {
               className="object-contain w-5 h-5"
             />
             <div className="flex flex-col min-w-0">
-              <span className="text-sm font-medium truncate">{league.name}</span>
+              <span className="text-sm font-medium truncate">
+                {league.name}
+              </span>
               <span className="text-[10px] text-muted-foreground">
                 {league.country?.name || "International"}
               </span>

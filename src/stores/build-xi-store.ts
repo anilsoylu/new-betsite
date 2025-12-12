@@ -194,14 +194,12 @@ export const useBuildXIStore = create<BuildXIState>()(
 
         // Require at least one player to save
         const filledCount = Object.values(currentLineup.players).filter(
-          Boolean
+          Boolean,
         ).length;
         if (filledCount === 0) return null;
 
         // Generate name if empty
-        const name =
-          currentLineup.name ||
-          `Lineup ${savedLineups.length + 1}`;
+        const name = currentLineup.name || `Lineup ${savedLineups.length + 1}`;
 
         const lineupToSave: BuildXILineup = {
           ...currentLineup,
@@ -260,6 +258,6 @@ export const useBuildXIStore = create<BuildXIState>()(
         // Only persist saved lineups, not current work-in-progress
         savedLineups: state.savedLineups,
       }),
-    }
-  )
+    },
+  ),
 );

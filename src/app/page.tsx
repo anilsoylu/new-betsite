@@ -1,15 +1,15 @@
-import type { Metadata } from "next"
-import { getHomePageData, getTopLeaguesStandings } from "@/lib/queries"
-import { getHomePage } from "@/lib/contentful"
-import { HomeContent } from "@/components/home/home-content"
-import { RichText, FaqSection } from "@/components/content"
+import type { Metadata } from "next";
+import { getHomePageData, getTopLeaguesStandings } from "@/lib/queries";
+import { getHomePage } from "@/lib/contentful";
+import { HomeContent } from "@/components/home/home-content";
+import { RichText, FaqSection } from "@/components/content";
 import {
   TopLeagues,
   OtherLeagues,
   BuildXI,
   StandingsWidget,
-} from "@/components/sidebar"
-import { SEO, SITE } from "@/lib/constants"
+} from "@/components/sidebar";
+import { SEO, SITE } from "@/lib/constants";
 
 export const metadata: Metadata = {
   title: SEO.home.title,
@@ -17,7 +17,7 @@ export const metadata: Metadata = {
   alternates: {
     canonical: SITE.url,
   },
-}
+};
 
 export default async function HomePage() {
   // Fetch all data in parallel
@@ -25,9 +25,9 @@ export default async function HomePage() {
     getHomePageData(),
     getHomePage(),
     getTopLeaguesStandings(),
-  ])
+  ]);
 
-  const { liveFixtures, todayFixtures } = fixturesData
+  const { liveFixtures, todayFixtures } = fixturesData;
 
   return (
     <main className="flex-1 overflow-auto">
@@ -71,5 +71,5 @@ export default async function HomePage() {
         </div>
       </div>
     </main>
-  )
+  );
 }

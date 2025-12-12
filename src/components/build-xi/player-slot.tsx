@@ -43,7 +43,7 @@ export function PlayerSlot({
         onClick={onSelect}
         className={cn(
           "flex flex-col items-center gap-1 transition-all duration-200",
-          "hover:scale-110 cursor-pointer group"
+          "hover:scale-110 cursor-pointer group",
         )}
       >
         <div
@@ -52,20 +52,24 @@ export function PlayerSlot({
             "flex items-center justify-center transition-all",
             isSelected
               ? "border-primary bg-primary/20 ring-2 ring-primary ring-offset-2 ring-offset-green-600"
-              : "border-white/50 bg-white/10 backdrop-blur-sm group-hover:border-white group-hover:bg-white/20"
+              : "border-white/50 bg-white/10 backdrop-blur-sm group-hover:border-white group-hover:bg-white/20",
           )}
         >
           <Plus
             className={cn(
               "w-5 h-5 transition-colors",
-              isSelected ? "text-primary" : "text-white/70 group-hover:text-white"
+              isSelected
+                ? "text-primary"
+                : "text-white/70 group-hover:text-white",
             )}
           />
         </div>
         <span
           className={cn(
             "text-[10px] sm:text-xs font-medium transition-colors",
-            isSelected ? "text-primary" : "text-white/70 group-hover:text-white"
+            isSelected
+              ? "text-primary"
+              : "text-white/70 group-hover:text-white",
           )}
         >
           {slot.label}
@@ -82,7 +86,7 @@ export function PlayerSlot({
           type="button"
           className={cn(
             "flex flex-col items-center gap-1 transition-all duration-200",
-            "hover:scale-110 cursor-pointer"
+            "hover:scale-110 cursor-pointer",
           )}
         >
           <Avatar
@@ -90,10 +94,13 @@ export function PlayerSlot({
               "w-9 h-9 sm:w-11 sm:h-11 border-2 shadow-lg transition-all",
               isSelected
                 ? "border-primary ring-2 ring-primary ring-offset-2 ring-offset-green-600"
-                : "border-white"
+                : "border-white",
             )}
           >
-            <AvatarImage src={player.image ?? undefined} alt={player.displayName} />
+            <AvatarImage
+              src={player.image ?? undefined}
+              alt={player.displayName}
+            />
             <AvatarFallback className="bg-primary text-primary-foreground text-xs font-bold">
               {initials}
             </AvatarFallback>
