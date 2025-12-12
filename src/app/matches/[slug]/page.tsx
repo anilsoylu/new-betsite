@@ -41,25 +41,28 @@ export async function generateMetadata({
     const { homeTeam, awayTeam, league, startTime } = fixture;
     const formattedDate = format(new Date(startTime), DATE_FORMATS.date);
 
+    const title = SEO.matchDetail.titleTemplate(homeTeam.name, awayTeam.name);
+    const description = SEO.matchDetail.descriptionTemplate(
+      homeTeam.name,
+      awayTeam.name,
+      league?.name || "Football",
+      formattedDate,
+    );
+
     return {
-      title: SEO.matchDetail.titleTemplate(homeTeam.name, awayTeam.name),
-      description: SEO.matchDetail.descriptionTemplate(
-        homeTeam.name,
-        awayTeam.name,
-        league?.name || "Football",
-        formattedDate,
-      ),
+      title,
+      description,
       alternates: {
         canonical: `${SITE.url}/matches/${slug}`,
       },
       openGraph: {
-        title: SEO.matchDetail.titleTemplate(homeTeam.name, awayTeam.name),
-        description: SEO.matchDetail.descriptionTemplate(
-          homeTeam.name,
-          awayTeam.name,
-          league?.name || "Football",
-          formattedDate,
-        ),
+        title,
+        description,
+      },
+      twitter: {
+        card: "summary_large_image",
+        title,
+        description,
       },
     };
   } catch {

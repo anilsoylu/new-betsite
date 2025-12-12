@@ -23,6 +23,20 @@ export const metadata: Metadata = {
   alternates: {
     canonical: `${SITE.url}/players`,
   },
+  openGraph: {
+    title: `Players | ${SITE.name}`,
+    description:
+      "Discover top goalscorers from the best football leagues. Find player statistics, career history and more.",
+    url: `${SITE.url}/players`,
+    siteName: SITE.name,
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: `Players | ${SITE.name}`,
+    description:
+      "Discover top goalscorers from the best football leagues. Find player statistics, career history and more.",
+  },
 };
 
 export default async function PlayersPage() {

@@ -21,6 +21,20 @@ export const metadata: Metadata = {
   alternates: {
     canonical: `${SITE.url}/matches`,
   },
+  openGraph: {
+    title: `All Matches | ${SITE.name}`,
+    description:
+      "Browse all football matches by date. Find live scores, upcoming fixtures and match results.",
+    url: `${SITE.url}/matches`,
+    siteName: SITE.name,
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: `All Matches | ${SITE.name}`,
+    description:
+      "Browse all football matches by date. Find live scores, upcoming fixtures and match results.",
+  },
 };
 
 interface MatchesPageProps {

@@ -22,6 +22,20 @@ export const metadata: Metadata = {
   alternates: {
     canonical: `${SITE.url}/teams`,
   },
+  openGraph: {
+    title: `Football Teams | ${SITE.name}`,
+    description:
+      "Discover and browse football teams from top leagues. Find team information, squad, fixtures and statistics.",
+    url: `${SITE.url}/teams`,
+    siteName: SITE.name,
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: `Football Teams | ${SITE.name}`,
+    description:
+      "Discover and browse football teams from top leagues. Find team information, squad, fixtures and statistics.",
+  },
 };
 
 export default async function TeamsPage() {

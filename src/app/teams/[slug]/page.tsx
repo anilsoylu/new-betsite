@@ -112,6 +112,12 @@ export async function generateMetadata({
         description,
         images: team.logo ? [{ url: team.logo }] : undefined,
       },
+      twitter: {
+        card: "summary_large_image",
+        title,
+        description,
+        images: team.logo ? [team.logo] : undefined,
+      },
     };
   } catch {
     return { title: "Team Not Found" };

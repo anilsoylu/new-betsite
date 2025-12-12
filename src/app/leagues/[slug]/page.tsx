@@ -33,23 +33,51 @@ export async function generateMetadata({
   const knownLeague = TOP_LEAGUES.find((l) => l.id === leagueId);
 
   if (knownLeague) {
+    const title = SEO.leagueDetail.titleTemplate(knownLeague.name);
+    const description = SEO.leagueDetail.descriptionTemplate(
+      knownLeague.name,
+      knownLeague.country,
+    );
     return {
-      title: SEO.leagueDetail.titleTemplate(knownLeague.name),
-      description: SEO.leagueDetail.descriptionTemplate(
-        knownLeague.name,
-        knownLeague.country,
-      ),
+      title,
+      description,
       alternates: {
         canonical: `${SITE.url}/leagues/${slug}`,
+      },
+      openGraph: {
+        title,
+        description,
+        url: `${SITE.url}/leagues/${slug}`,
+        siteName: SITE.name,
+        type: "website",
+      },
+      twitter: {
+        card: "summary_large_image",
+        title,
+        description,
       },
     };
   }
 
+  const defaultTitle = `League | ${SITE.name}`;
+  const defaultDescription = "League standings, fixtures, and statistics.";
   return {
-    title: `League | ${SITE.name}`,
-    description: "League standings, fixtures, and statistics.",
+    title: defaultTitle,
+    description: defaultDescription,
     alternates: {
       canonical: `${SITE.url}/leagues/${slug}`,
+    },
+    openGraph: {
+      title: defaultTitle,
+      description: defaultDescription,
+      url: `${SITE.url}/leagues/${slug}`,
+      siteName: SITE.name,
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: defaultTitle,
+      description: defaultDescription,
     },
   };
 }

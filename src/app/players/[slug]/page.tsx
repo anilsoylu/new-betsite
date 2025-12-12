@@ -38,24 +38,29 @@ export async function generateMetadata({
   try {
     const player = await getPlayerById(playerId);
 
+    const title = SEO.playerDetail.titleTemplate(player.displayName);
+    const description = SEO.playerDetail.descriptionTemplate(
+      player.displayName,
+      player.position || "Football Player",
+      player.currentTeam?.teamName || "Free Agent",
+    );
+
     return {
-      title: SEO.playerDetail.titleTemplate(player.displayName),
-      description: SEO.playerDetail.descriptionTemplate(
-        player.displayName,
-        player.position || "Football Player",
-        player.currentTeam?.teamName || "Free Agent",
-      ),
+      title,
+      description,
       alternates: {
         canonical: `${SITE.url}/players/${slug}`,
       },
       openGraph: {
-        title: SEO.playerDetail.titleTemplate(player.displayName),
-        description: SEO.playerDetail.descriptionTemplate(
-          player.displayName,
-          player.position || "Football Player",
-          player.currentTeam?.teamName || "Free Agent",
-        ),
+        title,
+        description,
         images: player.image ? [{ url: player.image }] : undefined,
+      },
+      twitter: {
+        card: "summary_large_image",
+        title,
+        description,
+        images: player.image ? [player.image] : undefined,
       },
     };
   } catch {
