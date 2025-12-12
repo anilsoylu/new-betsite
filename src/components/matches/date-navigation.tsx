@@ -61,17 +61,20 @@ export function DateNavigation({ dates }: DateNavigationProps) {
 
       {/* Date Pills */}
       <div className="flex-1 flex justify-center gap-1 overflow-x-auto scrollbar-hide">
-        {dates.map((item) => (
+        {dates.map((item, index) => (
           <Link
             key={item.dateString}
             href={`/matches?date=${item.dateString}`}
             className={cn(
-              "flex flex-col items-center px-3 py-2 rounded-lg min-w-[60px] transition-colors",
+              "flex flex-col items-center px-3 py-2 rounded-lg min-w-[60px]",
+              "transition-all duration-300 ease-out",
+              "animate-in fade-in slide-in-from-bottom-2",
               item.isSelected
-                ? "bg-primary text-primary-foreground"
-                : "hover:bg-muted",
+                ? "bg-primary text-primary-foreground scale-105"
+                : "hover:bg-muted hover:scale-105",
               item.isToday && !item.isSelected && "border border-primary",
             )}
+            style={{ animationDelay: `${index * 30}ms` }}
           >
             <span className="text-xs font-medium uppercase">{item.label}</span>
             <span className="text-lg font-bold">{item.dayNumber}</span>

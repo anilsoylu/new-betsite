@@ -1,15 +1,22 @@
-"use client";
+"use client"
 
-import { useRef, useEffect } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import { format, addDays, subDays, isSameDay, isToday } from "date-fns";
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
+import { useRef, useEffect, useMemo } from "react"
+import { ChevronLeft, ChevronRight } from "lucide-react"
+import {
+  format,
+  addDays,
+  subDays,
+  isSameDay,
+  isToday,
+  startOfDay,
+} from "date-fns"
+import { cn } from "@/lib/utils"
+import { Button } from "@/components/ui/button"
 
 interface DatePickerProps {
-  selectedDate: Date;
-  onDateChange: (date: Date) => void;
-  className?: string;
+  selectedDate: Date
+  onDateChange: (date: Date) => void
+  className?: string
 }
 
 export function DatePicker({
@@ -17,47 +24,50 @@ export function DatePicker({
   onDateChange,
   className,
 }: DatePickerProps) {
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null)
 
   // Generate 15 days: 7 before today, today, 7 after
-  const today = new Date();
-  const dates = Array.from({ length: 15 }, (_, i) =>
-    addDays(subDays(today, 7), i),
-  );
+  // Memoize to prevent recreation on every render
+  const dates = useMemo(() => {
+    const today = startOfDay(new Date())
+    return Array.from({ length: 15 }, (_, i) => addDays(subDays(today, 7), i))
+  }, [])
 
   // Scroll to selected date on mount
   useEffect(() => {
     if (scrollRef.current) {
-      const selectedIndex = dates.findIndex((d) => isSameDay(d, selectedDate));
-      const button = scrollRef.current.children[selectedIndex] as HTMLElement;
+      const selectedIndex = dates.findIndex((d) => isSameDay(d, selectedDate))
+      const button = scrollRef.current.children[selectedIndex] as HTMLElement
       if (button) {
         button.scrollIntoView({
           behavior: "smooth",
           inline: "center",
           block: "nearest",
-        });
+        })
       }
     }
-  }, []);
+  }, [])
 
   const scrollTo = (direction: "left" | "right") => {
     if (scrollRef.current) {
-      const scrollAmount = direction === "left" ? -200 : 200;
-      scrollRef.current.scrollBy({ left: scrollAmount, behavior: "smooth" });
+      const scrollAmount = direction === "left" ? -200 : 200
+      scrollRef.current.scrollBy({ left: scrollAmount, behavior: "smooth" })
     }
-  };
+  }
 
   const getDateLabel = (date: Date) => {
-    if (isToday(date)) return "Today";
-    if (isSameDay(date, addDays(today, 1))) return "Tomorrow";
-    if (isSameDay(date, subDays(today, 1))) return "Yesterday";
-    return format(date, "EEE");
-  };
+    const today = startOfDay(new Date())
+    if (isToday(date)) return "Today"
+    if (isSameDay(date, addDays(today, 1))) return "Tomorrow"
+    if (isSameDay(date, subDays(today, 1))) return "Yesterday"
+    return format(date, "EEE")
+  }
 
   return (
     <div className={cn("relative flex items-center gap-1", className)}>
       {/* Left Arrow */}
-      <Button
+      {/*
+        <Button
         variant="ghost"
         size="icon"
         className="h-8 w-8 shrink-0 hidden sm:flex"
@@ -65,6 +75,7 @@ export function DatePicker({
       >
         <ChevronLeft className="h-4 w-4" />
       </Button>
+        */}
 
       {/* Date Scroll Container */}
       <div
@@ -72,27 +83,32 @@ export function DatePicker({
         className="flex gap-1 overflow-x-auto scrollbar-hide scroll-smooth flex-1"
         style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
       >
-        {dates.map((date) => {
-          const isSelected = isSameDay(date, selectedDate);
-          const isTodayDate = isToday(date);
+        {dates.map((date, index) => {
+          const isSelected = isSameDay(date, selectedDate)
+          const isTodayDate = isToday(date)
+          const dateKey = format(date, "yyyy-MM-dd")
 
           return (
             <button
-              key={date.toISOString()}
+              key={dateKey}
               onClick={() => onDateChange(date)}
               className={cn(
-                "flex flex-col items-center justify-center px-3 py-2 rounded-lg min-w-[60px] transition-all",
-                "hover:bg-muted/80 active:scale-95",
-                isSelected && "bg-primary text-primary-foreground",
-                !isSelected && isTodayDate && "ring-1 ring-primary/50",
+                "flex flex-col items-center justify-center px-3 py-2 rounded-lg min-w-[60px]",
+                "transition-all duration-300 ease-out",
+                "animate-in fade-in slide-in-from-bottom-2",
+                isSelected
+                  ? "bg-primary text-primary-foreground scale-105"
+                  : "hover:bg-muted/80 hover:scale-105",
+                !isSelected && isTodayDate && "ring-1 ring-primary/50"
               )}
+              style={{ animationDelay: `${index * 30}ms` }}
             >
               <span
                 className={cn(
                   "text-[10px] uppercase font-medium",
                   isSelected
                     ? "text-primary-foreground/80"
-                    : "text-muted-foreground",
+                    : "text-muted-foreground"
                 )}
               >
                 {getDateLabel(date)}
@@ -100,25 +116,27 @@ export function DatePicker({
               <span
                 className={cn(
                   "text-sm font-bold",
-                  isSelected ? "text-primary-foreground" : "text-foreground",
+                  isSelected ? "text-primary-foreground" : "text-foreground"
                 )}
               >
                 {format(date, "d")}
               </span>
             </button>
-          );
+          )
         })}
       </div>
 
       {/* Right Arrow */}
+      {/*
       <Button
         variant="ghost"
-        size="icon"
-        className="h-8 w-8 shrink-0 hidden sm:flex"
-        onClick={() => scrollTo("right")}
-      >
-        <ChevronRight className="h-4 w-4" />
-      </Button>
+          size="icon"
+          className="h-8 w-8 shrink-0 hidden sm:flex"
+          onClick={() => scrollTo("right")}
+        >
+          <ChevronRight className="h-4 w-4" />
+        </Button>
+         */}
     </div>
-  );
+  )
 }

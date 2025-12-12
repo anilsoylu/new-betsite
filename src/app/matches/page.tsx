@@ -41,12 +41,12 @@ interface MatchesPageProps {
   searchParams: Promise<{ date?: string }>;
 }
 
-// Generate date items for navigation
+// Generate date items for navigation (selected date is centered)
 function generateDateItems(selectedDateString: string) {
-  const today = new Date();
+  const selectedDate = parseISO(selectedDateString);
   return Array.from({ length: 7 }, (_, i) => {
-    const d = new Date(today);
-    d.setDate(today.getDate() - 3 + i);
+    const d = new Date(selectedDate);
+    d.setDate(selectedDate.getDate() - 3 + i);
     const dateString = format(d, DATE_FORMATS.apiDate);
     return {
       date: d,
