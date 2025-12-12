@@ -34,9 +34,10 @@ export function calculateFormMetrics(
   isHomeForm: boolean | null = null,
 ): FormMetrics {
   // Filter fixtures by home/away if specified
-  const filtered = isHomeForm === null
-    ? fixtures
-    : fixtures.filter((f) => f.isHome === isHomeForm);
+  const filtered =
+    isHomeForm === null
+      ? fixtures
+      : fixtures.filter((f) => f.isHome === isHomeForm);
 
   if (filtered.length === 0) {
     return createEmptyFormMetrics(isHomeForm);
@@ -372,7 +373,14 @@ function generate1X2Recommendation(
   ctx: RecommendationContext,
   odds: Array<{ label: string; value: number; probability: number | null }>,
 ): BetRecommendation {
-  const { homeForm, awayForm, h2h, homeStanding, awayStanding, sidelinedImpact } = ctx;
+  const {
+    homeForm,
+    awayForm,
+    h2h,
+    homeStanding,
+    awayStanding,
+    sidelinedImpact,
+  } = ctx;
 
   // Calculate base probability from form and standings
   let homeProb = 0.4; // Base home advantage
@@ -528,7 +536,8 @@ function generateBTTSRecommendation(
   }
 
   // Consider clean sheet rates
-  const cleanSheetFactor = 1 - (homeForm.cleanSheetRate + awayForm.cleanSheetRate) / 2;
+  const cleanSheetFactor =
+    1 - (homeForm.cleanSheetRate + awayForm.cleanSheetRate) / 2;
   bttsProb = bttsProb * 0.6 + cleanSheetFactor * 0.4;
 
   const pick = bttsProb > 0.5 ? "Yes" : "No";
@@ -635,7 +644,11 @@ function generateDrawNoBetRecommendation(
   homeWinProb += formDiff * 0.15;
   awayWinProb -= formDiff * 0.15;
 
-  if (homeStanding && awayStanding && homeStanding.position < awayStanding.position) {
+  if (
+    homeStanding &&
+    awayStanding &&
+    homeStanding.position < awayStanding.position
+  ) {
     homeWinProb += 0.05;
     awayWinProb -= 0.05;
   } else if (homeStanding && awayStanding) {
@@ -682,35 +695,66 @@ function generateAsianHandicap0Recommendation(
   };
 }
 
-// Generate reasoning text
+// Generate reasoning text - pick-aware to avoid contradictory statements
 function generateReasoning(
   market: string,
   pick: string,
   ctx: RecommendationContext,
 ): string {
   const { homeForm, awayForm, h2h, sidelinedImpact } = ctx;
-
   const parts: string[] = [];
 
-  // Form-based reasoning
-  if (homeForm.played > 0 && awayForm.played > 0) {
-    if (homeForm.ppg > awayForm.ppg + 0.5) {
-      parts.push("Home team in better form");
-    } else if (awayForm.ppg > homeForm.ppg + 0.5) {
-      parts.push("Away team in better form");
+  // Market-specific reasoning based on pick direction
+  if (market.includes("O/U")) {
+    // Over/Under markets - reasoning should match the pick
+    const avgOverRate = (homeForm.over25Rate + awayForm.over25Rate) / 2;
+    if (pick === "Over") {
+      if (avgOverRate > 0.6) parts.push("Both teams have high-scoring records");
+      else if (h2h.avgGoals > 2.5)
+        parts.push("H2H matches tend to be high-scoring");
+      else parts.push("Attack-minded teams");
+    } else {
+      if (avgOverRate < 0.4) parts.push("Both teams in low-scoring form");
+      else if (homeForm.cleanSheetRate > 0.4 || awayForm.cleanSheetRate > 0.4)
+        parts.push("Strong defensive record");
+      else parts.push("Tight match expected");
+    }
+  } else if (market === "BTTS") {
+    // BTTS market - reasoning should match Yes/No pick
+    const avgBttsRate = (homeForm.bttsRate + awayForm.bttsRate) / 2;
+    if (pick === "Yes") {
+      if (avgBttsRate > 0.6) parts.push("Both teams score frequently");
+      else if (h2h.bttsRate > 0.6)
+        parts.push("H2H shows both teams usually score");
+      else parts.push("Open match expected");
+    } else {
+      if (homeForm.cleanSheetRate > 0.4)
+        parts.push("Home team keeps clean sheets");
+      else if (awayForm.cleanSheetRate > 0.4)
+        parts.push("Away team keeps clean sheets");
+      else parts.push("One-sided match expected");
+    }
+  } else {
+    // 1X2, DC, DNB markets - form-based reasoning
+    if (homeForm.played > 0 && awayForm.played > 0) {
+      if (homeForm.ppg > awayForm.ppg + 0.5) {
+        parts.push("Home team in better form");
+      } else if (awayForm.ppg > homeForm.ppg + 0.5) {
+        parts.push("Away team in better form");
+      }
+    }
+
+    // H2H reasoning (only for result markets)
+    if (h2h.totalMatches >= 3) {
+      if (h2h.homeWins > h2h.awayWins * 2) {
+        parts.push("Strong H2H record for home");
+      } else if (h2h.awayWins > h2h.homeWins * 2) {
+        parts.push("Strong H2H record for away");
+      }
     }
   }
 
-  // H2H reasoning
-  if (h2h.totalMatches >= 3) {
-    if (h2h.homeWins > h2h.awayWins * 2) {
-      parts.push("Strong H2H record for home");
-    } else if (h2h.awayWins > h2h.homeWins * 2) {
-      parts.push("Strong H2H record for away");
-    }
-  }
-
-  // Sidelined reasoning
+  // Sidelined reasoning (applies to all markets)
   if (sidelinedImpact.home === "high") {
     parts.push("Key home players missing");
   }
@@ -718,18 +762,9 @@ function generateReasoning(
     parts.push("Key away players missing");
   }
 
-  // Market-specific reasoning
-  if (market.includes("O/U") || market === "BTTS") {
-    const avgGoalsForm = (homeForm.goalsFor + awayForm.goalsFor) /
-      (homeForm.played + awayForm.played || 1);
-    if (avgGoalsForm > 1.5) {
-      parts.push("High-scoring teams");
-    } else if (avgGoalsForm < 1) {
-      parts.push("Low-scoring match expected");
-    }
-  }
-
-  return parts.length > 0 ? parts.join(". ") + "." : "Based on statistical analysis.";
+  return parts.length > 0
+    ? parts.join(". ") + "."
+    : "Based on statistical analysis.";
 }
 
 // ==========================================
