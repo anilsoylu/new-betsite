@@ -9,6 +9,7 @@ import {
   MatchTabs,
   OddsCard,
   MatchArticle,
+  MatchBetInsights,
   MatchQuickStats,
   TeamFormWidget,
   LeagueMiniTable,
@@ -83,7 +84,7 @@ export default async function MatchDetailPage({
     notFound();
   }
 
-  const { fixture, standings, h2h, odds, homeForm, awayForm } = data;
+  const { fixture, standings, h2h, odds, homeForm, awayForm, insights } = data;
 
   // Generate structured data
   const sportsEventSchema = generateSportsEventSchema(fixture);
@@ -112,7 +113,16 @@ export default async function MatchDetailPage({
             <MatchTabs fixture={fixture} standings={standings} h2h={h2h} />
           </Suspense>
 
-          {/* Match Article */}
+          {/* Betting Insights - Data-driven analysis */}
+          {insights && (
+            <MatchBetInsights
+              insights={insights}
+              homeTeam={fixture.homeTeam}
+              awayTeam={fixture.awayTeam}
+            />
+          )}
+
+          {/* Match Article - SEO-friendly match preview */}
           <MatchArticle
             fixture={fixture}
             standings={standings}

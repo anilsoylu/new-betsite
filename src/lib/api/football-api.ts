@@ -41,6 +41,7 @@ import type {
   StandingTable,
   H2HFixture,
   MatchOdds,
+  MarketOdds,
   TeamDetail,
   TeamSearchResult,
   PlayerDetail,
@@ -82,10 +83,30 @@ const FIXTURE_DETAIL_INCLUDES = [
   "formations",
   "referees.referee",
   "coaches",
+  "sidelined.sideline.player", // Player injuries/suspensions
 ];
 
 // H2H includes
 const H2H_INCLUDES = ["participants", "scores", "state", "league"];
+
+// Betting markets configuration
+// Market IDs from Sportmonks API
+export const BETTING_MARKETS = {
+  FULLTIME_RESULT: { id: 1, name: "Full Time Result", labels: ["1", "X", "2"] },
+  DOUBLE_CHANCE: { id: 12, name: "Double Chance", labels: ["1X", "12", "X2"] },
+  OVER_UNDER_2_5: { id: 18, name: "Over/Under 2.5", labels: ["Over", "Under"] },
+  BTTS: { id: 28, name: "Both Teams To Score", labels: ["Yes", "No"] },
+  OVER_UNDER_1_5: { id: 16, name: "Over/Under 1.5", labels: ["Over", "Under"] },
+  OVER_UNDER_3_5: { id: 19, name: "Over/Under 3.5", labels: ["Over", "Under"] },
+  DRAW_NO_BET: { id: 6, name: "Draw No Bet", labels: ["1", "2"] },
+  ASIAN_HANDICAP_0: { id: 3, name: "Asian Handicap 0", labels: ["1", "2"] },
+} as const;
+
+// Get all market IDs for fetching
+export const ALL_MARKET_IDS = Object.values(BETTING_MARKETS).map((m) => m.id);
+
+// Concurrency limit for multi-market odds fetching
+const ODDS_CONCURRENCY_LIMIT = 4;
 
 /**
  * Get live (in-play) fixtures
@@ -208,6 +229,114 @@ export async function getOddsByFixture(
   } catch {
     return null;
   }
+}
+
+/**
+ * Get pre-match odds for multiple markets
+ * Uses concurrency limiting to avoid rate limits
+ * Returns array of MarketOdds for all requested markets
+ * Cache: short (5min) - odds change frequently
+ */
+export async function getOddsByFixtureMultiMarket(
+  fixtureId: number,
+  marketIds: readonly number[] = ALL_MARKET_IDS,
+): Promise<Array<MarketOdds>> {
+  idSchema.parse(fixtureId);
+
+  // Process markets in batches with concurrency limit
+  const results: Array<MarketOdds> = [];
+
+  // Split market IDs into chunks
+  const chunks: number[][] = [];
+  for (let i = 0; i < marketIds.length; i += ODDS_CONCURRENCY_LIMIT) {
+    chunks.push(marketIds.slice(i, i + ODDS_CONCURRENCY_LIMIT) as number[]);
+  }
+
+  for (const chunk of chunks) {
+    const chunkResults = await Promise.all(
+      chunk.map(async (marketId) => {
+        try {
+          const response = await sportmonksPaginatedRequest<SportmonksOddRaw>({
+            endpoint: `/odds/pre-match/fixtures/${fixtureId}/markets/${marketId}`,
+            include: ["bookmaker", "market"],
+            perPage: 50,
+            cache: "short",
+          });
+
+          return mapMarketOdds(response.data, marketId);
+        } catch {
+          return null;
+        }
+      }),
+    );
+
+    // Filter out null results and add to results array
+    results.push(
+      ...(chunkResults.filter((r): r is MarketOdds => r !== null)),
+    );
+  }
+
+  return results;
+}
+
+/**
+ * Map raw odds data to MarketOdds
+ */
+function mapMarketOdds(
+  odds: Array<SportmonksOddRaw>,
+  marketId: number,
+): MarketOdds | null {
+  if (!odds || odds.length === 0) return null;
+
+  // Get market name from first odd with market info, or from our config
+  const marketConfig = Object.values(BETTING_MARKETS).find(
+    (m) => m.id === marketId,
+  );
+  const marketName =
+    odds[0]?.market?.name || marketConfig?.name || `Market ${marketId}`;
+
+  // Group odds by label and get best value for each
+  const oddsMap = new Map<
+    string,
+    {
+      label: string;
+      value: number;
+      probability: number | null;
+      total?: string | null;
+      handicap?: string | null;
+    }
+  >();
+
+  for (const odd of odds) {
+    if (odd.stopped) continue;
+
+    const existing = oddsMap.get(odd.label);
+    const value = parseFloat(odd.value);
+
+    // Keep the best odds (highest value) for each label
+    if (!existing || value > existing.value) {
+      oddsMap.set(odd.label, {
+        label: odd.label,
+        value,
+        probability: odd.probability ? parseFloat(odd.probability) : null,
+        total: odd.total || null,
+        handicap: odd.handicap || null,
+      });
+    }
+  }
+
+  if (oddsMap.size === 0) return null;
+
+  // Get bookmaker name and updated time from first available
+  const firstOdd = odds.find((o) => o.bookmaker);
+
+  return {
+    marketId,
+    marketName,
+    odds: Array.from(oddsMap.values()),
+    bookmaker: firstOdd?.bookmaker?.name || null,
+    updatedAt: firstOdd?.updated_at || null,
+  };
 }
 
 /**
@@ -524,6 +653,32 @@ const TOP_SCORER_TYPE_IDS: Record<TopScorerStatType, number> = {
   cleanSheets: 212,
   rating: 118,
 };
+
+// Key player stat types for betting insights
+export const KEY_PLAYER_STAT_TYPES = ["goals", "assists", "rating"] as const;
+export type KeyPlayerStatType = (typeof KEY_PLAYER_STAT_TYPES)[number];
+
+/**
+ * Get key players by season (goals, assists, ratings)
+ * Fetches all three in parallel for key player detection
+ * Returns combined structure for cross-referencing with sidelined players
+ */
+export async function getKeyPlayersBySeason(
+  seasonId: number,
+  limit = 20,
+): Promise<{
+  scorers: Array<TopScorer>;
+  assists: Array<TopScorer>;
+  rated: Array<TopScorer>;
+}> {
+  const [scorers, assists, rated] = await Promise.all([
+    getTopScorersBySeason(seasonId, "goals", limit).catch(() => []),
+    getTopScorersBySeason(seasonId, "assists", limit).catch(() => []),
+    getTopScorersBySeason(seasonId, "rating", limit).catch(() => []),
+  ]);
+
+  return { scorers, assists, rated };
+}
 
 /**
  * Get top scorers by season

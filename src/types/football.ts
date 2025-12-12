@@ -256,6 +256,10 @@ export interface FixtureDetail extends Fixture {
   homeCoach: Coach | null;
   awayCoach: Coach | null;
   referee: Referee | null;
+  sidelined: {
+    home: Array<Sidelined>;
+    away: Array<Sidelined>;
+  };
 }
 
 // Form fixture data (for team recent form)
@@ -273,6 +277,7 @@ export interface MatchDetailData {
   odds: MatchOdds | null;
   homeForm: Array<FormFixtureData>;
   awayForm: Array<FormFixtureData>;
+  insights: MatchInsights | null;
 }
 
 // Team detail (full team info for team page)
@@ -582,4 +587,144 @@ export interface LeaguePageData {
   recentFixtures: Fixture[];
   upcomingFixtures: Fixture[];
   liveFixtures: Fixture[];
+}
+
+// ==========================================
+// Betting Insights Types
+// ==========================================
+
+// Sidelined player (injury/suspension)
+export interface Sidelined {
+  id: number;
+  playerId: number;
+  playerName: string;
+  playerImage: string | null;
+  teamId: number;
+  category: string; // "injury" | "suspension" | etc.
+  startDate: string;
+  endDate: string | null;
+  gamesMissed: number;
+  isActive: boolean;
+  positionId: number | null;
+}
+
+// Form metrics for a team
+export interface FormMetrics {
+  // Basic stats
+  played: number;
+  wins: number;
+  draws: number;
+  losses: number;
+  goalsFor: number;
+  goalsAgainst: number;
+  // Calculated metrics
+  ppg: number; // Points per game
+  winRate: number;
+  cleanSheetRate: number;
+  bttsRate: number; // Both teams to score rate
+  over15Rate: number;
+  over25Rate: number;
+  over35Rate: number;
+  // Home/away specific
+  isHomeForm: boolean | null; // null means overall form
+}
+
+// Head-to-head metrics
+export interface H2HMetrics {
+  totalMatches: number;
+  homeWins: number;
+  awayWins: number;
+  draws: number;
+  homeGoals: number;
+  awayGoals: number;
+  // Venue-specific (away team as away in this fixture)
+  venueMatches: number;
+  venueHomeWins: number;
+  venueAwayWins: number;
+  venueDraws: number;
+  // Trends
+  bttsRate: number;
+  over25Rate: number;
+  avgGoals: number;
+}
+
+// Single market odds
+export interface MarketOdds {
+  marketId: number;
+  marketName: string;
+  odds: Array<{
+    label: string;
+    value: number;
+    probability: number | null;
+    total?: string | null; // For over/under lines
+    handicap?: string | null; // For handicap markets
+  }>;
+  bookmaker: string | null;
+  updatedAt: string | null;
+}
+
+// Bet recommendation
+export interface BetRecommendation {
+  marketId: number;
+  marketName: string;
+  pick: string; // "Over 2.5", "Home", "BTTS Yes"
+  pickLabel: string; // Display label
+  confidence: number; // 0-100
+  reasoning: string;
+  odds: number | null;
+  impliedProbability: number | null;
+  modelProbability: number | null;
+  hasValue: boolean; // model prob > implied prob
+}
+
+// Key player missing due to injury/suspension
+export interface KeyPlayerMissing {
+  player: Sidelined;
+  keyType: "topScorer" | "topAssist" | "topRated";
+  seasonRank: number; // Position in top scorers/assists list
+  seasonStats: {
+    goals?: number;
+    assists?: number;
+    rating?: number;
+  };
+  impactLevel: "high" | "medium" | "low";
+}
+
+// Complete match insights
+export interface MatchInsights {
+  // Form analysis
+  homeFormMetrics: FormMetrics;
+  awayFormMetrics: FormMetrics;
+  homeFormHome: FormMetrics | null; // Home team's home form
+  awayFormAway: FormMetrics | null; // Away team's away form
+
+  // H2H analysis
+  h2hMetrics: H2HMetrics;
+
+  // Injuries & suspensions
+  sidelined: {
+    home: Sidelined[];
+    away: Sidelined[];
+  };
+  keyPlayersMissing: KeyPlayerMissing[];
+  sidelinedImpact: {
+    home: "high" | "medium" | "low" | "none";
+    away: "high" | "medium" | "low" | "none";
+  };
+
+  // Market recommendations
+  recommendations: BetRecommendation[];
+  topPicks: BetRecommendation[]; // Top 3-5 by confidence
+
+  // Multi-market odds
+  marketOdds: MarketOdds[];
+
+  // Metadata
+  dataQuality: {
+    hasForm: boolean;
+    hasH2H: boolean;
+    hasSidelined: boolean;
+    hasOdds: boolean;
+    hasKeyPlayers: boolean;
+  };
 }

@@ -120,4 +120,34 @@ export interface SportmonksFixtureRaw {
   formations?: Array<SportmonksFormationRaw>;
   referees?: Array<import("./match-data").SportmonksRefereeRaw>;
   coaches?: Array<import("./team").SportmonksFixtureCoachRaw>;
+  sidelined?: Array<SportmonksFixtureSidelinedRaw>;
+}
+
+// Sidelined player entry (from fixture include)
+export interface SportmonksFixtureSidelinedRaw {
+  id: number;
+  fixture_id: number;
+  sideline_id: number;
+  participant_id: number;
+  sideline?: SportmonksSidelinedRaw;
+}
+
+// Full sidelined record (injury/suspension details)
+export interface SportmonksSidelinedRaw {
+  id: number;
+  player_id: number;
+  type_id: number;
+  category: string;
+  team_id: number;
+  season_id: number;
+  start_date: string;
+  end_date: string | null;
+  games_missed: number;
+  completed: boolean;
+  player?: {
+    id: number;
+    display_name: string;
+    image_path: string | null;
+    position_id: number | null;
+  };
 }

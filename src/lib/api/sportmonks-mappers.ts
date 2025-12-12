@@ -24,6 +24,7 @@ import type {
   SportmonksCoachDetailRaw,
   SportmonksCoachTeamRelationRaw,
   SportmonksCoachRaw,
+  SportmonksFixtureSidelinedRaw,
 } from "@/types/sportmonks/raw";
 import type {
   Fixture,
@@ -62,6 +63,7 @@ import type {
   PlayerMatch,
   TeamTransfer,
   TeamTrophy,
+  Sidelined,
 } from "@/types/football";
 
 // Map state developer_name to MatchStatus
@@ -443,6 +445,28 @@ export function mapStandingsToTables(
   return tables;
 }
 
+// Map sidelined (injuries/suspensions) from fixture
+export function mapSidelined(raw: SportmonksFixtureSidelinedRaw): Sidelined | null {
+  const sideline = raw.sideline;
+  if (!sideline) return null;
+
+  const player = sideline.player;
+
+  return {
+    id: sideline.id,
+    playerId: sideline.player_id,
+    playerName: player?.display_name || "Unknown Player",
+    playerImage: player?.image_path || null,
+    teamId: sideline.team_id,
+    category: sideline.category || "Unknown",
+    startDate: sideline.start_date,
+    endDate: sideline.end_date,
+    gamesMissed: sideline.games_missed || 0,
+    isActive: !sideline.completed,
+    positionId: player?.position_id || null,
+  };
+}
+
 // Map event
 export function mapEvent(raw: SportmonksEventRaw): MatchEvent {
   let type: MatchEvent["type"] = "other";
@@ -785,6 +809,17 @@ export function mapFixtureDetail(raw: SportmonksFixtureRaw): FixtureDetail {
       }
     : null;
 
+  // Map sidelined (injuries/suspensions)
+  const sidelinedData = raw.sidelined || [];
+  const homeSidelined = sidelinedData
+    .filter((s) => s.participant_id === base.homeTeam.id)
+    .map(mapSidelined)
+    .filter((s): s is Sidelined => s !== null);
+  const awaySidelined = sidelinedData
+    .filter((s) => s.participant_id === base.awayTeam.id)
+    .map(mapSidelined)
+    .filter((s): s is Sidelined => s !== null);
+
   return {
     ...base,
     events,
@@ -794,6 +829,10 @@ export function mapFixtureDetail(raw: SportmonksFixtureRaw): FixtureDetail {
     homeCoach,
     awayCoach,
     referee,
+    sidelined: {
+      home: homeSidelined,
+      away: awaySidelined,
+    },
   };
 }
 

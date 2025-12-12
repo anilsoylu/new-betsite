@@ -6,15 +6,18 @@ import {
   getHeadToHead,
   getStandingsBySeason,
   getOddsByFixture,
+  getOddsByFixtureMultiMarket,
+  getKeyPlayersBySeason,
   getTodayDate,
   getLeagueById,
   getFixturesByTeam,
   getTeamsBySeason,
   getTopScorersBySeason,
 } from "@/lib/api/cached-football-api";
-import type { TopScorer, Country } from "@/types/football";
+import type { TopScorer, Country, FormFixtureData } from "@/types/football";
 import { TOP_LEAGUES } from "@/components/sidebar/top-leagues";
 import type { HomePageData, MatchDetailData, Standing } from "@/types/football";
+import { buildMatchBettingInsights } from "@/lib/analysis/match-betting-insights";
 
 /**
  * Get home page data
@@ -42,7 +45,8 @@ export async function getHomePageData(): Promise<HomePageData> {
 
 /**
  * Get match detail page data
- * Fetches fixture, h2h, standings, odds, and team form in parallel
+ * Fetches fixture, h2h, standings, odds, team form, key players, and multi-market odds
+ * Then builds betting insights from all collected data
  */
 export async function getMatchDetailData(
   fixtureId: number,
@@ -51,35 +55,68 @@ export async function getMatchDetailData(
   const fixture = await getFixtureById(fixtureId);
 
   // Then fetch additional data in parallel
-  const [h2h, standings, odds, homeTeamFixtures, awayTeamFixtures] =
-    await Promise.all([
-      getHeadToHead(fixture.homeTeam.id, fixture.awayTeam.id).catch(() => []),
-      fixture.seasonId
-        ? getStandingsBySeason(fixture.seasonId).catch(() => [])
-        : Promise.resolve([]),
-      getOddsByFixture(fixtureId).catch(() => null),
-      getFixturesByTeam(fixture.homeTeam.id, { past: 5 }).catch(() => ({
-        recent: [],
-        upcoming: [],
-      })),
-      getFixturesByTeam(fixture.awayTeam.id, { past: 5 }).catch(() => ({
-        recent: [],
-        upcoming: [],
-      })),
-    ]);
+  const [
+    h2h,
+    standings,
+    odds,
+    homeTeamFixtures,
+    awayTeamFixtures,
+    keyPlayers,
+    marketOdds,
+  ] = await Promise.all([
+    getHeadToHead(fixture.homeTeam.id, fixture.awayTeam.id).catch(() => []),
+    fixture.seasonId
+      ? getStandingsBySeason(fixture.seasonId).catch(() => [])
+      : Promise.resolve([]),
+    getOddsByFixture(fixtureId).catch(() => null),
+    getFixturesByTeam(fixture.homeTeam.id, { past: 5 }).catch(() => ({
+      recent: [],
+      upcoming: [],
+    })),
+    getFixturesByTeam(fixture.awayTeam.id, { past: 5 }).catch(() => ({
+      recent: [],
+      upcoming: [],
+    })),
+    // Key players for cross-referencing with sidelined
+    fixture.seasonId
+      ? getKeyPlayersBySeason(fixture.seasonId, 20).catch(() => ({
+          scorers: [],
+          assists: [],
+          rated: [],
+        }))
+      : Promise.resolve({ scorers: [], assists: [], rated: [] }),
+    // Multi-market odds for comprehensive analysis
+    getOddsByFixtureMultiMarket(fixtureId).catch(() => []),
+  ]);
 
   // Convert recent fixtures to form data for each team
-  const homeForm = homeTeamFixtures.recent.map((f) => ({
+  const homeForm: FormFixtureData[] = homeTeamFixtures.recent.map((f) => ({
     homeScore: f.score?.home ?? null,
     awayScore: f.score?.away ?? null,
     isHome: f.homeTeam.id === fixture.homeTeam.id,
   }));
 
-  const awayForm = awayTeamFixtures.recent.map((f) => ({
+  const awayForm: FormFixtureData[] = awayTeamFixtures.recent.map((f) => ({
     homeScore: f.score?.home ?? null,
     awayScore: f.score?.away ?? null,
     isHome: f.homeTeam.id === fixture.awayTeam.id,
   }));
+
+  // Build betting insights from all collected data
+  const insights = buildMatchBettingInsights({
+    homeTeamId: fixture.homeTeam.id,
+    awayTeamId: fixture.awayTeam.id,
+    homeForm,
+    awayForm,
+    h2h,
+    standings,
+    sidelined: {
+      home: fixture.sidelined?.home ?? [],
+      away: fixture.sidelined?.away ?? [],
+    },
+    keyPlayers,
+    marketOdds,
+  });
 
   return {
     fixture,
@@ -88,6 +125,7 @@ export async function getMatchDetailData(
     odds,
     homeForm,
     awayForm,
+    insights,
   };
 }
 

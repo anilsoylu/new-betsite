@@ -7,6 +7,7 @@ export { StandingsTab } from "./standings-tab";
 export { H2HTab } from "./h2h-tab";
 export { OddsCard } from "./odds-card";
 export { MatchArticle } from "./match-article";
+export { MatchBetInsights } from "./match-bet-insights";
 export {
   MatchQuickStats,
   TeamFormWidget,

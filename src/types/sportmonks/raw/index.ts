@@ -12,6 +12,8 @@ export type {
   SportmonksScoreRaw,
   SportmonksStateRaw,
   SportmonksFormationRaw,
+  SportmonksFixtureSidelinedRaw,
+  SportmonksSidelinedRaw,
 } from "./core";
 
 // League types
