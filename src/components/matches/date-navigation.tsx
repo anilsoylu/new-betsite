@@ -31,13 +31,13 @@ export function DateNavigation({ dates }: DateNavigationProps) {
   const router = useRouter();
   const selectedDate = dates.find((d) => d.isSelected)?.date || new Date();
 
-  const handlePrevWeek = () => {
-    const newDate = subDays(selectedDate, 7);
+  const handlePrevDay = () => {
+    const newDate = subDays(selectedDate, 1);
     router.push(`/matches?date=${format(newDate, DATE_FORMATS.apiDate)}`);
   };
 
-  const handleNextWeek = () => {
-    const newDate = addDays(selectedDate, 7);
+  const handleNextDay = () => {
+    const newDate = addDays(selectedDate, 1);
     router.push(`/matches?date=${format(newDate, DATE_FORMATS.apiDate)}`);
   };
 
@@ -49,11 +49,11 @@ export function DateNavigation({ dates }: DateNavigationProps) {
 
   return (
     <div className="flex items-center gap-2">
-      {/* Previous Week Button */}
+      {/* Previous Day Button */}
       <Button
         variant="outline"
         size="icon"
-        onClick={handlePrevWeek}
+        onClick={handlePrevDay}
         className="shrink-0"
       >
         <ChevronLeft className="h-4 w-4" />
@@ -79,11 +79,11 @@ export function DateNavigation({ dates }: DateNavigationProps) {
         ))}
       </div>
 
-      {/* Next Week Button */}
+      {/* Next Day Button */}
       <Button
         variant="outline"
         size="icon"
-        onClick={handleNextWeek}
+        onClick={handleNextDay}
         className="shrink-0"
       >
         <ChevronRight className="h-4 w-4" />
