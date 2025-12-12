@@ -23,7 +23,15 @@ import {
   upsertPlayer,
   upsertCoach,
   upsertTeam,
+  upsertLeaguesBatch,
+  upsertMatchesBatch,
+  upsertTeamsBatch,
 } from "./upsert";
+import type {
+  LeagueCacheInput,
+  MatchCacheInput,
+  TeamCacheInput,
+} from "./types";
 
 /**
  * Cache a league from domain object.
@@ -218,21 +226,87 @@ export function cacheFixture(fixture: Fixture | FixtureDetail): void {
 }
 
 /**
- * Cache multiple fixtures.
- * Safe to call - individual failures don't affect other fixtures.
+ * Cache multiple fixtures using batch operations.
+ * Faz 2: Uses batch upserts for much better performance.
+ * Collects all matches and teams, then inserts in 2 transactions instead of 3N.
  */
 export function cacheFixtures(fixtures: Fixture[]): void {
-  for (const fixture of fixtures) {
-    cacheFixture(fixture);
+  if (fixtures.length === 0) return;
+
+  try {
+    const matches: MatchCacheInput[] = [];
+    const teams: TeamCacheInput[] = [];
+    const seenTeamIds = new Set<number>();
+
+    for (const fixture of fixtures) {
+      // Collect match data
+      matches.push({
+        id: fixture.id,
+        homeTeamName: fixture.homeTeam.name,
+        awayTeamName: fixture.awayTeam.name,
+        kickoffAt: fixture.startTime,
+        leagueId: fixture.leagueId,
+        leagueName: fixture.league?.name ?? null,
+      });
+
+      // Collect unique teams (deduplication)
+      if (!seenTeamIds.has(fixture.homeTeam.id)) {
+        seenTeamIds.add(fixture.homeTeam.id);
+        teams.push({
+          id: fixture.homeTeam.id,
+          name: fixture.homeTeam.name,
+          logo: fixture.homeTeam.logo,
+        });
+      }
+      if (!seenTeamIds.has(fixture.awayTeam.id)) {
+        seenTeamIds.add(fixture.awayTeam.id);
+        teams.push({
+          id: fixture.awayTeam.id,
+          name: fixture.awayTeam.name,
+          logo: fixture.awayTeam.logo,
+        });
+      }
+    }
+
+    // Batch insert - 2 transactions instead of 3N individual transactions
+    upsertMatchesBatch(matches);
+    upsertTeamsBatch(teams);
+  } catch (error) {
+    console.warn(
+      "[SitemapCache] Failed to batch cache fixtures, falling back to individual:",
+      error,
+    );
+    // Fallback to individual inserts
+    for (const fixture of fixtures) {
+      cacheFixture(fixture);
+    }
   }
 }
 
 /**
- * Cache multiple leagues.
- * Safe to call - individual failures don't affect other leagues.
+ * Cache multiple leagues using batch operations.
+ * Faz 2: Uses batch upsert for better performance.
  */
 export function cacheLeagues(leagues: League[]): void {
-  for (const league of leagues) {
-    cacheLeague(league);
+  if (leagues.length === 0) return;
+
+  try {
+    const leagueInputs: LeagueCacheInput[] = leagues.map((league) => ({
+      id: league.id,
+      name: league.name,
+      country: league.country?.name ?? null,
+      logo: league.logo,
+    }));
+
+    upsertLeaguesBatch(leagueInputs);
+  } catch (error) {
+    console.warn(
+      "[SitemapCache] Failed to batch cache leagues, falling back to individual:",
+      error,
+    );
+    // Fallback to individual inserts
+    for (const league of leagues) {
+      cacheLeague(league);
+    }
   }
 }

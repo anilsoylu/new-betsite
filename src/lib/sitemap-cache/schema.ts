@@ -3,16 +3,39 @@
  *
  * Defines table structures for the sitemap cache.
  * Tables use soft-delete pattern via include_in_sitemap flag.
+ *
+ * Faz 3: Once-guard pattern prevents redundant schema checks per process.
  */
 
 import { getDatabase } from "./connection";
 
+// ============================================================================
+// Faz 3: Once-Guard - Prevent repeated schema initialization
+// ============================================================================
+
+let schemaInitialized = false;
+
+/**
+ * Reset schema initialized flag.
+ * Useful for testing or when DB connection is reset.
+ */
+export function resetSchemaFlag(): void {
+  schemaInitialized = false;
+}
+
 /**
  * Initialize the database schema.
  * Creates all tables and indexes if they don't exist.
- * Safe to call multiple times (uses IF NOT EXISTS).
+ *
+ * Faz 3: Uses once-guard to skip redundant initialization.
+ * After first call in a process, subsequent calls are no-ops.
  */
 export function initializeSchema(): void {
+  // Skip if already initialized in this process
+  if (schemaInitialized) {
+    return;
+  }
+
   const db = getDatabase();
 
   // Leagues table
@@ -155,6 +178,9 @@ export function initializeSchema(): void {
       hour_started_at TEXT
     )
   `).run();
+
+  // Mark as initialized - subsequent calls will be no-ops
+  schemaInitialized = true;
 }
 
 /**

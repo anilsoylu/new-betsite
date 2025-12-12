@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getLiveFixtures } from "@/lib/api/football-api";
+import { getLiveFixtures } from "@/lib/api/cached-football-api";
 import { createErrorResponse, logError } from "@/lib/errors";
 
 export async function GET() {

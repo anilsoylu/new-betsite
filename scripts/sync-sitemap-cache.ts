@@ -1,4 +1,4 @@
-#!/usr/bin/env bun
+#!/usr/bin/env tsx
 /**
  * Sitemap Cache Sync Script
  *
@@ -6,13 +6,14 @@
  * the Sportmonks API. It handles rate limiting and panic mode.
  *
  * Usage:
- *   bun scripts/sync-sitemap-cache.ts                    # Sync all entities
- *   bun scripts/sync-sitemap-cache.ts -e leagues         # Sync only leagues
- *   bun scripts/sync-sitemap-cache.ts -e players -m 50   # Sync players, max 50 pages
- *   bun scripts/sync-sitemap-cache.ts --stats            # Show cache statistics
+ *   pnpm sync:all                                        # Sync all entities
+ *   pnpm sync:coaches                                    # Sync only coaches
+ *   tsx scripts/sync-sitemap-cache.ts -e leagues         # Sync only leagues
+ *   tsx scripts/sync-sitemap-cache.ts -e players -m 50   # Sync players, max 50 pages
+ *   tsx scripts/sync-sitemap-cache.ts --stats            # Show cache statistics
  *
  * Options:
- *   -e, --entity    Entity type to sync (leagues|teams|players|matches)
+ *   -e, --entity    Entity type to sync (leagues|teams|players|matches|coaches)
  *   -m, --max-pages Maximum pages to fetch per entity (default: 20)
  *   --stats         Show cache statistics and exit
  *   --help          Show this help message
@@ -30,10 +31,11 @@ import {
   upsertMatchesBatch,
   upsertPlayersBatch,
   upsertTeamsBatch,
+  upsertCoachesBatch,
 } from "../src/lib/sitemap-cache/upsert";
 
-// Entity types
-type EntityType = "leagues" | "teams" | "players" | "matches";
+// Entity types - Faz 4: Added coaches
+type EntityType = "leagues" | "teams" | "players" | "matches" | "coaches";
 
 // Rate limit state per entity
 interface RateLimitState {
@@ -63,6 +65,13 @@ const state: Record<EntityType, RateLimitState> = {
     panicUntil: null,
   },
   matches: {
+    requestsThisHour: 0,
+    hourStartedAt: new Date(),
+    isPanic: false,
+    panicUntil: null,
+  },
+  // Faz 4: Added coaches
+  coaches: {
     requestsThisHour: 0,
     hourStartedAt: new Date(),
     isPanic: false,
@@ -358,6 +367,75 @@ async function syncMatches(maxPages: number): Promise<void> {
 }
 
 /**
+ * Faz 4: Sync coaches from Sportmonks API.
+ * Note: Sportmonks doesn't have a /coaches list endpoint.
+ * We fetch coaches through the /teams endpoint with coaches.coach include.
+ */
+async function syncCoaches(maxPages: number): Promise<void> {
+  console.log("\n📦 Syncing coaches (via teams endpoint)...");
+
+  for (let page = 1; page <= maxPages; page++) {
+    // Fetch teams with their active coach
+    const result = await fetchFromApi("coaches", "/teams", {
+      page,
+      per_page: 50,
+      include: "coaches.coach",
+    });
+
+    if (!result) break;
+
+    const coaches: Array<{
+      id: number;
+      name: string;
+      country?: string;
+      teamId?: number;
+    }> = [];
+
+    // Extract coaches from teams
+    for (const team of result.data as Record<string, unknown>[]) {
+      const teamId = team.id as number;
+      const coachRelations = team.coaches as
+        | Array<Record<string, unknown>>
+        | undefined;
+
+      if (!coachRelations) continue;
+
+      // Find active coach (where active is true or end is null)
+      const activeRelation = coachRelations.find((rel) => {
+        return rel.active === true;
+      });
+
+      if (activeRelation?.coach) {
+        const coach = activeRelation.coach as Record<string, unknown>;
+        coaches.push({
+          id: coach.id as number,
+          name:
+            (coach.display_name as string) ||
+            (coach.common_name as string) ||
+            (coach.name as string),
+          country: (coach.nationality as Record<string, unknown>)?.name as
+            | string
+            | undefined,
+          teamId,
+        });
+      }
+    }
+
+    if (coaches.length > 0) {
+      upsertCoachesBatch(coaches);
+      console.log(`  Page ${page}: ${coaches.length} coaches cached`);
+    }
+
+    if (!result.hasMore) {
+      console.log("  ✅ All coaches synced");
+      break;
+    }
+
+    await sleep(200);
+  }
+}
+
+/**
  * Show cache statistics.
  */
 function showStats(): void {
@@ -369,6 +447,7 @@ function showStats(): void {
   console.log(`  Leagues:  ${stats.leagues.toLocaleString()}`);
   console.log(`  Teams:    ${stats.teams.toLocaleString()}`);
   console.log(`  Players:  ${stats.players.toLocaleString()}`);
+  console.log(`  Coaches:  ${stats.coaches.toLocaleString()}`);
   console.log(`  Matches:  ${stats.matches.toLocaleString()}`);
   console.log("─".repeat(40));
   console.log(`  Database: ${stats.totalSize}`);
@@ -393,7 +472,7 @@ Usage:
   bun scripts/sync-sitemap-cache.ts [options]
 
 Options:
-  -e, --entity <type>     Entity type to sync (leagues|teams|players|matches)
+  -e, --entity <type>     Entity type to sync (leagues|teams|players|matches|coaches)
                           If not specified, syncs all entities
   -m, --max-pages <n>     Maximum pages to fetch per entity (default: 20)
   --stats                 Show cache statistics and exit
@@ -402,6 +481,7 @@ Options:
 Examples:
   bun scripts/sync-sitemap-cache.ts                    # Sync all entities
   bun scripts/sync-sitemap-cache.ts -e leagues         # Sync only leagues
+  bun scripts/sync-sitemap-cache.ts -e coaches -m 100  # Sync coaches, max 100 pages
   bun scripts/sync-sitemap-cache.ts -e players -m 50   # Sync players, max 50 pages
   bun scripts/sync-sitemap-cache.ts --stats            # Show cache stats
 `);
@@ -449,10 +529,10 @@ async function main(): Promise<void> {
   console.log(`   Max pages: ${maxPages}`);
   console.log(`   Entities: ${entityArg || "all"}`);
 
-  // Determine which entities to sync
+  // Determine which entities to sync - Faz 4: Added coaches
   const entities: EntityType[] = entityArg
     ? [entityArg]
-    : ["leagues", "teams", "players", "matches"];
+    : ["leagues", "teams", "players", "matches", "coaches"];
 
   // Run sync for each entity
   for (const entity of entities) {
@@ -468,6 +548,9 @@ async function main(): Promise<void> {
         break;
       case "matches":
         await syncMatches(maxPages);
+        break;
+      case "coaches":
+        await syncCoaches(maxPages);
         break;
     }
   }

@@ -20,6 +20,89 @@ const RETRY_CONFIG = {
   retryableStatuses: [429, 500, 502, 503, 504],
 } as const;
 
+// ============================================================================
+// Faz 0: Metrics Counter - Lightweight API observability
+// ============================================================================
+
+const metrics = {
+  totalRequests: 0,
+  successfulRequests: 0,
+  retries: 0,
+  errors: 0,
+  _latencySum: 0,
+  // Per-endpoint breakdown (top 20 tracked)
+  byEndpoint: new Map<string, { count: number; totalMs: number }>(),
+};
+
+const VERBOSE_LOGGING = process.env.API_DEBUG === "true";
+
+/**
+ * Get current API metrics snapshot
+ */
+export function getApiMetrics() {
+  const endpointStats = Array.from(metrics.byEndpoint.entries())
+    .map(([endpoint, stats]) => ({
+      endpoint,
+      count: stats.count,
+      avgMs: stats.count > 0 ? Math.round(stats.totalMs / stats.count) : 0,
+    }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 10);
+
+  return {
+    totalRequests: metrics.totalRequests,
+    successfulRequests: metrics.successfulRequests,
+    retries: metrics.retries,
+    errors: metrics.errors,
+    avgLatencyMs:
+      metrics.totalRequests > 0
+        ? Math.round(metrics._latencySum / metrics.totalRequests)
+        : 0,
+    topEndpoints: endpointStats,
+  };
+}
+
+/**
+ * Reset metrics (useful for testing)
+ */
+export function resetApiMetrics() {
+  metrics.totalRequests = 0;
+  metrics.successfulRequests = 0;
+  metrics.retries = 0;
+  metrics.errors = 0;
+  metrics._latencySum = 0;
+  metrics.byEndpoint.clear();
+}
+
+function trackRequest(endpoint: string, durationMs: number, success: boolean) {
+  metrics.totalRequests++;
+  metrics._latencySum += durationMs;
+
+  if (success) {
+    metrics.successfulRequests++;
+  } else {
+    metrics.errors++;
+  }
+
+  // Track per-endpoint stats (limit to 100 unique endpoints)
+  if (metrics.byEndpoint.size < 100 || metrics.byEndpoint.has(endpoint)) {
+    const existing = metrics.byEndpoint.get(endpoint) || {
+      count: 0,
+      totalMs: 0,
+    };
+    metrics.byEndpoint.set(endpoint, {
+      count: existing.count + 1,
+      totalMs: existing.totalMs + durationMs,
+    });
+  }
+
+  if (VERBOSE_LOGGING) {
+    console.log(
+      `[Sportmonks] ${endpoint} ${success ? "OK" : "FAIL"} (${durationMs}ms)`,
+    );
+  }
+}
+
 // Request configuration
 export interface SportmonksRequestConfig {
   endpoint: string;
@@ -159,15 +242,27 @@ export async function sportmonksRequest<TData>(
     const startTime = performance.now();
 
     try {
-      const response = await fetch(url, {
-        method: "GET",
-        headers: {
-          Authorization: env.API_SPORTMONKS_KEY,
-          Accept: "application/json",
-        },
-        next: { revalidate: cacheSeconds },
-      });
+      // Faz 1: Use cache: 'no-store' when cacheSeconds is 0 for true dynamic behavior
+      const fetchOptions: RequestInit & { next?: { revalidate: number } } =
+        cacheSeconds === 0
+          ? {
+              method: "GET",
+              headers: {
+                Authorization: env.API_SPORTMONKS_KEY,
+                Accept: "application/json",
+              },
+              cache: "no-store" as const,
+            }
+          : {
+              method: "GET",
+              headers: {
+                Authorization: env.API_SPORTMONKS_KEY,
+                Accept: "application/json",
+              },
+              next: { revalidate: cacheSeconds },
+            };
 
+      const response = await fetch(url, fetchOptions);
       const duration = Math.round(performance.now() - startTime);
 
       if (!response.ok) {
@@ -179,7 +274,18 @@ export async function sportmonksRequest<TData>(
           isRetryableStatus(response.status) &&
           attempt < RETRY_CONFIG.maxRetries
         ) {
-          const delay = calculateBackoffDelay(attempt);
+          // Faz 1: Respect Retry-After header for 429 responses
+          let delay: number;
+          if (response.status === 429) {
+            const retryAfter = response.headers.get("Retry-After");
+            delay = retryAfter
+              ? parseInt(retryAfter, 10) * 1000
+              : calculateBackoffDelay(attempt);
+          } else {
+            delay = calculateBackoffDelay(attempt);
+          }
+
+          metrics.retries++;
           console.warn(
             `[Sportmonks] ${config.endpoint} returned ${response.status}, retrying in ${Math.round(delay)}ms (attempt ${attempt + 1}/${RETRY_CONFIG.maxRetries})`,
           );
@@ -191,6 +297,9 @@ export async function sportmonksRequest<TData>(
           );
           continue;
         }
+
+        // Track failed request
+        trackRequest(config.endpoint, duration, false);
 
         console.error(
           `[Sportmonks] ${config.endpoint} failed (${duration}ms):`,
@@ -207,6 +316,9 @@ export async function sportmonksRequest<TData>(
         );
       }
 
+      // Track successful request
+      trackRequest(config.endpoint, duration, true);
+
       const data = (await response.json()) as SportmonksResponse<TData>;
       return data;
     } catch (error) {
@@ -221,6 +333,7 @@ export async function sportmonksRequest<TData>(
         const duration = Math.round(performance.now() - startTime);
         if (attempt < RETRY_CONFIG.maxRetries) {
           const delay = calculateBackoffDelay(attempt);
+          metrics.retries++;
           console.warn(
             `[Sportmonks] ${config.endpoint} network error, retrying in ${Math.round(delay)}ms (attempt ${attempt + 1}/${RETRY_CONFIG.maxRetries})`,
           );
@@ -231,6 +344,9 @@ export async function sportmonksRequest<TData>(
           );
           continue;
         }
+
+        // Track failed request
+        trackRequest(config.endpoint, duration, false);
 
         console.error(
           `[Sportmonks] ${config.endpoint} error (${duration}ms):`,
@@ -264,15 +380,27 @@ export async function sportmonksPaginatedRequest<TItem>(
     const startTime = performance.now();
 
     try {
-      const response = await fetch(url, {
-        method: "GET",
-        headers: {
-          Authorization: env.API_SPORTMONKS_KEY,
-          Accept: "application/json",
-        },
-        next: { revalidate: cacheSeconds },
-      });
+      // Faz 1: Use cache: 'no-store' when cacheSeconds is 0 for true dynamic behavior
+      const fetchOptions: RequestInit & { next?: { revalidate: number } } =
+        cacheSeconds === 0
+          ? {
+              method: "GET",
+              headers: {
+                Authorization: env.API_SPORTMONKS_KEY,
+                Accept: "application/json",
+              },
+              cache: "no-store" as const,
+            }
+          : {
+              method: "GET",
+              headers: {
+                Authorization: env.API_SPORTMONKS_KEY,
+                Accept: "application/json",
+              },
+              next: { revalidate: cacheSeconds },
+            };
 
+      const response = await fetch(url, fetchOptions);
       const duration = Math.round(performance.now() - startTime);
 
       if (!response.ok) {
@@ -284,7 +412,18 @@ export async function sportmonksPaginatedRequest<TItem>(
           isRetryableStatus(response.status) &&
           attempt < RETRY_CONFIG.maxRetries
         ) {
-          const delay = calculateBackoffDelay(attempt);
+          // Faz 1: Respect Retry-After header for 429 responses
+          let delay: number;
+          if (response.status === 429) {
+            const retryAfter = response.headers.get("Retry-After");
+            delay = retryAfter
+              ? parseInt(retryAfter, 10) * 1000
+              : calculateBackoffDelay(attempt);
+          } else {
+            delay = calculateBackoffDelay(attempt);
+          }
+
+          metrics.retries++;
           console.warn(
             `[Sportmonks] ${config.endpoint} returned ${response.status}, retrying in ${Math.round(delay)}ms (attempt ${attempt + 1}/${RETRY_CONFIG.maxRetries})`,
           );
@@ -296,6 +435,9 @@ export async function sportmonksPaginatedRequest<TItem>(
           );
           continue;
         }
+
+        // Track failed request
+        trackRequest(config.endpoint, duration, false);
 
         console.error(
           `[Sportmonks] ${config.endpoint} failed (${duration}ms):`,
@@ -312,6 +454,9 @@ export async function sportmonksPaginatedRequest<TItem>(
         );
       }
 
+      // Track successful request
+      trackRequest(config.endpoint, duration, true);
+
       const data =
         (await response.json()) as SportmonksPaginatedResponse<TItem>;
       return data;
@@ -325,6 +470,7 @@ export async function sportmonksPaginatedRequest<TItem>(
         const duration = Math.round(performance.now() - startTime);
         if (attempt < RETRY_CONFIG.maxRetries) {
           const delay = calculateBackoffDelay(attempt);
+          metrics.retries++;
           console.warn(
             `[Sportmonks] ${config.endpoint} network error, retrying in ${Math.round(delay)}ms (attempt ${attempt + 1}/${RETRY_CONFIG.maxRetries})`,
           );
@@ -335,6 +481,9 @@ export async function sportmonksPaginatedRequest<TItem>(
           );
           continue;
         }
+
+        // Track failed request
+        trackRequest(config.endpoint, duration, false);
 
         console.error(
           `[Sportmonks] ${config.endpoint} error (${duration}ms):`,

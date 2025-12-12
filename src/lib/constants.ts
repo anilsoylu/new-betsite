@@ -261,3 +261,6 @@ export const POPULAR_LEAGUES = [
     logo: "/leagues/europa-league.png",
   },
 ] as const;
+
+// Faz 4: League IDs for SQLite-first coaches page (derived from POPULAR_LEAGUES)
+export const POPULAR_LEAGUE_IDS = POPULAR_LEAGUES.map((l) => l.id) as number[];

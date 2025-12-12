@@ -63,6 +63,12 @@ export {
   getTeamPageCount,
   getTeamsForSitemap,
   getTotalMatchCount,
+  // Faz 4: Coaches page queries
+  getCoachesWithTeams,
+  getCoachesByLeague,
+  getCoachesForPopularLeagues,
+  type CoachWithTeam,
+  type LeagueWithCoaches,
 } from "./queries";
 
 // Domain-aware cache hooks

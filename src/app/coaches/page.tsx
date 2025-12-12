@@ -10,13 +10,14 @@ import {
 } from "@/components/sidebar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { getTeamById } from "@/lib/api/football-api";
-import { SEO, SITE } from "@/lib/constants";
-import {
-  getTeamsForPopularLeagues,
-  getTopLeaguesStandings,
-} from "@/lib/queries";
+import { SEO, SITE, POPULAR_LEAGUE_IDS } from "@/lib/constants";
+import { getTopLeaguesStandings } from "@/lib/queries";
 import { generateBreadcrumbSchema } from "@/lib/seo/json-ld";
+import {
+  initializeSchema,
+  getCoachesForPopularLeagues,
+  type LeagueWithCoaches,
+} from "@/lib/sitemap-cache";
 import { getCoachUrl, getTeamUrl } from "@/lib/utils";
 
 export const metadata: Metadata = {
@@ -39,102 +40,57 @@ export const metadata: Metadata = {
   },
 };
 
-// Fetch a few teams from each league to get coach data
-// Using a subset to avoid too many API calls
-async function getCoachesFromTeams() {
-  const leagueTeams = await getTeamsForPopularLeagues();
-
-  // Get top 3 teams from each league (to limit API calls)
-  const teamIds: Array<{
+/**
+ * Faz 4: SQLite-first approach for coaches page.
+ * Fetches coaches from SQLite cache instead of making 19+ API calls.
+ * This reduces TTFB dramatically and eliminates API rate limit concerns.
+ */
+function getCoachesFromSQLite(): Array<{
+  leagueId: number;
+  leagueName: string;
+  leagueLogo: string;
+  coaches: Array<{
+    id: number;
+    name: string;
+    displayName: string;
+    image: string | null;
     teamId: number;
-    leagueId: number;
-    leagueName: string;
-    leagueLogo: string;
-  }> = [];
+    teamName: string;
+    teamLogo: string;
+  }>;
+}> {
+  // Ensure schema is initialized (uses once-guard, safe to call multiple times)
+  initializeSchema();
 
-  for (const league of leagueTeams.slice(0, 4)) {
-    // Top 4 leagues only
-    for (const team of league.teams.slice(0, 4)) {
-      // Top 4 teams per league
-      teamIds.push({
-        teamId: team.id,
-        leagueId: league.leagueId,
-        leagueName: league.leagueName,
-        leagueLogo: league.leagueLogo,
-      });
-    }
-  }
-
-  // Fetch team details in parallel (with coach info)
-  const teamDetails = await Promise.all(
-    teamIds.map(({ teamId, leagueId, leagueName, leagueLogo }) =>
-      getTeamById(teamId)
-        .then((team) => ({
-          team,
-          leagueId,
-          leagueName,
-          leagueLogo,
-        }))
-        .catch(() => null),
-    ),
+  // Get coaches from SQLite cache - 0 API calls!
+  const leaguesWithCoaches = getCoachesForPopularLeagues(
+    POPULAR_LEAGUE_IDS,
+    16, // Max 16 coaches per league
   );
 
-  // Group by league
-  const coachesByLeague = new Map<
-    number,
-    {
-      leagueId: number;
-      leagueName: string;
-      leagueLogo: string;
-      coaches: Array<{
-        id: number;
-        name: string;
-        displayName: string;
-        image: string | null;
-        teamId: number;
-        teamName: string;
-        teamLogo: string;
-      }>;
-    }
-  >();
-
-  for (const result of teamDetails) {
-    if (!result) continue; // Ensure result is not null from the catch block
-
-    const { team, leagueId, leagueName, leagueLogo } = result;
-    if (!team.coach) continue; // Narrow the type of team.coach here
-
-    const coach = team.coach; // coach is now correctly inferred as CoachDetail
-
-    let leagueData = coachesByLeague.get(leagueId);
-    if (!leagueData) {
-      leagueData = {
-        leagueId,
-        leagueName,
-        leagueLogo,
-        coaches: [],
-      };
-      coachesByLeague.set(leagueId, leagueData);
-    }
-
-    leagueData.coaches.push({
+  // Transform to match the expected UI structure
+  return leaguesWithCoaches.map((league: LeagueWithCoaches) => ({
+    leagueId: league.leagueId,
+    leagueName: league.leagueName,
+    leagueLogo: league.leagueLogo ?? "",
+    coaches: league.coaches.map((coach) => ({
       id: coach.id,
       name: coach.name,
-      displayName: coach.displayName,
-      image: coach.image,
-      teamId: team.id,
-      teamName: team.name,
-      teamLogo: team.logo,
-    });
-  }
-
-  return Array.from(coachesByLeague.values());
+      displayName: coach.name, // SQLite stores name, use as displayName
+      image: null, // SQLite doesn't store coach images (can be enhanced later)
+      teamId: coach.teamId ?? 0,
+      teamName: coach.teamName ?? "",
+      teamLogo: coach.teamLogo ?? "",
+    })),
+  }));
 }
 
 export default async function CoachesPage() {
-  // Fetch coaches and standings in parallel
+  // Faz 4: SQLite-first for coaches, API only for standings
+  // Coaches: 0 API calls (from SQLite cache)
+  // Standings: still uses API (can be cached separately if needed)
   const [leagueCoaches, leagueStandings] = await Promise.all([
-    getCoachesFromTeams().catch(() => []),
+    Promise.resolve(getCoachesFromSQLite()), // Sync SQLite call wrapped in Promise
     getTopLeaguesStandings().catch(() => []),
   ]);
 

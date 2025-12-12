@@ -8,11 +8,14 @@
     "start": "next start",
     "lint": "biome check",
     "format": "biome format --write",
-    "sync:sitemap": "tsx scripts/sync-sitemap-cache.ts",
-    "sync:leagues": "tsx scripts/sync-sitemap-cache.ts -e leagues",
-    "sync:teams": "tsx scripts/sync-sitemap-cache.ts -e teams",
-    "sync:players": "tsx scripts/sync-sitemap-cache.ts -e players",
-    "sync:matches": "tsx scripts/sync-sitemap-cache.ts -e matches"
+    "sync:sitemap": "node --env-file=.env --import tsx scripts/sync-sitemap-cache.ts",
+    "sync:leagues": "node --env-file=.env --import tsx scripts/sync-sitemap-cache.ts -e leagues",
+    "sync:teams": "node --env-file=.env --import tsx scripts/sync-sitemap-cache.ts -e teams",
+    "sync:players": "node --env-file=.env --import tsx scripts/sync-sitemap-cache.ts -e players",
+    "sync:matches": "node --env-file=.env --import tsx scripts/sync-sitemap-cache.ts -e matches",
+    "sync:all": "node --env-file=.env --import tsx scripts/sync-sitemap-cache.ts",
+    "sync:coaches": "node --env-file=.env --import tsx scripts/sync-sitemap-cache.ts -e coaches",
+    "sync:stats": "node --env-file=.env --import tsx scripts/sync-sitemap-cache.ts --stats"      
   },
   "dependencies": {
     "@contentful/rich-text-react-renderer": "^16.1.6",
