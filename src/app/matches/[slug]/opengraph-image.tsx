@@ -3,6 +3,7 @@ import { getFixtureById } from "@/lib/api/football-api";
 import { format } from "date-fns";
 import { enUS } from "date-fns/locale";
 import { SITE } from "@/lib/constants";
+import { extractFixtureId } from "@/lib/utils";
 import type { FixtureDetail } from "@/types/football";
 
 export const alt = "Match Preview";
@@ -11,13 +12,6 @@ export const size = {
   height: 630,
 };
 export const contentType = "image/png";
-
-// Helper to extract fixture ID from slug (format: "123-team-vs-team")
-function extractFixtureId(slug: string): number | null {
-  const parts = slug.split("-");
-  const id = parseInt(parts[0], 10);
-  return isNaN(id) ? null : id;
-}
 
 // Helper to get the base URL for API calls
 function getBaseUrl(): string {
