@@ -108,6 +108,22 @@ function initializeSchema(database: Database.Database): void {
     )
     .run();
 
+  // Fixture-IP vote limit table (prevents incognito bypass)
+  // Each IP can vote max N times per fixture regardless of cookie/fingerprint
+  database
+    .prepare(
+      `
+    CREATE TABLE IF NOT EXISTS fixture_ip_votes (
+      fixture_id INTEGER NOT NULL,
+      ip TEXT NOT NULL,
+      vote_count INTEGER NOT NULL DEFAULT 1,
+      updated_at INTEGER NOT NULL,
+      PRIMARY KEY (fixture_id, ip)
+    )
+  `,
+    )
+    .run();
+
   // Migration: Add fingerprint column if missing (for existing databases)
   migrateRateLimitsTable(database);
 }

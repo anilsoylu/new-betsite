@@ -22,10 +22,13 @@ const RATE_LIMITS = {
   // Normal limits (when IP is known)
   fiveMinute: { max: 30, windowMs: 5 * 60 * 1000 },
   daily: { max: 200, windowMs: 24 * 60 * 60 * 1000 },
-  // Strict limits for unknown IP (prevents incognito abuse)
+  // Strict limits for unknown IP or empty fingerprint (prevents incognito abuse)
   unknownFiveMinute: { max: 3, windowMs: 5 * 60 * 1000 },
   unknownDaily: { max: 10, windowMs: 24 * 60 * 60 * 1000 },
 } as const;
+
+// Maximum votes per IP per fixture (prevents incognito cookie bypass)
+const MAX_VOTES_PER_IP_PER_FIXTURE = 5;
 
 // 10-second cooldown between vote changes
 const CHANGE_COOLDOWN_MS = 10 * 1000;
@@ -247,12 +250,20 @@ export function checkRateLimit(ip: string, fingerprint = ""): RateLimitResult {
 
   // LAYER 1: Check IP-only limit (sum of all fingerprints for this IP)
   // This catches incognito abuse where each session has different/empty fingerprint
+  // Uses strict limits when IP unknown or fingerprint empty (incognito mode)
+  const ipOnlyFiveMinLimit = useStrictLimits
+    ? RATE_LIMITS.unknownFiveMinute.max
+    : RATE_LIMITS.fiveMinute.max;
+  const ipOnlyDailyLimit = useStrictLimits
+    ? RATE_LIMITS.unknownDaily.max
+    : RATE_LIMITS.daily.max;
+
   const ipOnlyStmt = db.prepare<[string, string], { total: number }>(
     `SELECT COALESCE(SUM(count), 0) as total FROM vote_rate_limits WHERE ip = ? AND bucket = ?`,
   );
 
   const ipFiveMinTotal = ipOnlyStmt.get(ip, buckets.fiveMin);
-  if (ipFiveMinTotal && ipFiveMinTotal.total >= RATE_LIMITS.fiveMinute.max) {
+  if (ipFiveMinTotal && ipFiveMinTotal.total >= ipOnlyFiveMinLimit) {
     const date = new Date(now);
     const currentMinute = date.getMinutes();
     const nextWindow = Math.ceil((currentMinute + 1) / 5) * 5;
@@ -261,7 +272,7 @@ export function checkRateLimit(ip: string, fingerprint = ""): RateLimitResult {
   }
 
   const ipDayTotal = ipOnlyStmt.get(ip, buckets.day);
-  if (ipDayTotal && ipDayTotal.total >= RATE_LIMITS.daily.max) {
+  if (ipDayTotal && ipDayTotal.total >= ipOnlyDailyLimit) {
     const date = new Date(now);
     const midnight = new Date(date);
     midnight.setHours(24, 0, 0, 0);
@@ -327,4 +338,49 @@ export function cleanupOldRateLimits(): number {
     .run(twoDaysAgo);
 
   return result.changes;
+}
+
+/**
+ * Check and increment fixture-IP vote limit
+ * This is the KEY defense against incognito spam bypass
+ * Each IP can vote max N times per fixture regardless of cookie/fingerprint
+ *
+ * @throws AppError with code "FIXTURE_IP_LIMIT" if limit exceeded
+ */
+export function checkAndIncrementFixtureIpLimit(
+  fixtureId: number,
+  ip: string,
+): void {
+  const db = getVoteDatabase();
+  const now = Date.now();
+
+  // Skip enforcement for unknown IP (shouldn't happen with proper Cloudflare setup)
+  if (ip === "unknown") {
+    return;
+  }
+
+  // Check current vote count for this IP on this fixture
+  const row = db
+    .prepare<
+      [number, string],
+      { vote_count: number }
+    >(`SELECT vote_count FROM fixture_ip_votes WHERE fixture_id = ? AND ip = ?`)
+    .get(fixtureId, ip);
+
+  if (row && row.vote_count >= MAX_VOTES_PER_IP_PER_FIXTURE) {
+    throw new AppError(
+      `Too many votes from this IP for this match (max ${MAX_VOTES_PER_IP_PER_FIXTURE})`,
+      "FIXTURE_IP_LIMIT",
+      429,
+    );
+  }
+
+  // Upsert: increment vote_count or insert with 1
+  db.prepare(
+    `INSERT INTO fixture_ip_votes (fixture_id, ip, vote_count, updated_at)
+     VALUES (?, ?, 1, ?)
+     ON CONFLICT(fixture_id, ip) DO UPDATE SET
+       vote_count = vote_count + 1,
+       updated_at = ?`,
+  ).run(fixtureId, ip, now, now);
 }

@@ -14,6 +14,7 @@ import {
   submitVote,
   checkRateLimit,
   incrementRateLimit,
+  checkAndIncrementFixtureIpLimit,
 } from "@/lib/vote-db/queries";
 import {
   getOrCreateVoterCookie,
@@ -23,13 +24,19 @@ import type { VoteTotalsResponse, SubmitVoteResponse } from "@/lib/vote-db/types
 
 /**
  * Get client IP from request headers
- * Priority: CF-Connecting-IP (Cloudflare) > X-Real-IP (Nginx) > X-Forwarded-For > "unknown"
+ * Priority (Cloudflare + Nginx):
+ * 1. CF-Connecting-IP (Cloudflare's real client IP)
+ * 2. X-Forwarded-For first IP (proxy chain, first = client)
+ * 3. True-Client-IP (some CDNs)
+ * 4. X-Real-IP (Nginx - but may be edge IP behind Cloudflare)
+ * 5. "unknown" fallback
  */
 function getClientIp(request: NextRequest): string {
   return (
-    request.headers.get("cf-connecting-ip") ||  // Cloudflare sends real IP here
-    request.headers.get("x-real-ip") ||
+    request.headers.get("cf-connecting-ip") ||
     request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+    request.headers.get("true-client-ip") ||
+    request.headers.get("x-real-ip") ||
     "unknown"
   );
 }
@@ -40,6 +47,34 @@ function getClientIp(request: NextRequest): string {
  */
 function getFingerprint(request: NextRequest): string {
   return request.headers.get("x-vote-fp") || "";
+}
+
+/**
+ * Mask IP for logging (privacy-safe)
+ * Example: "212.253.197.189" -> "212.253.xxx.xxx"
+ */
+function maskIp(ip: string): string {
+  if (ip === "unknown") return "unknown";
+  const parts = ip.split(".");
+  if (parts.length === 4) {
+    return `${parts[0]}.${parts[1]}.xxx.xxx`;
+  }
+  // IPv6 or other - just show first part
+  return ip.split(":")[0] + ":xxx";
+}
+
+/**
+ * Get debug headers for logging (masked for privacy)
+ */
+function getDebugHeaders(request: NextRequest): Record<string, string> {
+  return {
+    cfConnectingIp: maskIp(request.headers.get("cf-connecting-ip") || ""),
+    xForwardedFor: maskIp(
+      request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "",
+    ),
+    xRealIp: maskIp(request.headers.get("x-real-ip") || ""),
+    userAgent: (request.headers.get("user-agent") || "").slice(0, 50),
+  };
 }
 
 interface RouteParams {
@@ -85,27 +120,18 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
   const { id } = await params;
 
   try {
-    // Validate fixture ID
+    // 1. Validate fixture ID
     const fixtureId = idSchema.parse(id);
 
-    // Validate request body
+    // 2. Validate request body
     const body = await request.json();
     const { choice } = submitVoteSchema.parse(body);
 
-    // Get client IP and fingerprint for rate limiting
+    // 3. Get client IP and fingerprint for rate limiting
     const ip = getClientIp(request);
     const fingerprint = getFingerprint(request);
 
-    // Check rate limit (IP + fingerprint combination)
-    const rateLimitResult = checkRateLimit(ip, fingerprint);
-    if (!rateLimitResult.allowed) {
-      throw new RateLimitError(rateLimitResult.retryAfter);
-    }
-
-    // Get or create voter identity
-    const { voterId, isNew } = getOrCreateVoterCookie(request);
-
-    // Check if voting is still open (kickoff not passed)
+    // 4. Check if voting is still open (early fail before rate limit checks)
     const fixture = await getFixtureById(fixtureId);
     if (!fixture) {
       throw new AppError("Fixture not found", "NOT_FOUND", 404);
@@ -120,10 +146,23 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       throw new AppError("Voting is closed for this match", "VOTING_CLOSED", 403);
     }
 
-    // Submit vote (transactional)
+    // 5. Check rate limit (IP + fingerprint combination)
+    const rateLimitResult = checkRateLimit(ip, fingerprint);
+    if (!rateLimitResult.allowed) {
+      throw new RateLimitError(rateLimitResult.retryAfter);
+    }
+
+    // 6. Check fixture-IP limit (KEY defense against incognito bypass)
+    // This ensures max N votes per IP per fixture regardless of cookie
+    checkAndIncrementFixtureIpLimit(fixtureId, ip);
+
+    // 7. Get or create voter identity
+    const { voterId, isNew } = getOrCreateVoterCookie(request);
+
+    // 8. Submit vote (transactional)
     const result = submitVote(fixtureId, voterId, choice);
 
-    // Increment rate limit counter (IP + fingerprint)
+    // 9. Increment rate limit counter (IP + fingerprint)
     incrementRateLimit(ip, fingerprint);
 
     const responseData: SubmitVoteResponse = {
@@ -145,9 +184,11 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
 
     return response;
   } catch (error) {
+    // Log with masked debug headers for rate limit / IP limit debugging
     logError("api/fixtures/[id]/votes:POST", error, {
       url: request.url,
       fixtureId: id,
+      ...getDebugHeaders(request),
     });
     const { body, status } = createErrorResponse(error);
     return NextResponse.json(body, { status });
