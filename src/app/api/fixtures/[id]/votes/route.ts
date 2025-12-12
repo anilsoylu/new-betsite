@@ -23,10 +23,11 @@ import type { VoteTotalsResponse, SubmitVoteResponse } from "@/lib/vote-db/types
 
 /**
  * Get client IP from request headers
- * Priority: X-Real-IP (Nginx) > X-Forwarded-For (proxy chain) > "unknown"
+ * Priority: CF-Connecting-IP (Cloudflare) > X-Real-IP (Nginx) > X-Forwarded-For > "unknown"
  */
 function getClientIp(request: NextRequest): string {
   return (
+    request.headers.get("cf-connecting-ip") ||  // Cloudflare sends real IP here
     request.headers.get("x-real-ip") ||
     request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
     "unknown"
