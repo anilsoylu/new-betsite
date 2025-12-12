@@ -172,7 +172,7 @@ export function GlobalSearch() {
         <Input
           ref={inputRef}
           type="text"
-          placeholder="Search..."
+          placeholder="Any team or player name..."
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => {
