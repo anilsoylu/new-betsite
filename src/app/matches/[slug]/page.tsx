@@ -59,11 +59,16 @@ export async function generateMetadata({
       openGraph: {
         title,
         description,
+        type: "article",
+        siteName: SITE.name,
+        locale: "en_US",
+        url: `${SITE.url}/matches/${slug}`,
       },
       twitter: {
         card: "summary_large_image",
         title,
         description,
+        site: SITE.twitter,
       },
     };
   } catch {

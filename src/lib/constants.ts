@@ -22,7 +22,7 @@ export const SEO = {
   },
   matchDetail: {
     titleTemplate: (home: string, away: string) =>
-      `${home} vs ${away} | Live Score & Stats`,
+      `${home} vs ${away} - Live Score, Lineups & Stats`,
     descriptionTemplate: (
       home: string,
       away: string,
