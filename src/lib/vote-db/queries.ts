@@ -223,32 +223,36 @@ function getBucketKeys(now: number): { fiveMin: string; day: string } {
 }
 
 /**
- * Check rate limits for an IP + fingerprint combination
- * Uses stricter limits for unknown IPs to prevent incognito abuse
+ * Check rate limits for an IP
+ * Uses TWO layers:
+ * 1. IP-only limit (catches incognito abuse regardless of fingerprint)
+ * 2. IP+fingerprint limit (more granular for legitimate users)
  */
 export function checkRateLimit(ip: string, fingerprint = ""): RateLimitResult {
   const db = getVoteDatabase();
   const now = Date.now();
   const buckets = getBucketKeys(now);
 
-  // Use stricter limits for unknown IP
+  // Use stricter limits for unknown IP or empty fingerprint
   const isUnknownIp = ip === "unknown";
-  const fiveMinLimit = isUnknownIp
+  const isEmptyFingerprint = !fingerprint;
+  const useStrictLimits = isUnknownIp || isEmptyFingerprint;
+
+  const fiveMinLimit = useStrictLimits
     ? RATE_LIMITS.unknownFiveMinute.max
     : RATE_LIMITS.fiveMinute.max;
-  const dailyLimit = isUnknownIp
+  const dailyLimit = useStrictLimits
     ? RATE_LIMITS.unknownDaily.max
     : RATE_LIMITS.daily.max;
 
-  // Query by IP + fingerprint combination
-  const stmt = db.prepare<[string, string, string], RateLimitRow>(
-    `SELECT * FROM vote_rate_limits WHERE ip = ? AND fingerprint = ? AND bucket = ?`,
+  // LAYER 1: Check IP-only limit (sum of all fingerprints for this IP)
+  // This catches incognito abuse where each session has different/empty fingerprint
+  const ipOnlyStmt = db.prepare<[string, string], { total: number }>(
+    `SELECT COALESCE(SUM(count), 0) as total FROM vote_rate_limits WHERE ip = ? AND bucket = ?`,
   );
 
-  // Check 5-minute limit
-  const fiveMinRow = stmt.get(ip, fingerprint, buckets.fiveMin);
-  if (fiveMinRow && fiveMinRow.count >= fiveMinLimit) {
-    // Calculate retry after (time until next 5-min window)
+  const ipFiveMinTotal = ipOnlyStmt.get(ip, buckets.fiveMin);
+  if (ipFiveMinTotal && ipFiveMinTotal.total >= RATE_LIMITS.fiveMinute.max) {
     const date = new Date(now);
     const currentMinute = date.getMinutes();
     const nextWindow = Math.ceil((currentMinute + 1) / 5) * 5;
@@ -256,10 +260,31 @@ export function checkRateLimit(ip: string, fingerprint = ""): RateLimitResult {
     return { allowed: false, retryAfter };
   }
 
-  // Check daily limit
+  const ipDayTotal = ipOnlyStmt.get(ip, buckets.day);
+  if (ipDayTotal && ipDayTotal.total >= RATE_LIMITS.daily.max) {
+    const date = new Date(now);
+    const midnight = new Date(date);
+    midnight.setHours(24, 0, 0, 0);
+    const retryAfter = Math.ceil((midnight.getTime() - now) / 1000);
+    return { allowed: false, retryAfter };
+  }
+
+  // LAYER 2: Check IP + fingerprint specific limit (stricter for empty fingerprint)
+  const stmt = db.prepare<[string, string, string], RateLimitRow>(
+    `SELECT * FROM vote_rate_limits WHERE ip = ? AND fingerprint = ? AND bucket = ?`,
+  );
+
+  const fiveMinRow = stmt.get(ip, fingerprint, buckets.fiveMin);
+  if (fiveMinRow && fiveMinRow.count >= fiveMinLimit) {
+    const date = new Date(now);
+    const currentMinute = date.getMinutes();
+    const nextWindow = Math.ceil((currentMinute + 1) / 5) * 5;
+    const retryAfter = (nextWindow - currentMinute) * 60 - date.getSeconds();
+    return { allowed: false, retryAfter };
+  }
+
   const dayRow = stmt.get(ip, fingerprint, buckets.day);
   if (dayRow && dayRow.count >= dailyLimit) {
-    // Calculate retry after (time until midnight)
     const date = new Date(now);
     const midnight = new Date(date);
     midnight.setHours(24, 0, 0, 0);
