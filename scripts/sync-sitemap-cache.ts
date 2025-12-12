@@ -268,29 +268,56 @@ async function syncTeams(maxPages: number): Promise<void> {
 
 /**
  * Sync players from Sportmonks API.
+ * Note: Sportmonks doesn't have a /players list endpoint.
+ * We fetch players through the /teams endpoint with players.player include.
  */
 async function syncPlayers(maxPages: number): Promise<void> {
-  console.log("\n📦 Syncing players...");
+  console.log("\n📦 Syncing players (via teams endpoint)...");
 
   for (let page = 1; page <= maxPages; page++) {
-    const result = await fetchFromApi("players", "/players", {
+    // Fetch teams with their squad players (use semicolon for multiple includes)
+    const result = await fetchFromApi("players", "/teams", {
       page,
       per_page: 50,
-      include: "country,position",
+      include: "players.player.position;players.player.nationality",
     });
 
     if (!result) break;
 
-    const players = (result.data as Record<string, unknown>[]).map((raw) => ({
-      id: raw.id as number,
-      name: (raw.display_name as string) || (raw.name as string),
-      country: (raw.country as Record<string, unknown>)?.name as
-        | string
-        | undefined,
-      position: (raw.position as Record<string, unknown>)?.name as
-        | string
-        | undefined,
-    }));
+    const players: Array<{
+      id: number;
+      name: string;
+      country?: string;
+      position?: string;
+    }> = [];
+
+    // Extract players from teams
+    for (const team of result.data as Record<string, unknown>[]) {
+      const playerRelations = team.players as
+        | Array<Record<string, unknown>>
+        | undefined;
+
+      if (!playerRelations) continue;
+
+      for (const rel of playerRelations) {
+        const player = rel.player as Record<string, unknown> | undefined;
+        if (!player) continue;
+
+        players.push({
+          id: player.id as number,
+          name:
+            (player.display_name as string) ||
+            (player.common_name as string) ||
+            (player.name as string),
+          country: (player.nationality as Record<string, unknown>)?.name as
+            | string
+            | undefined,
+          position: (player.position as Record<string, unknown>)?.name as
+            | string
+            | undefined,
+        });
+      }
+    }
 
     if (players.length > 0) {
       upsertPlayersBatch(players);
