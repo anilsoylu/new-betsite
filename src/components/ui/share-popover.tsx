@@ -157,13 +157,13 @@ export function SharePopover({
     try {
       await navigator.clipboard.writeText(shareUrl)
       setCopied(true)
-      toast.success("Link kopyalandı!")
+      toast.success("Link copied!")
       setTimeout(() => {
         setCopied(false)
         setOpen(false)
       }, 1500)
     } catch {
-      toast.error("Link kopyalanamadı")
+      toast.error("Failed to copy link")
     }
   }
 
@@ -187,7 +187,7 @@ export function SharePopover({
               : "bg-muted hover:bg-muted/80",
             className
           )}
-          aria-label="Paylaş"
+          aria-label="Share"
         >
           <Share2 className="h-4 w-4" />
         </button>
@@ -195,7 +195,7 @@ export function SharePopover({
       <PopoverContent className="w-auto p-3" align="end" sideOffset={8}>
         <div className="space-y-3">
           <p className="text-sm font-medium text-center text-muted-foreground">
-            Paylaş
+            Share
           </p>
 
           {/* Social Media Grid */}
@@ -232,12 +232,12 @@ export function SharePopover({
             {copied ? (
               <>
                 <Check className="h-4 w-4" />
-                <span className="text-sm font-medium">Kopyalandı!</span>
+                <span className="text-sm font-medium">Copied!</span>
               </>
             ) : (
               <>
                 <Link2 className="h-4 w-4" />
-                <span className="text-sm font-medium">Linki Kopyala</span>
+                <span className="text-sm font-medium">Copy Link</span>
               </>
             )}
           </button>

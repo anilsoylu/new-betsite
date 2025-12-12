@@ -8,6 +8,7 @@ import {
   MatchHeader,
   MatchTabs,
   OddsCard,
+  MatchVoteCard,
   MatchArticle,
   MatchBetInsights,
   MatchQuickStats,
@@ -152,6 +153,15 @@ export default async function MatchDetailPage({
                 awayTeam={fixture.awayTeam}
               />
             )}
+
+            {/* Vote Card */}
+            <MatchVoteCard
+              fixtureId={fixture.id}
+              homeTeam={fixture.homeTeam}
+              awayTeam={fixture.awayTeam}
+              kickoffTime={fixture.startTime}
+              status={fixture.status}
+            />
 
             {/* Match Info */}
             <MatchInfoWidget fixture={fixture} />

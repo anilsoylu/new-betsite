@@ -26,6 +26,9 @@ const envSchema = z.object({
   SMTP_PASSWORD: z.string().optional(),
   SMTP_USER: z.string().optional(),
   SMTP_TO: z.string().email().optional(),
+
+  // Vote Cookie Secret (for HMAC signing anonymous voter IDs)
+  VOTE_COOKIE_SECRET: z.string().min(32).optional(),
 });
 
 export type Env = z.infer<typeof envSchema>;

@@ -138,6 +138,25 @@ export const fixtureIdParamsSchema = z.object({
 });
 
 // ============================================================================
+// Vote Schemas
+// ============================================================================
+
+/**
+ * Vote choice: home, draw, or away
+ */
+export const voteChoiceSchema = z.enum(["home", "draw", "away"]);
+
+/**
+ * Submit vote request body
+ */
+export const submitVoteSchema = z.object({
+  choice: voteChoiceSchema,
+});
+
+export type VoteChoice = z.infer<typeof voteChoiceSchema>;
+export type SubmitVoteBody = z.infer<typeof submitVoteSchema>;
+
+// ============================================================================
 // Helper Functions
 // ============================================================================
 

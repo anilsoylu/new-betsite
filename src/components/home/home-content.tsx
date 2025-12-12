@@ -113,7 +113,7 @@ export function HomeContent({
 
     return allFixtures.reduce((acc, fixture) => {
       const leagueId = fixture.league?.id ?? 0;
-      const leagueName = fixture.league?.name ?? "Diğer";
+      const leagueName = fixture.league?.name ?? "Other";
 
       if (!acc[leagueId]) {
         acc[leagueId] = {
