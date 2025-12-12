@@ -7,7 +7,7 @@ import { Search, Loader2, User, Users, Star, X, Briefcase } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { cn, generatePlayerSlug, generateTeamSlug, generateCoachSlug } from "@/lib/utils";
+import { cn, getPlayerUrl, getTeamUrl, getCoachUrl } from "@/lib/utils";
 import { useFavoritesStore } from "@/stores/favorites-store";
 import type { PlayerSearchResult, TeamSearchResult, CoachSearchResult } from "@/types/football";
 
@@ -132,25 +132,19 @@ export function GlobalSearch() {
   }, []);
 
   const handlePlayerClick = (player: PlayerSearchResult) => {
-    const slug = generatePlayerSlug(
-      player.displayName || player.name,
-      player.id,
-    );
-    router.push(`/players/${slug}`);
+    router.push(getPlayerUrl(player.displayName || player.name, player.id));
     setIsOpen(false);
     setQuery("");
   };
 
   const handleTeamClick = (team: TeamSearchResult) => {
-    const slug = generateTeamSlug(team.name, team.id);
-    router.push(`/teams/${slug}`);
+    router.push(getTeamUrl(team.name, team.id));
     setIsOpen(false);
     setQuery("");
   };
 
   const handleCoachClick = (coach: CoachSearchResult) => {
-    const slug = generateCoachSlug(coach.displayName || coach.name, coach.id);
-    router.push(`/coaches/${slug}`);
+    router.push(getCoachUrl(coach.displayName || coach.name, coach.id));
     setIsOpen(false);
     setQuery("");
   };

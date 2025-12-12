@@ -1,4 +1,5 @@
 import { SITE } from "@/lib/constants";
+import { slugify } from "@/lib/utils";
 import type {
   FixtureDetail,
   TeamDetail,
@@ -7,15 +8,6 @@ import type {
   League,
   Standing,
 } from "@/types/football";
-
-// Helper to create URL-friendly slug
-function slugify(text: string): string {
-  return text
-    .toLowerCase()
-    .trim()
-    .replace(/\s+/g, "-")
-    .replace(/[^a-z0-9-]/g, "");
-}
 
 // WebSite + SearchAction schema for home page
 export function generateWebsiteSchema() {

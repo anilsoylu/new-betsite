@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { User } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-import { generateCoachSlug } from "@/lib/utils";
+import { getCoachUrl } from "@/lib/utils";
 import type { CoachSearchResult } from "@/types/football";
 
 interface CoachCardProps {
@@ -13,11 +13,11 @@ interface CoachCardProps {
 }
 
 export function CoachCard({ coach, variant = "default" }: CoachCardProps) {
-  const slug = generateCoachSlug(coach.displayName || coach.name, coach.id);
+  const coachUrl = getCoachUrl(coach.displayName || coach.name, coach.id);
 
   if (variant === "compact") {
     return (
-      <Link href={`/coaches/${slug}`} className="block">
+      <Link href={coachUrl} className="block">
         <Card className="hover:bg-muted/50 transition-colors group">
           <CardContent className="flex items-center gap-3 p-3">
             <div className="relative h-10 w-10 shrink-0">
@@ -51,7 +51,7 @@ export function CoachCard({ coach, variant = "default" }: CoachCardProps) {
   }
 
   return (
-    <Link href={`/coaches/${slug}`} className="block">
+    <Link href={coachUrl} className="block">
       <Card className="hover:bg-muted/50 transition-colors group overflow-hidden">
         <CardContent className="p-0">
           {/* Coach Image */}
