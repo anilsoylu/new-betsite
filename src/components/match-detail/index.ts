@@ -1,4 +1,8 @@
 export { MatchHeader } from "./match-header";
+export {
+  LiveFixtureProvider,
+  useLiveFixtureContext,
+} from "./live-fixture-provider";
 export { MatchTabs } from "./match-tabs";
 export { EventsTab } from "./events-tab";
 export { StatisticsTab } from "./statistics-tab";

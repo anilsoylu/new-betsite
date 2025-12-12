@@ -14,6 +14,7 @@ import {
   TeamFormWidget,
   LeagueMiniTable,
   MatchInfoWidget,
+  LiveFixtureProvider,
 } from "@/components/match-detail";
 import { SITE, SEO, DATE_FORMATS } from "@/lib/constants";
 import { JsonLdScript } from "@/components/seo";
@@ -105,80 +106,82 @@ export default async function MatchDetailPage({
       <JsonLdScript id="sports-event-schema" schema={sportsEventSchema} />
       <JsonLdScript id="breadcrumb-schema" schema={breadcrumbSchema} />
 
-      {/* Match Header */}
-      <MatchHeader fixture={fixture} homeForm={homeForm} awayForm={awayForm} />
+      <LiveFixtureProvider fixture={fixture}>
+        {/* Match Header */}
+        <MatchHeader fixture={fixture} homeForm={homeForm} awayForm={awayForm} />
 
-      {/* Main content grid */}
-      <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_280px]">
-        {/* Tabs section */}
-        <div className="lg:order-1">
-          <Suspense fallback={null}>
-            <MatchTabs fixture={fixture} standings={standings} h2h={h2h} />
-          </Suspense>
+        {/* Main content grid */}
+        <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_280px]">
+          {/* Tabs section */}
+          <div className="lg:order-1">
+            <Suspense fallback={null}>
+              <MatchTabs fixture={fixture} standings={standings} h2h={h2h} />
+            </Suspense>
 
-          {/* Betting Insights - Data-driven analysis */}
-          {insights && (
-            <MatchBetInsights
-              insights={insights}
+            {/* Betting Insights - Data-driven analysis */}
+            {insights && (
+              <MatchBetInsights
+                insights={insights}
+                homeTeam={fixture.homeTeam}
+                awayTeam={fixture.awayTeam}
+              />
+            )}
+
+            {/* Match Article - SEO-friendly match preview */}
+            <MatchArticle
+              fixture={fixture}
+              standings={standings}
+              h2h={h2h}
+              homeForm={homeForm}
+              awayForm={awayForm}
+            />
+          </div>
+
+          {/* Sidebar */}
+          <div className="lg:order-2 space-y-4">
+            {/* Odds Card */}
+            {odds && (
+              <OddsCard
+                odds={odds}
+                homeTeam={fixture.homeTeam}
+                awayTeam={fixture.awayTeam}
+              />
+            )}
+
+            {/* Match Info */}
+            <MatchInfoWidget fixture={fixture} />
+
+            {/* Quick Stats (if match has started/finished) */}
+            {fixture.statistics.length > 0 && (
+              <MatchQuickStats
+                statistics={fixture.statistics}
+                homeTeam={fixture.homeTeam}
+                awayTeam={fixture.awayTeam}
+              />
+            )}
+
+            {/* Team Form Comparison */}
+            <TeamFormWidget
               homeTeam={fixture.homeTeam}
               awayTeam={fixture.awayTeam}
+              homeForm={homeForm}
+              awayForm={awayForm}
             />
-          )}
 
-          {/* Match Article - SEO-friendly match preview */}
-          <MatchArticle
-            fixture={fixture}
-            standings={standings}
-            h2h={h2h}
-            homeForm={homeForm}
-            awayForm={awayForm}
-          />
+            {/* Mini League Table */}
+            <LeagueMiniTable
+              standings={standings}
+              homeTeamId={fixture.homeTeam.id}
+              awayTeamId={fixture.awayTeam.id}
+              leagueSlug={
+                fixture.league
+                  ? slugify(fixture.league.name) + "-" + fixture.league.id
+                  : undefined
+              }
+            />
+          </div>
         </div>
-
-        {/* Sidebar */}
-        <div className="lg:order-2 space-y-4">
-          {/* Odds Card */}
-          {odds && (
-            <OddsCard
-              odds={odds}
-              homeTeam={fixture.homeTeam}
-              awayTeam={fixture.awayTeam}
-            />
-          )}
-
-          {/* Match Info */}
-          <MatchInfoWidget fixture={fixture} />
-
-          {/* Quick Stats (if match has started/finished) */}
-          {fixture.statistics.length > 0 && (
-            <MatchQuickStats
-              statistics={fixture.statistics}
-              homeTeam={fixture.homeTeam}
-              awayTeam={fixture.awayTeam}
-            />
-          )}
-
-          {/* Team Form Comparison */}
-          <TeamFormWidget
-            homeTeam={fixture.homeTeam}
-            awayTeam={fixture.awayTeam}
-            homeForm={homeForm}
-            awayForm={awayForm}
-          />
-
-          {/* Mini League Table */}
-          <LeagueMiniTable
-            standings={standings}
-            homeTeamId={fixture.homeTeam.id}
-            awayTeamId={fixture.awayTeam.id}
-            leagueSlug={
-              fixture.league
-                ? slugify(fixture.league.name) + "-" + fixture.league.id
-                : undefined
-            }
-          />
-        </div>
-      </div>
+      </LiveFixtureProvider>
     </main>
   );
 }

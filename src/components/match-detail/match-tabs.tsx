@@ -13,6 +13,7 @@ import type {
   StandingTable,
   H2HFixture,
 } from "@/types/football";
+import { useLiveFixtureContext } from "./live-fixture-provider";
 
 export type MatchTab =
   | "events"
@@ -47,8 +48,17 @@ export function MatchTabs({ fixture, standings, h2h }: MatchTabsProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  const hasEvents = fixture.events.length > 0;
-  const hasStatistics = fixture.statistics.length > 0;
+  // Get live data from context (polling handled by provider)
+  const { events: liveEvents, statistics: liveStatistics } =
+    useLiveFixtureContext();
+
+  // Use live data if available, otherwise fall back to static fixture data
+  const currentEvents = liveEvents.length > 0 ? liveEvents : fixture.events;
+  const currentStatistics =
+    liveStatistics.length > 0 ? liveStatistics : fixture.statistics;
+
+  const hasEvents = currentEvents.length > 0;
+  const hasStatistics = currentStatistics.length > 0;
   const hasLineups = fixture.homeLineup || fixture.awayLineup;
   const hasStandings = standings.length > 0;
   const hasH2H = h2h.length > 0;
@@ -138,7 +148,7 @@ export function MatchTabs({ fixture, standings, h2h }: MatchTabsProps) {
 
       <TabsContent value="events">
         <EventsTab
-          events={fixture.events}
+          events={currentEvents}
           homeTeam={fixture.homeTeam}
           awayTeam={fixture.awayTeam}
         />
@@ -162,7 +172,7 @@ export function MatchTabs({ fixture, standings, h2h }: MatchTabsProps) {
       <TabsContent value="statistics">
         {hasStatistics ? (
           <StatisticsTab
-            statistics={fixture.statistics}
+            statistics={currentStatistics}
             homeTeam={fixture.homeTeam}
             awayTeam={fixture.awayTeam}
           />

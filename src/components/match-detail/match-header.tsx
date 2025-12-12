@@ -16,7 +16,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn, getTeamUrl } from "@/lib/utils";
-import { useLiveFixture } from "@/hooks";
+import { useLiveFixtureContext } from "./live-fixture-provider";
 import { useFavoritesStore } from "@/stores/favorites-store";
 import { FormStrip, getFormFromFixtures } from "@/components/teams/form-strip";
 import type { FixtureDetail, FormFixtureData } from "@/types/football";
@@ -58,9 +58,9 @@ export function MatchHeader({ fixture, homeForm, awayForm }: MatchHeaderProps) {
   const formattedDate = format(new Date(startTime), "dd MMM yyyy");
   const formattedTime = format(new Date(startTime), "HH:mm");
 
-  // Poll for live fixture updates
-  const liveData = useLiveFixture({ fixture, pollInterval: 30000 });
-  const { status, displayMinute, homeScore, awayScore, isLive } = liveData;
+  // Get live fixture data from context (polling handled by provider)
+  const { status, displayMinute, homeScore, awayScore, isLive } =
+    useLiveFixtureContext();
 
   return (
     <div className="space-y-4">
