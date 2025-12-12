@@ -68,16 +68,13 @@ export interface SportmonksCoachRaw {
 }
 
 // Coach in fixture context (from fixture.coaches include)
-export interface SportmonksFixtureCoachRaw {
-  id: number;
-  fixture_id: number;
-  coach_id: number;
-  participant_id: number; // team_id
+// Coach data is directly on the object, meta contains participant_id for team matching
+export interface SportmonksFixtureCoachRaw extends SportmonksCoachRaw {
   meta: {
-    location: "home" | "away";
+    fixture_id: number;
+    coach_id: number;
+    participant_id: number; // team_id - use this to match home/away
   } | null;
-  // Nested coach data when using coaches.coach include
-  coach?: SportmonksCoachRaw;
 }
 
 // Extended coach data (from GET /coaches/{id} with includes)

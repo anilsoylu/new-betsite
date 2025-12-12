@@ -239,6 +239,58 @@ export function generateCoachSchema(coach: CoachDetail) {
   return schema;
 }
 
+// FAQPage schema for coach detail pages
+export function generateCoachFAQSchema(coach: CoachDetail) {
+  const faqItems: Array<{
+    "@type": "Question";
+    name: string;
+    acceptedAnswer: { "@type": "Answer"; text: string };
+  }> = [];
+
+  // Current team question
+  faqItems.push({
+    "@type": "Question",
+    name: `What team does ${coach.displayName} currently manage?`,
+    acceptedAnswer: {
+      "@type": "Answer",
+      text: coach.currentTeam
+        ? `${coach.displayName} is currently the ${coach.currentTeam.position || "Head Coach"} of ${coach.currentTeam.teamName}.`
+        : `${coach.displayName} is not currently managing any team.`,
+    },
+  });
+
+  // Titles won question (if applicable)
+  const titlesCount = coach.trophies.filter((t) => t.position === 1).length;
+  if (titlesCount > 0) {
+    faqItems.push({
+      "@type": "Question",
+      name: `How many titles has ${coach.displayName} won?`,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: `${coach.displayName} has won ${titlesCount} ${titlesCount === 1 ? "title" : "titles"} throughout their managerial career.`,
+      },
+    });
+  }
+
+  // Nationality question (if available)
+  if (coach.nationality?.name) {
+    faqItems.push({
+      "@type": "Question",
+      name: `What nationality is ${coach.displayName}?`,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: `${coach.displayName} is from ${coach.nationality.name}.`,
+      },
+    });
+  }
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqItems,
+  };
+}
+
 // SportsOrganization schema for leagues
 export function generateSportsLeagueSchema(
   league: League,

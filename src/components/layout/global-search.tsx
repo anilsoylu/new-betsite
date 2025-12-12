@@ -3,18 +3,18 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { Search, Loader2, User, Users, Star, X } from "lucide-react";
+import { Search, Loader2, User, Users, Star, X, Briefcase } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
-import { generatePlayerSlug, generateTeamSlug } from "@/lib/utils";
+import { cn, generatePlayerSlug, generateTeamSlug, generateCoachSlug } from "@/lib/utils";
 import { useFavoritesStore } from "@/stores/favorites-store";
-import type { PlayerSearchResult, TeamSearchResult } from "@/types/football";
+import type { PlayerSearchResult, TeamSearchResult, CoachSearchResult } from "@/types/football";
 
 interface SearchResults {
   players: PlayerSearchResult[];
   teams: TeamSearchResult[];
+  coaches: CoachSearchResult[];
 }
 
 export function GlobalSearch() {
@@ -23,12 +23,14 @@ export function GlobalSearch() {
   // Use selectors for proper reactivity
   const favoritePlayers = useFavoritesStore((state) => state.players);
   const favoriteTeams = useFavoritesStore((state) => state.teams);
+  const favoriteCoaches = useFavoritesStore((state) => state.coaches);
   const toggleFavorite = useFavoritesStore((state) => state.toggleFavorite);
 
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResults>({
     players: [],
     teams: [],
+    coaches: [],
   });
   const [isLoading, setIsLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
@@ -41,42 +43,47 @@ export function GlobalSearch() {
     setHasMounted(true);
   }, []);
 
-  const hasResults = results.players.length > 0 || results.teams.length > 0;
+  const hasResults = results.players.length > 0 || results.teams.length > 0 || results.coaches.length > 0;
 
   // Helper to check favorites only after mount - using selector values for reactivity
-  const checkIsFavorite = (type: "players" | "teams", id: number) => {
+  const checkIsFavorite = (type: "players" | "teams" | "coaches", id: number) => {
     if (!hasMounted) return false;
-    return type === "players"
-      ? favoritePlayers.includes(id)
-      : favoriteTeams.includes(id);
+    if (type === "players") return favoritePlayers.includes(id);
+    if (type === "teams") return favoriteTeams.includes(id);
+    return favoriteCoaches.includes(id);
   };
 
   const searchAll = useCallback(async (searchQuery: string) => {
     if (searchQuery.length < 2) {
-      setResults({ players: [], teams: [] });
+      setResults({ players: [], teams: [], coaches: [] });
       return;
     }
 
     setIsLoading(true);
 
     try {
-      const [playersRes, teamsRes] = await Promise.all([
+      const [playersRes, teamsRes, coachesRes] = await Promise.all([
         fetch(`/api/players/search?q=${encodeURIComponent(searchQuery)}`),
         fetch(`/api/teams/search?q=${encodeURIComponent(searchQuery)}`),
+        fetch(`/api/coaches/search?q=${encodeURIComponent(searchQuery)}`),
       ]);
 
       const playersData = playersRes.ok
         ? await playersRes.json()
         : { players: [] };
       const teamsData = teamsRes.ok ? await teamsRes.json() : { teams: [] };
+      const coachesData = coachesRes.ok
+        ? await coachesRes.json()
+        : { coaches: [] };
 
       setResults({
         players: (playersData.players || []).slice(0, 5),
         teams: (teamsData.teams || []).slice(0, 5),
+        coaches: (coachesData.coaches || []).slice(0, 5),
       });
     } catch (error) {
       console.error("Search error:", error);
-      setResults({ players: [], teams: [] });
+      setResults({ players: [], teams: [], coaches: [] });
     } finally {
       setIsLoading(false);
     }
@@ -141,9 +148,16 @@ export function GlobalSearch() {
     setQuery("");
   };
 
+  const handleCoachClick = (coach: CoachSearchResult) => {
+    const slug = generateCoachSlug(coach.displayName || coach.name, coach.id);
+    router.push(`/coaches/${slug}`);
+    setIsOpen(false);
+    setQuery("");
+  };
+
   const handleFavoriteClick = (
     e: React.MouseEvent,
-    type: "players" | "teams",
+    type: "players" | "teams" | "coaches",
     id: number,
   ) => {
     e.stopPropagation();
@@ -152,7 +166,7 @@ export function GlobalSearch() {
 
   const clearSearch = () => {
     setQuery("");
-    setResults({ players: [], teams: [] });
+    setResults({ players: [], teams: [], coaches: [] });
     inputRef.current?.focus();
   };
 
@@ -331,6 +345,71 @@ export function GlobalSearch() {
                             className={cn(
                               "h-4 w-4",
                               checkIsFavorite("teams", team.id)
+                                ? "fill-yellow-500 text-yellow-500"
+                                : "text-muted-foreground",
+                            )}
+                          />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Coaches Section */}
+              {results.coaches.length > 0 && (
+                <div>
+                  <div className="sticky top-0 bg-muted/80 backdrop-blur-sm px-3 py-2 border-b">
+                    <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+                      <Briefcase className="h-3.5 w-3.5" />
+                      Coaches
+                    </div>
+                  </div>
+                  <div className="py-1">
+                    {results.coaches.map((coach) => (
+                      <div
+                        key={coach.id}
+                        className="flex items-center gap-3 px-3 py-2 hover:bg-accent cursor-pointer group"
+                        onClick={() => handleCoachClick(coach)}
+                      >
+                        <div className="relative h-8 w-8 shrink-0">
+                          {coach.image ? (
+                            <Image
+                              src={coach.image}
+                              alt={coach.displayName || coach.name}
+                              fill
+                              className="object-cover rounded-full"
+                            />
+                          ) : (
+                            <div className="h-full w-full bg-muted rounded-full flex items-center justify-center">
+                              <Briefcase className="h-4 w-4 text-muted-foreground" />
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium truncate">
+                            {coach.displayName || coach.name}
+                          </p>
+                          <div className="flex items-center gap-1.5">
+                            {coach.currentTeamName && (
+                              <span className="text-xs text-muted-foreground truncate">
+                                {coach.currentTeamName}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
+                          onClick={(e) =>
+                            handleFavoriteClick(e, "coaches", coach.id)
+                          }
+                        >
+                          <Star
+                            className={cn(
+                              "h-4 w-4",
+                              checkIsFavorite("coaches", coach.id)
                                 ? "fill-yellow-500 text-yellow-500"
                                 : "text-muted-foreground",
                             )}

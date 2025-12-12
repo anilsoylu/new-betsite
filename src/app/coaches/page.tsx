@@ -2,6 +2,7 @@ import { ChevronRight, Search, Users } from "lucide-react";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import { JsonLdScript } from "@/components/seo";
 import {
   OtherLeagues,
   StandingsWidget,
@@ -10,19 +11,31 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { getTeamById } from "@/lib/api/football-api";
-import { SITE } from "@/lib/constants";
+import { SEO, SITE } from "@/lib/constants";
 import {
   getTeamsForPopularLeagues,
   getTopLeaguesStandings,
 } from "@/lib/queries";
+import { generateBreadcrumbSchema } from "@/lib/seo/json-ld";
 import { getCoachUrl, getTeamUrl } from "@/lib/utils";
 
 export const metadata: Metadata = {
-  title: `Football Managers & Coaches | ${SITE.name}`,
-  description:
-    "Discover football managers and coaches worldwide. View career history, trophies, and current teams from top leagues.",
+  title: SEO.coaches.title,
+  description: SEO.coaches.description,
   alternates: {
     canonical: `${SITE.url}/coaches`,
+  },
+  openGraph: {
+    title: SEO.coaches.title,
+    description: SEO.coaches.description,
+    url: `${SITE.url}/coaches`,
+    siteName: SITE.name,
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: SEO.coaches.title,
+    description: SEO.coaches.description,
   },
 };
 
@@ -130,8 +143,15 @@ export default async function CoachesPage() {
     0,
   );
 
+  // Generate structured data
+  const breadcrumbSchema = generateBreadcrumbSchema([
+    { name: "Home", url: SITE.url },
+    { name: "Coaches", url: `${SITE.url}/coaches` },
+  ]);
+
   return (
     <main className="flex-1 overflow-auto">
+      <JsonLdScript id="breadcrumb-schema" schema={breadcrumbSchema} />
       <div className="container mx-auto px-4 py-4">
         {/* 3-Column Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-[240px_1fr_300px] gap-6">

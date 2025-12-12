@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import {
+  CoachAboutSection,
   CoachAttributes,
   CoachCareer,
   CoachHeader,
@@ -8,10 +9,14 @@ import {
 } from "@/components/coaches";
 import { JsonLdScript } from "@/components/seo";
 import { StandingsWidget } from "@/components/sidebar";
-import { getCoachById } from "@/lib/api/football-api";
-import { SITE } from "@/lib/constants";
+import { getCoachById, getPlayerById } from "@/lib/api/cached-football-api";
+import { SEO, SITE } from "@/lib/constants";
 import { getTopLeaguesStandings } from "@/lib/queries";
-import { generateBreadcrumbSchema } from "@/lib/seo/json-ld";
+import {
+  generateBreadcrumbSchema,
+  generateCoachFAQSchema,
+  generateCoachSchema,
+} from "@/lib/seo/json-ld";
 import { extractCoachId } from "@/lib/utils";
 
 interface CoachDetailPageProps {
@@ -31,12 +36,11 @@ export async function generateMetadata({
   try {
     const coach = await getCoachById(coachId);
 
-    const title = `${coach.displayName} | Career & Trophies`;
-    const description = `${coach.displayName} profile, career history and achievements.${
-      coach.currentTeam
-        ? ` Currently managing ${coach.currentTeam.teamName}.`
-        : ""
-    }`;
+    const title = SEO.coachDetail.titleTemplate(coach.displayName);
+    const description = SEO.coachDetail.descriptionTemplate(
+      coach.displayName,
+      coach.currentTeam?.teamName || null,
+    );
 
     return {
       title,
@@ -47,7 +51,16 @@ export async function generateMetadata({
       openGraph: {
         title,
         description,
+        url: `${SITE.url}/coaches/${slug}`,
+        siteName: SITE.name,
         images: coach.image ? [{ url: coach.image }] : undefined,
+        type: "profile",
+      },
+      twitter: {
+        card: "summary",
+        title,
+        description,
+        images: coach.image ? [coach.image] : undefined,
       },
     };
   } catch {
@@ -75,31 +88,15 @@ export default async function CoachDetailPage({
     notFound();
   }
 
-  // Generate structured data
-  const personSchema = {
-    "@context": "https://schema.org",
-    "@type": "Person",
-    name: coach.displayName,
-    givenName: coach.firstName,
-    familyName: coach.lastName,
-    image: coach.image,
-    url: `${SITE.url}/coaches/${slug}`,
-    jobTitle: "Football Manager",
-    birthDate: coach.dateOfBirth,
-    nationality: coach.nationality?.name
-      ? {
-          "@type": "Country",
-          name: coach.nationality.name,
-        }
-      : undefined,
-    worksFor: coach.currentTeam
-      ? {
-          "@type": "SportsTeam",
-          name: coach.currentTeam.teamName,
-        }
-      : undefined,
-  };
+  // Fetch player career data if coach was a former player
+  let playerCareer = null;
+  if (coach.formerPlayerId) {
+    playerCareer = await getPlayerById(coach.formerPlayerId).catch(() => null);
+  }
 
+  // Generate structured data using centralized schema generators
+  const personSchema = generateCoachSchema(coach);
+  const faqSchema = generateCoachFAQSchema(coach);
   const breadcrumbSchema = generateBreadcrumbSchema([
     { name: "Home", url: SITE.url },
     { name: "Coaches", url: `${SITE.url}/coaches` },
@@ -109,6 +106,7 @@ export default async function CoachDetailPage({
   return (
     <main className="flex-1 overflow-auto">
       <JsonLdScript id="person-schema" schema={personSchema} />
+      <JsonLdScript id="faq-schema" schema={faqSchema} />
       <JsonLdScript id="breadcrumb-schema" schema={breadcrumbSchema} />
 
       <div className="container mx-auto px-4 py-4">
@@ -119,11 +117,18 @@ export default async function CoachDetailPage({
             {/* Coach Header */}
             <CoachHeader coach={coach} />
 
-            {/* About Section - SEO Content */}
-            <CoachAboutSection coach={coach} />
+            {/* Mobile only: Attributes, Career & Trophies */}
+            <div className="lg:hidden space-y-4">
+              <CoachAttributes coach={coach} />
+              <CoachCareer teams={coach.teams} />
+              <CoachTrophies trophies={coach.trophies} />
+            </div>
+
+            {/* About Section - SEO Content with playing career */}
+            <CoachAboutSection coach={coach} playerCareer={playerCareer} />
           </div>
 
-          {/* Right Sidebar */}
+          {/* Right Sidebar - Desktop only */}
           <aside className="hidden lg:flex flex-col gap-4">
             {/* Attribute Overview */}
             <CoachAttributes coach={coach} />
@@ -140,95 +145,5 @@ export default async function CoachDetailPage({
         </div>
       </div>
     </main>
-  );
-}
-
-// Simple About Section component for SEO content
-function CoachAboutSection({
-  coach,
-}: {
-  coach: Awaited<ReturnType<typeof getCoachById>>;
-}) {
-  const {
-    displayName,
-    currentTeam,
-    teams,
-    trophies,
-    nationality,
-    dateOfBirth,
-  } = coach;
-
-  const titlesCount = trophies.filter((t) => t.position === 1).length;
-  const teamsCount = teams.filter((t) => t.position === "Head Coach").length;
-
-  return (
-    <section className="prose prose-slate dark:prose-invert max-w-none">
-      <h2>About {displayName}</h2>
-      <p>
-        {displayName} is a professional football manager
-        {nationality ? ` from ${nationality.name}` : ""}.
-        {currentTeam
-          ? ` Currently serving as ${currentTeam.position || "Head Coach"} at ${currentTeam.teamName}.`
-          : ""}
-      </p>
-
-      {teamsCount > 0 && (
-        <p>
-          Throughout their managerial career, {displayName} has managed{" "}
-          {teamsCount} {teamsCount === 1 ? "team" : "teams"}
-          {titlesCount > 0
-            ? ` and won ${titlesCount} ${titlesCount === 1 ? "title" : "titles"}`
-            : ""}
-          .
-        </p>
-      )}
-
-      {/* Key Facts */}
-      <h3>Key Facts</h3>
-      <ul>
-        {currentTeam && (
-          <li>
-            <strong>Current Team:</strong> {currentTeam.teamName}
-          </li>
-        )}
-        {nationality && (
-          <li>
-            <strong>Nationality:</strong> {nationality.name}
-          </li>
-        )}
-        {dateOfBirth && (
-          <li>
-            <strong>Date of Birth:</strong> {dateOfBirth}
-          </li>
-        )}
-        <li>
-          <strong>Teams Managed:</strong> {teamsCount || teams.length}
-        </li>
-        <li>
-          <strong>Titles Won:</strong> {titlesCount}
-        </li>
-      </ul>
-
-      {/* FAQ Section */}
-      <h3>Frequently Asked Questions</h3>
-      <details>
-        <summary>What team does {displayName} currently manage?</summary>
-        <p>
-          {currentTeam
-            ? `${displayName} is currently the ${currentTeam.position || "Head Coach"} of ${currentTeam.teamName}.`
-            : `${displayName} is not currently managing any team.`}
-        </p>
-      </details>
-      {titlesCount > 0 && (
-        <details>
-          <summary>How many titles has {displayName} won?</summary>
-          <p>
-            {displayName} has won {titlesCount}{" "}
-            {titlesCount === 1 ? "title" : "titles"} throughout their managerial
-            career.
-          </p>
-        </details>
-      )}
-    </section>
   );
 }

@@ -746,40 +746,42 @@ export function mapFixtureDetail(raw: SportmonksFixtureRaw): FixtureDetail {
       }
     : null;
 
-  // Map coaches
-  const coachesPivots = raw.coaches || [];
-  const homeCoachPivot = coachesPivots.find(
-    (c) => c.meta?.location === "home" && c.coach,
+  // Map coaches - coach data is directly on array items, not nested
+  // Use meta.participant_id to match with team IDs
+  const coachesData = raw.coaches || [];
+
+  const homeCoachData = coachesData.find(
+    (c) => c.meta?.participant_id === base.homeTeam.id,
   );
-  const awayCoachPivot = coachesPivots.find(
-    (c) => c.meta?.location === "away" && c.coach,
+  const awayCoachData = coachesData.find(
+    (c) => c.meta?.participant_id === base.awayTeam.id,
   );
 
-  const homeCoach = homeCoachPivot?.coach
+  const homeCoach = homeCoachData
     ? {
-        id: homeCoachPivot.coach.id,
-        name: homeCoachPivot.coach.name,
+        id: homeCoachData.id,
+        name: homeCoachData.name,
         displayName:
-          homeCoachPivot.coach.display_name ||
-          homeCoachPivot.coach.common_name ||
-          homeCoachPivot.coach.name,
-        image: homeCoachPivot.coach.image_path,
-        countryId: homeCoachPivot.coach.country_id,
-        dateOfBirth: homeCoachPivot.coach.date_of_birth,
+          homeCoachData.display_name ||
+          homeCoachData.common_name ||
+          homeCoachData.name,
+        image: homeCoachData.image_path,
+        countryId: homeCoachData.country_id,
+        dateOfBirth: homeCoachData.date_of_birth,
       }
     : null;
 
-  const awayCoach = awayCoachPivot?.coach
+  const awayCoach = awayCoachData
     ? {
-        id: awayCoachPivot.coach.id,
-        name: awayCoachPivot.coach.name,
+        id: awayCoachData.id,
+        name: awayCoachData.name,
         displayName:
-          awayCoachPivot.coach.display_name ||
-          awayCoachPivot.coach.common_name ||
-          awayCoachPivot.coach.name,
-        image: awayCoachPivot.coach.image_path,
-        countryId: awayCoachPivot.coach.country_id,
-        dateOfBirth: awayCoachPivot.coach.date_of_birth,
+          awayCoachData.display_name ||
+          awayCoachData.common_name ||
+          awayCoachData.name,
+        image: awayCoachData.image_path,
+        countryId: awayCoachData.country_id,
+        dateOfBirth: awayCoachData.date_of_birth,
       }
     : null;
 
