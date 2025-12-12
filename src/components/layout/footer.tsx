@@ -54,10 +54,18 @@ export function Footer({ className }: FooterProps) {
             </ul>
           </div>
 
-          {/* Legal */}
+          {/* Legal & Contact */}
           <div>
-            <h3 className="font-semibold mb-3">Legal</h3>
+            <h3 className="font-semibold mb-3">Legal & Contact</h3>
             <ul className="space-y-2 text-sm">
+              <li>
+                <Link
+                  href="/contact"
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  Contact
+                </Link>
+              </li>
               <li>
                 <Link
                   href="/privacy"

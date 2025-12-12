@@ -144,6 +144,10 @@ export const SEO = {
     title: `Terms of Service | ${SITE.name}`,
     description: `${SITE.name} terms of service and conditions of use.`,
   },
+  contact: {
+    title: `Contact Us | ${SITE.name}`,
+    description: `Get in touch with ${SITE.name}. Contact us for questions, suggestions, or partnership opportunities.`,
+  },
   buildXI: {
     title: `Build Your XI | Create Your Dream Football Lineup | ${SITE.name}`,
     description:

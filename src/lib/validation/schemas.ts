@@ -64,6 +64,41 @@ export const paginationSchema = z.object({
 });
 
 // ============================================================================
+// Contact Form Schema
+// ============================================================================
+
+/**
+ * Contact form validation
+ */
+export const contactFormSchema = z.object({
+  name: z
+    .string()
+    .min(2, "First name must be at least 2 characters")
+    .max(50, "First name must be at most 50 characters"),
+  surname: z
+    .string()
+    .min(2, "Last name must be at least 2 characters")
+    .max(50, "Last name must be at most 50 characters"),
+  company: z
+    .string()
+    .max(100, "Company name must be at most 100 characters")
+    .optional()
+    .or(z.literal("")),
+  email: z.string().email("Please enter a valid email address"),
+  subject: z
+    .string()
+    .min(5, "Subject must be at least 5 characters")
+    .max(100, "Subject must be at most 100 characters"),
+  message: z
+    .string()
+    .min(10, "Message must be at least 10 characters")
+    .max(2000, "Message must be at most 2000 characters"),
+  captchaToken: z.string().min(1, "Please verify that you are not a robot"),
+});
+
+export type ContactFormData = z.infer<typeof contactFormSchema>;
+
+// ============================================================================
 // API Route Schemas
 // ============================================================================
 

@@ -8,6 +8,7 @@ import {
   Radio,
   UsersRound,
   ClipboardList,
+  Mail,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
@@ -117,6 +118,14 @@ export const NAV_ITEMS: NavItem[] = [
     label: "Build XI",
     icon: UsersRound,
     showOnDesktop: false, // Only in mobile sheet menu
+    showOnMobile: false,
+    showInMobileSheet: true,
+  },
+  {
+    href: "/contact",
+    label: "Contact",
+    icon: Mail,
+    showOnDesktop: true,
     showOnMobile: false,
     showInMobileSheet: true,
   },

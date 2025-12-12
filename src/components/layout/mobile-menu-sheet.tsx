@@ -139,10 +139,13 @@ export function MobileMenuSheet({ open, onOpenChange }: MobileMenuSheetProps) {
                   </span>
                   <span className="text-xs text-gray-500 dark:text-gray-500">
                     {item.href === "/players" && "Search & explore players"}
+                    {item.href === "/coaches" && "Managers & coaches"}
                     {item.href === "/leagues" && "All competitions"}
                     {item.href === "/live" && "Watch live matches"}
                     {item.href === "/favorites" &&
                       `${displayCount} saved items`}
+                    {item.href === "/build-xi" && "Create your dream team"}
+                    {item.href === "/contact" && "Get in touch with us"}
                   </span>
                 </div>
 

@@ -24,6 +24,7 @@ const STATIC_PAGES: StaticPage[] = [
   { path: "/teams", changefreq: "daily", priority: 0.8 },
   { path: "/players", changefreq: "daily", priority: 0.8 },
   { path: "/coaches", changefreq: "daily", priority: 0.8 },
+  { path: "/contact", changefreq: "monthly", priority: 0.5 },
   { path: "/privacy", changefreq: "yearly", priority: 0.3 },
   { path: "/terms", changefreq: "yearly", priority: 0.3 },
 ];
