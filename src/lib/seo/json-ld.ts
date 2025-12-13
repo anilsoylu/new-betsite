@@ -139,15 +139,8 @@ export function generateSportsEventSchema(fixture: FixtureDetail) {
   }
 
   if (fixture.league) {
-    // Use SportsOrganization for the league (not SportsEvent)
-    // A league is an organization, not a single event - this avoids Google validation errors
-    schema.superEvent = {
-      "@type": "SportsOrganization",
-      name: fixture.league.name,
-      url: `${SITE.url}/leagues/${slugify(fixture.league.name)}-${fixture.league.id}`,
-      sport: "Football",
-    };
-    // Organizer is also the league
+    // Only use organizer - superEvent requires Event type, not Organization
+    // SportsOrganization is valid for organizer but NOT for superEvent
     schema.organizer = {
       "@type": "SportsOrganization",
       name: fixture.league.name,
