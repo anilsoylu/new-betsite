@@ -13,6 +13,20 @@ import {
   StandingsWidget,
 } from "@/components/sidebar";
 import { SITE, DATE_FORMATS } from "@/lib/constants";
+import {
+  matchesDateSchema,
+  safeValidateSearchParams,
+} from "@/lib/validation/schemas";
+
+import { JsonLdScript } from "@/components/seo";
+import {
+  generateBreadcrumbSchema,
+  generateFixtureListSchema,
+} from "@/lib/seo/json-ld";
+import { slugify } from "@/lib/utils";
+
+// Revalidate every 5 minutes for fixture updates
+export const revalidate = 300;
 
 export const metadata: Metadata = {
   title: `All Matches | ${SITE.name}`,
@@ -60,10 +74,18 @@ function generateDateItems(selectedDateString: string) {
 }
 
 export default async function MatchesPage({ searchParams }: MatchesPageProps) {
-  const { date } = await searchParams;
+  const rawParams = await searchParams;
 
-  // Parse date from query or use today
-  const selectedDate = date ? parseISO(date) : new Date();
+  // Validate date parameter with Zod, fallback to today if invalid
+  const validation = safeValidateSearchParams(
+    matchesDateSchema,
+    new URLSearchParams(rawParams.date ? { date: rawParams.date } : {}),
+  );
+
+  // Use validated date or fallback to today
+  const selectedDate = validation.success && validation.data.date
+    ? parseISO(validation.data.date)
+    : new Date();
   const dateString = format(selectedDate, DATE_FORMATS.apiDate);
   const isSelectedToday = isToday(selectedDate);
 
@@ -83,8 +105,33 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
 
   const formattedDate = format(selectedDate, "EEEE, d MMMM yyyy");
 
+  // Generate structured data
+  const breadcrumbSchema = generateBreadcrumbSchema([
+    { name: "Home", url: SITE.url },
+    { name: "Matches", url: `${SITE.url}/matches` },
+  ]);
+
+  // Combine all fixtures for ItemList schema
+  const allFixtures = [...liveFixtures, ...nonLiveFixtures];
+  const fixturesForSchema = allFixtures.slice(0, 10).map((fixture) => ({
+    id: fixture.id,
+    homeTeam: { name: fixture.homeTeam.name },
+    awayTeam: { name: fixture.awayTeam.name },
+    startTime: fixture.startTime,
+    slug: `${slugify(fixture.homeTeam.name)}-vs-${slugify(fixture.awayTeam.name)}-${fixture.id}`,
+    league: fixture.league ? { name: fixture.league.name } : null,
+  }));
+
+  const fixtureListSchema = generateFixtureListSchema(fixturesForSchema, {
+    name: `Football Matches - ${formattedDate}`,
+    description: `Football fixtures and results for ${formattedDate}`,
+    maxItems: 10,
+  });
+
   return (
     <main className="flex-1 overflow-auto">
+      <JsonLdScript id="breadcrumb-schema" schema={breadcrumbSchema} />
+      <JsonLdScript id="fixture-list-schema" schema={fixtureListSchema} />
       <div className="container mx-auto px-4 py-4">
         {/* 3-Column Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-[240px_1fr_300px] gap-6">

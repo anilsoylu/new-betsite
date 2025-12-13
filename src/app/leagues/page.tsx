@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { Trophy, Globe, ChevronRight } from "lucide-react";
-import { SITE, SEO, CACHE_PROFILES } from "@/lib/constants";
+import { SITE, SEO } from "@/lib/constants";
 import { getAllLeaguesFull } from "@/lib/api/cached-football-api";
 import { slugify } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

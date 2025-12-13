@@ -11,6 +11,9 @@ import {
 } from "@/components/sidebar";
 import { SEO, SITE } from "@/lib/constants";
 
+// Revalidate every 5 minutes for live fixture updates on homepage
+export const revalidate = 300;
+
 export const metadata: Metadata = {
   title: SEO.home.title,
   description: SEO.home.description,

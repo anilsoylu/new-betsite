@@ -131,6 +131,14 @@ export const fixturesQuerySchema = z.object({
 });
 
 /**
+ * Matches page searchParams: /matches?date=...
+ * Optional date with today as default fallback
+ */
+export const matchesDateSchema = z.object({
+  date: dateSchema.optional(),
+});
+
+/**
  * Fixture by ID route: /api/fixtures/[id]/live
  */
 export const fixtureIdParamsSchema = z.object({
@@ -217,6 +225,28 @@ export function safeExtractIdFromSlug(slug: string): number | null {
   }
 }
 
+/**
+ * Validates slug params from Next.js page props
+ * @throws ZodError if slug format is invalid
+ */
+export function validateSlugParams(params: { slug: string }): { slug: string } {
+  return z.object({ slug: slugSchema }).parse(params);
+}
+
+/**
+ * Safely validates slug params, returning result object
+ * Returns { success: true, data } or { success: false, error }
+ */
+export function safeValidateSlugParams(
+  params: { slug: string },
+): { success: true; data: { slug: string } } | { success: false; error: z.ZodError } {
+  const result = z.object({ slug: slugSchema }).safeParse(params);
+  if (result.success) {
+    return { success: true, data: result.data };
+  }
+  return { success: false, error: result.error };
+}
+
 // ============================================================================
 // Type Exports
 // ============================================================================
@@ -225,5 +255,6 @@ export type PlayerSearchParams = z.infer<typeof playerSearchSchema>;
 export type TeamSearchParams = z.infer<typeof teamSearchSchema>;
 export type CoachSearchParams = z.infer<typeof coachSearchSchema>;
 export type FixturesQueryParams = z.infer<typeof fixturesQuerySchema>;
+export type MatchesDateParams = z.infer<typeof matchesDateSchema>;
 export type FixtureIdParams = z.infer<typeof fixtureIdParamsSchema>;
 export type PaginationParams = z.infer<typeof paginationSchema>;

@@ -163,6 +163,14 @@ export function generateSportsTeamSchema(team: TeamDetail) {
     name: team.name,
     logo: team.logo,
     url: `${SITE.url}/teams/${slugify(team.name)}-${team.id}`,
+    // Unique identifier (Sportmonks ID)
+    identifier: {
+      "@type": "PropertyValue",
+      propertyID: "sportmonks",
+      value: team.id.toString(),
+    },
+    // External references (can be populated if official URLs are available)
+    sameAs: [],
   };
 
   if (team.country?.name) {
@@ -205,6 +213,14 @@ export function generatePersonSchema(player: PlayerDetail) {
     image: player.image,
     url: `${SITE.url}/players/${slugify(player.displayName)}-${player.id}`,
     jobTitle: player.position || "Football Player",
+    // Unique identifier (Sportmonks ID)
+    identifier: {
+      "@type": "PropertyValue",
+      propertyID: "sportmonks",
+      value: player.id.toString(),
+    },
+    // External references (can be populated if official URLs are available)
+    sameAs: [],
   };
 
   if (player.dateOfBirth) {
@@ -255,6 +271,14 @@ export function generateCoachSchema(coach: CoachDetail) {
     image: coach.image,
     url: `${SITE.url}/coaches/${slugify(coach.displayName)}-${coach.id}`,
     jobTitle: "Football Manager",
+    // Unique identifier (Sportmonks ID)
+    identifier: {
+      "@type": "PropertyValue",
+      propertyID: "sportmonks",
+      value: coach.id.toString(),
+    },
+    // External references (can be populated if official URLs are available)
+    sameAs: [],
   };
 
   if (coach.dateOfBirth) {
@@ -365,6 +389,14 @@ export function generateSportsLeagueSchema(
     logo: league.logo,
     url: `${SITE.url}/leagues/${slugify(league.name)}-${league.id}`,
     sport: "Football",
+    // Unique identifier (Sportmonks ID)
+    identifier: {
+      "@type": "PropertyValue",
+      propertyID: "sportmonks",
+      value: league.id.toString(),
+    },
+    // External references (can be populated if official URLs are available)
+    sameAs: [],
     memberOf: {
       "@type": "SportsOrganization",
       name: league.country?.name || "International",
@@ -531,4 +563,310 @@ function getEventStatus(status: string): string | undefined {
     default:
       return undefined;
   }
+}
+
+// ============================================================================
+// ItemList Schemas (for list pages)
+// ============================================================================
+
+interface ItemListItem {
+  name: string;
+  url: string;
+  image?: string;
+  position?: number;
+}
+
+/**
+ * Generic ItemList schema for list pages
+ * Useful for coaches, players, teams list pages
+ * Limited to maxItems (default 10) for performance
+ */
+export function generateItemListSchema(opts: {
+  name: string;
+  description?: string;
+  items: ItemListItem[];
+  maxItems?: number;
+}) {
+  const maxItems = opts.maxItems ?? 10;
+  const limitedItems = opts.items.slice(0, maxItems);
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: opts.name,
+    ...(opts.description && { description: opts.description }),
+    numberOfItems: limitedItems.length,
+    itemListElement: limitedItems.map((item, idx) => ({
+      "@type": "ListItem",
+      position: item.position ?? idx + 1,
+      name: item.name,
+      url: item.url,
+      ...(item.image && { image: item.image }),
+    })),
+  };
+}
+
+/**
+ * SportsEvent ItemList for matches/fixtures list pages
+ * Each item is a SportsEvent reference
+ */
+export function generateFixtureListSchema(
+  fixtures: Array<{
+    id: number;
+    homeTeam: { name: string };
+    awayTeam: { name: string };
+    startTime: string;
+    slug: string;
+    league?: { name: string } | null;
+  }>,
+  opts?: {
+    name?: string;
+    description?: string;
+    maxItems?: number;
+  },
+) {
+  const maxItems = opts?.maxItems ?? 10;
+  const limitedFixtures = fixtures.slice(0, maxItems);
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: opts?.name ?? "Football Matches",
+    ...(opts?.description && { description: opts.description }),
+    numberOfItems: limitedFixtures.length,
+    itemListElement: limitedFixtures.map((fixture, idx) => ({
+      "@type": "ListItem",
+      position: idx + 1,
+      item: {
+        "@type": "SportsEvent",
+        name: `${fixture.homeTeam.name} vs ${fixture.awayTeam.name}`,
+        startDate: fixture.startTime,
+        url: `${SITE.url}/matches/${fixture.slug}`,
+        ...(fixture.league && {
+          organizer: {
+            "@type": "SportsOrganization",
+            name: fixture.league.name,
+          },
+        }),
+      },
+    })),
+  };
+}
+
+/**
+ * Live matches schema - WebPage with ItemList of live SportsEvents
+ */
+export function generateLiveMatchesSchema(
+  liveFixtures: Array<{
+    id: number;
+    homeTeam: { name: string };
+    awayTeam: { name: string };
+    startTime: string;
+    slug: string;
+    score?: { home: number; away: number } | null;
+  }>,
+) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    name: "Live Football Scores",
+    description: "Real-time live football scores and match updates",
+    url: `${SITE.url}/live`,
+    mainEntity: {
+      "@type": "ItemList",
+      name: "Live Matches",
+      numberOfItems: liveFixtures.length,
+      itemListElement: liveFixtures.slice(0, 10).map((fixture, idx) => ({
+        "@type": "ListItem",
+        position: idx + 1,
+        item: {
+          "@type": "SportsEvent",
+          name: `${fixture.homeTeam.name} vs ${fixture.awayTeam.name}`,
+          startDate: fixture.startTime,
+          url: `${SITE.url}/matches/${fixture.slug}`,
+          eventStatus: "https://schema.org/EventScheduled",
+        },
+      })),
+    },
+  };
+}
+
+// ============================================================================
+// FAQ Schemas (for detail pages)
+// ============================================================================
+
+/**
+ * FAQPage schema for player detail pages
+ * Generates common questions about the player
+ */
+export function generatePlayerFAQSchema(player: PlayerDetail) {
+  const faqItems: Array<{
+    "@type": "Question";
+    name: string;
+    acceptedAnswer: { "@type": "Answer"; text: string };
+  }> = [];
+
+  // Current team question
+  faqItems.push({
+    "@type": "Question",
+    name: `What team does ${player.displayName} play for?`,
+    acceptedAnswer: {
+      "@type": "Answer",
+      text: player.currentTeam
+        ? `${player.displayName} currently plays for ${player.currentTeam.teamName}.`
+        : `${player.displayName} is currently a free agent.`,
+    },
+  });
+
+  // Position question
+  if (player.position) {
+    faqItems.push({
+      "@type": "Question",
+      name: `What position does ${player.displayName} play?`,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: `${player.displayName} plays as a ${player.position}.`,
+      },
+    });
+  }
+
+  // Nationality question
+  if (player.nationality?.name) {
+    faqItems.push({
+      "@type": "Question",
+      name: `What nationality is ${player.displayName}?`,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: `${player.displayName} is from ${player.nationality.name}.`,
+      },
+    });
+  }
+
+  // Age question
+  if (player.dateOfBirth) {
+    const birthDate = new Date(player.dateOfBirth);
+    const age = Math.floor(
+      (Date.now() - birthDate.getTime()) / (365.25 * 24 * 60 * 60 * 1000),
+    );
+    faqItems.push({
+      "@type": "Question",
+      name: `How old is ${player.displayName}?`,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: `${player.displayName} is ${age} years old (born ${format(birthDate, "MMMM d, yyyy")}).`,
+      },
+    });
+  }
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqItems,
+  };
+}
+
+/**
+ * FAQPage schema for team detail pages
+ * Generates common questions about the team
+ */
+export function generateTeamFAQSchema(team: TeamDetail) {
+  const faqItems: Array<{
+    "@type": "Question";
+    name: string;
+    acceptedAnswer: { "@type": "Answer"; text: string };
+  }> = [];
+
+  // Founded year question
+  if (team.founded) {
+    faqItems.push({
+      "@type": "Question",
+      name: `When was ${team.name} founded?`,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: `${team.name} was founded in ${team.founded}.`,
+      },
+    });
+  }
+
+  // Stadium question
+  if (team.venue) {
+    faqItems.push({
+      "@type": "Question",
+      name: `Where does ${team.name} play home games?`,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: `${team.name} plays their home games at ${team.venue.name}${team.venue.city ? ` in ${team.venue.city}` : ""}.`,
+      },
+    });
+  }
+
+  // Current coach question
+  if (team.coach) {
+    faqItems.push({
+      "@type": "Question",
+      name: `Who is the manager of ${team.name}?`,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: `${team.name} is managed by ${team.coach.displayName}.`,
+      },
+    });
+  }
+
+  // Country question
+  if (team.country?.name) {
+    faqItems.push({
+      "@type": "Question",
+      name: `What country is ${team.name} from?`,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: `${team.name} is a football club from ${team.country.name}.`,
+      },
+    });
+  }
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqItems,
+  };
+}
+
+/**
+ * FAQPage schema for league detail pages
+ * Generates common questions about the league
+ */
+export function generateLeagueFAQSchema(league: League) {
+  const faqItems: Array<{
+    "@type": "Question";
+    name: string;
+    acceptedAnswer: { "@type": "Answer"; text: string };
+  }> = [];
+
+  // Country question
+  if (league.country?.name) {
+    faqItems.push({
+      "@type": "Question",
+      name: `What country is the ${league.name} from?`,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: `The ${league.name} is a football competition from ${league.country.name}.`,
+      },
+    });
+  }
+
+  // Sport question
+  faqItems.push({
+    "@type": "Question",
+    name: `What sport is the ${league.name}?`,
+    acceptedAnswer: {
+      "@type": "Answer",
+      text: `The ${league.name} is a professional football (soccer) competition.`,
+    },
+  });
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqItems,
+  };
 }

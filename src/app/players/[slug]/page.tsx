@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { getPlayerById } from "@/lib/api/cached-football-api";
 import { getTopLeaguesStandings } from "@/lib/queries";
 import { extractPlayerId } from "@/lib/utils";
+import { safeValidateSlugParams } from "@/lib/validation/schemas";
 import {
   PlayerHeader,
   PlayerCurrentSeason,
@@ -19,7 +20,11 @@ import { JsonLdScript } from "@/components/seo";
 import {
   generatePersonSchema,
   generateBreadcrumbSchema,
+  generatePlayerFAQSchema,
 } from "@/lib/seo/json-ld";
+
+// Revalidate every 6 hours for player profile
+export const revalidate = 21600;
 
 interface PlayerDetailPageProps {
   params: Promise<{ slug: string }>;
@@ -29,8 +34,14 @@ export async function generateMetadata({
   params,
 }: PlayerDetailPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const playerId = extractPlayerId(slug);
 
+  // Validate slug format first
+  const validation = safeValidateSlugParams({ slug });
+  if (!validation.success) {
+    return { title: "Player Not Found" };
+  }
+
+  const playerId = extractPlayerId(slug);
   if (!playerId) {
     return { title: "Player Not Found" };
   }
@@ -72,8 +83,14 @@ export default async function PlayerDetailPage({
   params,
 }: PlayerDetailPageProps) {
   const { slug } = await params;
-  const playerId = extractPlayerId(slug);
 
+  // Validate slug format first
+  const validation = safeValidateSlugParams({ slug });
+  if (!validation.success) {
+    notFound();
+  }
+
+  const playerId = extractPlayerId(slug);
   if (!playerId) {
     notFound();
   }
@@ -95,11 +112,13 @@ export default async function PlayerDetailPage({
     { name: "Players", url: `${SITE.url}/players` },
     { name: player.displayName, url: `${SITE.url}/players/${slug}` },
   ]);
+  const faqSchema = generatePlayerFAQSchema(player);
 
   return (
     <main className="flex-1 overflow-auto">
       <JsonLdScript id="person-schema" schema={personSchema} />
       <JsonLdScript id="breadcrumb-schema" schema={breadcrumbSchema} />
+      <JsonLdScript id="faq-schema" schema={faqSchema} />
 
       <div className="container mx-auto px-4 py-4">
         {/* 2-Column Layout */}

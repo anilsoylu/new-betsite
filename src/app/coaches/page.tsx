@@ -12,13 +12,19 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { SEO, SITE, POPULAR_LEAGUE_IDS } from "@/lib/constants";
 import { getTopLeaguesStandings } from "@/lib/queries";
-import { generateBreadcrumbSchema } from "@/lib/seo/json-ld";
+import {
+  generateBreadcrumbSchema,
+  generateItemListSchema,
+} from "@/lib/seo/json-ld";
 import {
   initializeSchema,
   getCoachesForPopularLeagues,
   type LeagueWithCoaches,
 } from "@/lib/sitemap-cache";
 import { getCoachUrl, getTeamUrl } from "@/lib/utils";
+
+// Revalidate every 6 hours for coach list
+export const revalidate = 21600;
 
 export const metadata: Metadata = {
   title: SEO.coaches.title,
@@ -105,9 +111,23 @@ export default async function CoachesPage() {
     { name: "Coaches", url: `${SITE.url}/coaches` },
   ]);
 
+  // Generate ItemList schema for top 10 coaches
+  const allCoaches = leagueCoaches.flatMap((league) => league.coaches);
+  const itemListSchema = generateItemListSchema({
+    name: "Football Managers",
+    description: "Top football managers from the best leagues worldwide",
+    items: allCoaches.slice(0, 10).map((coach) => ({
+      name: coach.displayName,
+      url: getCoachUrl(coach.displayName, coach.id),
+      image: coach.image ?? undefined,
+    })),
+    maxItems: 10,
+  });
+
   return (
     <main className="flex-1 overflow-auto">
       <JsonLdScript id="breadcrumb-schema" schema={breadcrumbSchema} />
+      <JsonLdScript id="itemlist-schema" schema={itemListSchema} />
       <div className="container mx-auto px-4 py-4">
         {/* 3-Column Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-[240px_1fr_300px] gap-6">

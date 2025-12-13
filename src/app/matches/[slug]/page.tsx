@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { format } from "date-fns";
 import { getMatchDetailData } from "@/lib/queries";
 import { extractFixtureId, slugify } from "@/lib/utils";
+import { safeValidateSlugParams } from "@/lib/validation/schemas";
 import {
   MatchHeader,
   MatchTabs,
@@ -17,7 +18,7 @@ import {
   MatchInfoWidget,
   LiveFixtureProvider,
 } from "@/components/match-detail";
-import { SITE, SEO, DATE_FORMATS } from "@/lib/constants";
+import { SITE, SEO, DATE_FORMATS, CACHE_PROFILES } from "@/lib/constants";
 import { JsonLdScript } from "@/components/seo";
 import {
   generateSportsEventSchema,
@@ -27,6 +28,9 @@ import {
   generateOddsSchema,
 } from "@/lib/seo/json-ld";
 
+// Revalidate every 1 minute for live match updates
+export const revalidate = 60;
+
 interface MatchDetailPageProps {
   params: Promise<{ slug: string }>;
 }
@@ -35,8 +39,14 @@ export async function generateMetadata({
   params,
 }: MatchDetailPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const fixtureId = extractFixtureId(slug);
 
+  // Validate slug format first
+  const validation = safeValidateSlugParams({ slug });
+  if (!validation.success) {
+    return { title: "Match Not Found" };
+  }
+
+  const fixtureId = extractFixtureId(slug);
   if (!fixtureId) {
     return { title: "Match Not Found" };
   }
@@ -96,8 +106,14 @@ export default async function MatchDetailPage({
   params,
 }: MatchDetailPageProps) {
   const { slug } = await params;
-  const fixtureId = extractFixtureId(slug);
 
+  // Validate slug format first
+  const validation = safeValidateSlugParams({ slug });
+  if (!validation.success) {
+    notFound();
+  }
+
+  const fixtureId = extractFixtureId(slug);
   if (!fixtureId) {
     notFound();
   }

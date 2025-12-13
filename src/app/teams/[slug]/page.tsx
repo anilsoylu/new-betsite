@@ -9,6 +9,7 @@ import {
   getTeamTransfers,
 } from "@/lib/api/cached-football-api";
 import { extractTeamId } from "@/lib/utils";
+import { safeValidateSlugParams } from "@/lib/validation/schemas";
 import {
   TeamTabs,
   TeamOverviewContent,
@@ -24,7 +25,11 @@ import { JsonLdScript } from "@/components/seo";
 import {
   generateSportsTeamSchema,
   generateBreadcrumbSchema,
+  generateTeamFAQSchema,
 } from "@/lib/seo/json-ld";
+
+// Revalidate every 1 hour for team data
+export const revalidate = 3600;
 
 interface TeamDetailPageProps {
   params: Promise<{ slug: string }>;
@@ -73,8 +78,14 @@ export async function generateMetadata({
 }: TeamDetailPageProps): Promise<Metadata> {
   const { slug } = await params;
   const { tab } = await searchParams;
-  const teamId = extractTeamId(slug);
 
+  // Validate slug format first
+  const validation = safeValidateSlugParams({ slug });
+  if (!validation.success) {
+    return { title: "Team Not Found" };
+  }
+
+  const teamId = extractTeamId(slug);
   if (!teamId) {
     return { title: "Team Not Found" };
   }
@@ -126,8 +137,14 @@ export async function generateMetadata({
 
 export default async function TeamDetailPage({ params }: TeamDetailPageProps) {
   const { slug } = await params;
-  const teamId = extractTeamId(slug);
 
+  // Validate slug format first
+  const validation = safeValidateSlugParams({ slug });
+  if (!validation.success) {
+    notFound();
+  }
+
+  const teamId = extractTeamId(slug);
   if (!teamId) {
     notFound();
   }
@@ -235,11 +252,13 @@ export default async function TeamDetailPage({ params }: TeamDetailPageProps) {
     { name: "Teams", url: `${SITE.url}/teams` },
     { name: team.name, url: `${SITE.url}/teams/${slug}` },
   ]);
+  const faqSchema = generateTeamFAQSchema(team);
 
   return (
     <>
       <JsonLdScript id="sports-team-schema" schema={sportsTeamSchema} />
       <JsonLdScript id="breadcrumb-schema" schema={breadcrumbSchema} />
+      <JsonLdScript id="faq-schema" schema={faqSchema} />
 
       <Suspense fallback={<TabsSkeleton />}>
         <TeamTabs

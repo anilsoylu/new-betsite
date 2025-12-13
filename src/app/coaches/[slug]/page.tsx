@@ -18,6 +18,10 @@ import {
   generateCoachSchema,
 } from "@/lib/seo/json-ld";
 import { extractCoachId } from "@/lib/utils";
+import { safeValidateSlugParams } from "@/lib/validation/schemas";
+
+// Revalidate every 6 hours for coach profile
+export const revalidate = 21600;
 
 interface CoachDetailPageProps {
   params: Promise<{ slug: string }>;
@@ -27,8 +31,14 @@ export async function generateMetadata({
   params,
 }: CoachDetailPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const coachId = extractCoachId(slug);
 
+  // Validate slug format first
+  const validation = safeValidateSlugParams({ slug });
+  if (!validation.success) {
+    return { title: "Coach Not Found" };
+  }
+
+  const coachId = extractCoachId(slug);
   if (!coachId) {
     return { title: "Coach Not Found" };
   }
@@ -72,8 +82,14 @@ export default async function CoachDetailPage({
   params,
 }: CoachDetailPageProps) {
   const { slug } = await params;
-  const coachId = extractCoachId(slug);
 
+  // Validate slug format first
+  const validation = safeValidateSlugParams({ slug });
+  if (!validation.success) {
+    notFound();
+  }
+
+  const coachId = extractCoachId(slug);
   if (!coachId) {
     notFound();
   }

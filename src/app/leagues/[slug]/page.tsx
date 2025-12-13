@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { SITE, SEO } from "@/lib/constants";
 import { getLeaguePageData } from "@/lib/api/cached-football-api";
 import { extractLeagueId } from "@/lib/utils";
+import { safeValidateSlugParams } from "@/lib/validation/schemas";
 import { TOP_LEAGUES } from "@/components/sidebar/top-leagues";
 import {
   FixturesCard,
@@ -16,6 +17,9 @@ import {
   generateBreadcrumbSchema,
 } from "@/lib/seo/json-ld";
 
+// Revalidate every 1 hour for league data
+export const revalidate = 3600;
+
 interface LeaguePageProps {
   params: Promise<{ slug: string }>;
 }
@@ -24,8 +28,14 @@ export async function generateMetadata({
   params,
 }: LeaguePageProps): Promise<Metadata> {
   const { slug } = await params;
-  const leagueId = extractLeagueId(slug);
 
+  // Validate slug format first
+  const validation = safeValidateSlugParams({ slug });
+  if (!validation.success) {
+    return { title: `League | ${SITE.name}` };
+  }
+
+  const leagueId = extractLeagueId(slug);
   if (!leagueId) {
     return { title: `League | ${SITE.name}` };
   }
@@ -84,8 +94,14 @@ export async function generateMetadata({
 
 export default async function LeagueOverviewPage({ params }: LeaguePageProps) {
   const { slug } = await params;
-  const leagueId = extractLeagueId(slug);
 
+  // Validate slug format first
+  const validation = safeValidateSlugParams({ slug });
+  if (!validation.success) {
+    notFound();
+  }
+
+  const leagueId = extractLeagueId(slug);
   if (!leagueId) {
     notFound();
   }

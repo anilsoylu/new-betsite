@@ -8,12 +8,20 @@ import {
   getTopLeaguesStandings,
 } from "@/lib/queries";
 import { slugify } from "@/lib/utils";
+import { JsonLdScript } from "@/components/seo";
+import {
+  generateBreadcrumbSchema,
+  generateItemListSchema,
+} from "@/lib/seo/json-ld";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import {
   TopLeagues,
   OtherLeagues,
   StandingsWidget,
 } from "@/components/sidebar";
+
+// Revalidate every 1 hour for team list
+export const revalidate = 3600;
 
 export const metadata: Metadata = {
   title: `Football Teams | ${SITE.name}`,
@@ -50,8 +58,29 @@ export default async function TeamsPage() {
     0,
   );
 
+  // Generate structured data
+  const breadcrumbSchema = generateBreadcrumbSchema([
+    { name: "Home", url: SITE.url },
+    { name: "Teams", url: `${SITE.url}/teams` },
+  ]);
+
+  // Generate ItemList schema for top 10 teams
+  const allTeams = leagueTeams.flatMap((league) => league.teams);
+  const itemListSchema = generateItemListSchema({
+    name: "Football Teams",
+    description: "Top football teams from the best leagues worldwide",
+    items: allTeams.slice(0, 10).map((team) => ({
+      name: team.name,
+      url: `${SITE.url}/teams/${slugify(team.name)}-${team.id}`,
+      image: team.logo ?? undefined,
+    })),
+    maxItems: 10,
+  });
+
   return (
     <main className="flex-1 overflow-auto">
+      <JsonLdScript id="breadcrumb-schema" schema={breadcrumbSchema} />
+      <JsonLdScript id="itemlist-schema" schema={itemListSchema} />
       <div className="container mx-auto px-4 py-4">
         {/* 3-Column Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-[240px_1fr_300px] gap-6">
