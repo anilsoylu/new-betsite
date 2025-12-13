@@ -112,7 +112,7 @@ export default async function MatchDetailPage({
   const { fixture, standings, h2h, odds, homeForm, awayForm, insights } = data;
 
   // Generate structured data for SEO
-  const sportsEventSchema = generateSportsEventSchema(fixture);
+  const sportsEventSchema = generateSportsEventSchema(fixture, slug);
   const breadcrumbSchema = generateBreadcrumbSchema([
     { name: "Home", url: SITE.url },
     { name: "Matches", url: `${SITE.url}/matches` },

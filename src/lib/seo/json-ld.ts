@@ -47,12 +47,13 @@ export function generateBreadcrumbSchema(
 }
 
 // SportsEvent schema for matches
-export function generateSportsEventSchema(fixture: FixtureDetail) {
+export function generateSportsEventSchema(fixture: FixtureDetail, slug: string) {
   const eventStatus = getEventStatus(fixture.status);
 
   const schema: Record<string, unknown> = {
     "@context": "https://schema.org",
     "@type": "SportsEvent",
+    "@id": `${SITE.url}/matches/${slug}#event`, // ID for referencing from other schemas
     name: `${fixture.homeTeam.name} vs ${fixture.awayTeam.name}`,
     startDate: fixture.startTime,
     eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
@@ -404,7 +405,7 @@ export function generateMatchArticleSchema(
     },
     about: {
       "@type": "SportsEvent",
-      name: `${fixture.homeTeam.name} vs ${fixture.awayTeam.name}`,
+      "@id": `${SITE.url}/matches/${slug}#event`, // Reference to main SportsEvent schema
     },
   };
 }
