@@ -183,6 +183,7 @@ export function GlobalSearch() {
           className={cn(
             "pl-9 pr-16 h-9 transition-all duration-200",
             "w-40 focus:w-64 md:w-48 md:focus:w-80",
+            "placeholder:text-xs sm:placeholder:text-sm",
           )}
         />
         <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
