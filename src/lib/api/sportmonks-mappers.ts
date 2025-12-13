@@ -155,7 +155,7 @@ export function mapCountry(raw: SportmonksCountryRaw): Country {
   };
 }
 
-// Map venue
+// Map venue with rich data from Sportmonks API
 export function mapVenue(raw: SportmonksVenueRaw): Venue {
   return {
     id: raw.id,
@@ -163,6 +163,11 @@ export function mapVenue(raw: SportmonksVenueRaw): Venue {
     city: raw.city_name,
     capacity: raw.capacity,
     image: raw.image_path,
+    // Rich venue data for schema.org SEO
+    address: raw.address,
+    latitude: raw.latitude,
+    longitude: raw.longitude,
+    surface: raw.surface,
   };
 }
 

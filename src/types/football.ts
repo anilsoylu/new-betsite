@@ -39,6 +39,11 @@ export interface Venue {
   city: string | null;
   capacity: number | null;
   image: string | null;
+  // Rich venue data from Sportmonks API
+  address: string | null;
+  latitude: string | null;
+  longitude: string | null;
+  surface: string | null;
 }
 
 // League category (from API)

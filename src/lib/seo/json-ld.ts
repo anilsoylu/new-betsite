@@ -99,31 +99,64 @@ export function generateSportsEventSchema(fixture: FixtureDetail) {
   // Add image from league or home team logo
   schema.image = fixture.league?.logo || fixture.homeTeam.logo;
 
+  // Location is required - use venue if available, otherwise use league country or generic
   if (fixture.venue) {
-    schema.location = {
+    const locationSchema: Record<string, unknown> = {
       "@type": "StadiumOrArena",
       name: fixture.venue.name,
-      address: fixture.venue.city
-        ? {
-            "@type": "PostalAddress",
-            addressLocality: fixture.venue.city,
-          }
-        : undefined,
+    };
+
+    // Rich address data
+    if (fixture.venue.city || fixture.venue.address) {
+      locationSchema.address = {
+        "@type": "PostalAddress",
+        streetAddress: fixture.venue.address || undefined,
+        addressLocality: fixture.venue.city || undefined,
+      };
+    }
+
+    // GeoCoordinates for maps
+    if (fixture.venue.latitude && fixture.venue.longitude) {
+      locationSchema.geo = {
+        "@type": "GeoCoordinates",
+        latitude: fixture.venue.latitude,
+        longitude: fixture.venue.longitude,
+      };
+    }
+
+    // Stadium capacity
+    if (fixture.venue.capacity) {
+      locationSchema.maximumAttendeeCapacity = fixture.venue.capacity;
+    }
+
+    schema.location = locationSchema;
+  } else {
+    // Fallback location when venue is not available
+    schema.location = {
+      "@type": "Place",
+      name: fixture.league?.country?.name || "TBD",
     };
   }
 
   if (fixture.league) {
+    // Use SportsOrganization for the league (not SportsEvent)
+    // A league is an organization, not a single event - this avoids Google validation errors
     schema.superEvent = {
-      "@type": "SportsEvent",
+      "@type": "SportsOrganization",
       name: fixture.league.name,
+      url: `${SITE.url}/leagues/${slugify(fixture.league.name)}-${fixture.league.id}`,
+      sport: "Football",
     };
-    // Also add organizer for the league
+    // Organizer is also the league
     schema.organizer = {
       "@type": "SportsOrganization",
       name: fixture.league.name,
       url: `${SITE.url}/leagues/${slugify(fixture.league.name)}-${fixture.league.id}`,
     };
   }
+
+  // Add description for better SEO
+  schema.description = `${fixture.homeTeam.name} vs ${fixture.awayTeam.name}${fixture.league ? ` - ${fixture.league.name}` : ""} football match.`;
 
   return schema;
 }
