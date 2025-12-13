@@ -181,7 +181,7 @@ export function GlobalSearch() {
           }}
           onBlur={() => setIsFocused(false)}
           className={cn(
-            "pl-9 pr-16 h-9 transition-all duration-200",
+            "pl-8 pr-8 sm:pl-9 sm:pr-16 h-9 transition-all duration-200",
             "w-40 focus:w-64 md:w-48 md:focus:w-80",
             "placeholder:text-xs sm:placeholder:text-sm",
           )}
