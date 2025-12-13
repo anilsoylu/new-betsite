@@ -22,6 +22,9 @@ import { JsonLdScript } from "@/components/seo";
 import {
   generateSportsEventSchema,
   generateBreadcrumbSchema,
+  generateMatchArticleSchema,
+  generateMatchFAQSchema,
+  generateOddsSchema,
 } from "@/lib/seo/json-ld";
 
 interface MatchDetailPageProps {
@@ -54,6 +57,18 @@ export async function generateMetadata({
     return {
       title,
       description,
+      keywords: [
+        homeTeam.name,
+        awayTeam.name,
+        league?.name || "Football",
+        "live score",
+        "match statistics",
+        "betting odds",
+        "predictions",
+        "H2H",
+        "football",
+        "soccer",
+      ],
       alternates: {
         canonical: `${SITE.url}/matches/${slug}`,
       },
@@ -96,7 +111,7 @@ export default async function MatchDetailPage({
 
   const { fixture, standings, h2h, odds, homeForm, awayForm, insights } = data;
 
-  // Generate structured data
+  // Generate structured data for SEO
   const sportsEventSchema = generateSportsEventSchema(fixture);
   const breadcrumbSchema = generateBreadcrumbSchema([
     { name: "Home", url: SITE.url },
@@ -106,11 +121,17 @@ export default async function MatchDetailPage({
       url: `${SITE.url}/matches/${slug}`,
     },
   ]);
+  const articleSchema = generateMatchArticleSchema(fixture, slug);
+  const faqSchema = generateMatchFAQSchema(fixture);
+  const oddsSchema = odds ? generateOddsSchema(odds, fixture) : null;
 
   return (
     <main className="container mx-auto px-4 py-8">
       <JsonLdScript id="sports-event-schema" schema={sportsEventSchema} />
       <JsonLdScript id="breadcrumb-schema" schema={breadcrumbSchema} />
+      <JsonLdScript id="article-schema" schema={articleSchema} />
+      <JsonLdScript id="faq-schema" schema={faqSchema} />
+      {oddsSchema && <JsonLdScript id="odds-schema" schema={oddsSchema} />}
 
       <LiveFixtureProvider fixture={fixture}>
         {/* Match Header */}

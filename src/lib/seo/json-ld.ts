@@ -1,3 +1,4 @@
+import { format } from "date-fns";
 import { SITE } from "@/lib/constants";
 import { slugify } from "@/lib/utils";
 import type {
@@ -7,6 +8,7 @@ import type {
   CoachDetail,
   League,
   Standing,
+  MatchOdds,
 } from "@/types/football";
 
 // WebSite + SearchAction schema for home page
@@ -46,13 +48,15 @@ export function generateBreadcrumbSchema(
 
 // SportsEvent schema for matches
 export function generateSportsEventSchema(fixture: FixtureDetail) {
+  const eventStatus = getEventStatus(fixture.status);
+
   const schema: Record<string, unknown> = {
     "@context": "https://schema.org",
     "@type": "SportsEvent",
     name: `${fixture.homeTeam.name} vs ${fixture.awayTeam.name}`,
     startDate: fixture.startTime,
-    eventStatus: getEventStatus(fixture.status),
     eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
+    sport: "Football",
     homeTeam: {
       "@type": "SportsTeam",
       name: fixture.homeTeam.name,
@@ -65,13 +69,46 @@ export function generateSportsEventSchema(fixture: FixtureDetail) {
       logo: fixture.awayTeam.logo,
       url: `${SITE.url}/teams/${slugify(fixture.awayTeam.name)}-${fixture.awayTeam.id}`,
     },
+    // Competitor array for better Google compatibility
+    competitor: [
+      {
+        "@type": "SportsTeam",
+        name: fixture.homeTeam.name,
+        image: fixture.homeTeam.logo,
+      },
+      {
+        "@type": "SportsTeam",
+        name: fixture.awayTeam.name,
+        image: fixture.awayTeam.logo,
+      },
+    ],
   };
+
+  // Only set eventStatus if defined (not for live/finished)
+  if (eventStatus) {
+    schema.eventStatus = eventStatus;
+  }
+
+  // Add endDate for finished matches (startTime + ~2 hours)
+  if (fixture.status === "finished") {
+    const endDate = new Date(fixture.startTime);
+    endDate.setHours(endDate.getHours() + 2);
+    schema.endDate = endDate.toISOString();
+  }
+
+  // Add image from league or home team logo
+  schema.image = fixture.league?.logo || fixture.homeTeam.logo;
 
   if (fixture.venue) {
     schema.location = {
       "@type": "StadiumOrArena",
       name: fixture.venue.name,
-      address: fixture.venue.city || "",
+      address: fixture.venue.city
+        ? {
+            "@type": "PostalAddress",
+            addressLocality: fixture.venue.city,
+          }
+        : undefined,
     };
   }
 
@@ -79,6 +116,12 @@ export function generateSportsEventSchema(fixture: FixtureDetail) {
     schema.superEvent = {
       "@type": "SportsEvent",
       name: fixture.league.name,
+    };
+    // Also add organizer for the league
+    schema.organizer = {
+      "@type": "SportsOrganization",
+      name: fixture.league.name,
+      url: `${SITE.url}/leagues/${slugify(fixture.league.name)}-${fixture.league.id}`,
     };
   }
 
@@ -302,23 +345,163 @@ export function generateSportsLeagueSchema(
   };
 }
 
-// Helper to get event status
-function getEventStatus(status: string): string {
+// Article schema for match preview content
+export function generateMatchArticleSchema(
+  fixture: FixtureDetail,
+  slug: string,
+) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: `${fixture.homeTeam.name} vs ${fixture.awayTeam.name} - Match Preview`,
+    description: `Complete match preview for ${fixture.homeTeam.name} vs ${fixture.awayTeam.name}. Form analysis, head-to-head record, league standings, and match prediction.`,
+    image: fixture.league?.logo || fixture.homeTeam.logo,
+    datePublished: fixture.startTime,
+    dateModified: fixture.startTime,
+    url: `${SITE.url}/matches/${slug}`,
+    author: {
+      "@type": "Organization",
+      name: SITE.name,
+      url: SITE.url,
+    },
+    publisher: {
+      "@type": "Organization",
+      name: SITE.name,
+      logo: {
+        "@type": "ImageObject",
+        url: `${SITE.url}/logo.png`,
+      },
+    },
+    mainEntityOfPage: {
+      "@type": "WebPage",
+      "@id": `${SITE.url}/matches/${slug}`,
+    },
+    about: {
+      "@type": "SportsEvent",
+      name: `${fixture.homeTeam.name} vs ${fixture.awayTeam.name}`,
+    },
+  };
+}
+
+// FAQPage schema for match detail pages
+export function generateMatchFAQSchema(fixture: FixtureDetail) {
+  const faqItems: Array<{
+    "@type": "Question";
+    name: string;
+    acceptedAnswer: { "@type": "Answer"; text: string };
+  }> = [];
+
+  // Question 1: When is the match?
+  faqItems.push({
+    "@type": "Question",
+    name: `When does ${fixture.homeTeam.name} vs ${fixture.awayTeam.name} kick off?`,
+    acceptedAnswer: {
+      "@type": "Answer",
+      text: `The match kicks off on ${format(new Date(fixture.startTime), "EEEE, MMMM d, yyyy")} at ${format(new Date(fixture.startTime), "HH:mm")} UTC.`,
+    },
+  });
+
+  // Question 2: Where is the match?
+  if (fixture.venue) {
+    faqItems.push({
+      "@type": "Question",
+      name: `Where is ${fixture.homeTeam.name} vs ${fixture.awayTeam.name} being played?`,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: `The match is being played at ${fixture.venue.name}${fixture.venue.city ? ` in ${fixture.venue.city}` : ""}.`,
+      },
+    });
+  }
+
+  // Question 3: What competition?
+  if (fixture.league) {
+    faqItems.push({
+      "@type": "Question",
+      name: `What competition is ${fixture.homeTeam.name} vs ${fixture.awayTeam.name}?`,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: `This is a ${fixture.league.name} fixture.`,
+      },
+    });
+  }
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqItems,
+  };
+}
+
+// AggregateOffer schema for betting odds
+export function generateOddsSchema(odds: MatchOdds, fixture: FixtureDetail) {
+  const offers: Array<{
+    "@type": "Offer";
+    name: string;
+    price: number;
+    priceCurrency: string;
+    availability: string;
+  }> = [];
+
+  if (odds.home) {
+    offers.push({
+      "@type": "Offer",
+      name: `${fixture.homeTeam.name} Win`,
+      price: odds.home.value,
+      priceCurrency: "EUR",
+      availability: "https://schema.org/InStock",
+    });
+  }
+
+  if (odds.draw) {
+    offers.push({
+      "@type": "Offer",
+      name: "Draw",
+      price: odds.draw.value,
+      priceCurrency: "EUR",
+      availability: "https://schema.org/InStock",
+    });
+  }
+
+  if (odds.away) {
+    offers.push({
+      "@type": "Offer",
+      name: `${fixture.awayTeam.name} Win`,
+      price: odds.away.value,
+      priceCurrency: "EUR",
+      availability: "https://schema.org/InStock",
+    });
+  }
+
+  const schema: Record<string, unknown> = {
+    "@context": "https://schema.org",
+    "@type": "AggregateOffer",
+    priceCurrency: "EUR",
+    offerCount: offers.length,
+    offers: offers,
+  };
+
+  if (odds.bookmaker) {
+    schema.seller = {
+      "@type": "Organization",
+      name: odds.bookmaker,
+    };
+  }
+
+  return schema;
+}
+
+// Helper to get event status - returns undefined for live/finished (use endDate instead)
+function getEventStatus(status: string): string | undefined {
   switch (status) {
     case "scheduled":
     case "not_started":
       return "https://schema.org/EventScheduled";
-    case "live":
-    case "halftime":
-    case "playing":
-      return "https://schema.org/EventScheduled";
-    case "finished":
-    case "ft":
-      return "https://schema.org/EventScheduled";
     case "cancelled":
-    case "postponed":
       return "https://schema.org/EventCancelled";
+    case "postponed":
+      return "https://schema.org/EventPostponed";
+    // Live and finished matches don't have a specific status - use endDate instead
     default:
-      return "https://schema.org/EventScheduled";
+      return undefined;
   }
 }
